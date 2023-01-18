@@ -1,0 +1,2 @@
+import TRIPP.TRIPP_functions.py
+calculate_pka('/Volumes/chris_drive/Simulations/GPR68/MD/Inactive/M0498/Apo/MD1/GPR68I_M0498_POPC_eq_md_300ns_p_fit_skip100.xtc', '/Volumes/chris_drive/Simulations/GPR68/MD/Inactive/M0498/Apo/MD1/GPR68I_M0498_POPC_min_sd_p.pdb')

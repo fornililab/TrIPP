@@ -4,6 +4,8 @@ from propka import run
 import numpy as np 
 import os 
 import multiprocessing as mp 
+from edit_pdb import edit_pdb 
+from edit_pdb import mutate 
 
 class Trajectory: 
 
@@ -30,43 +32,6 @@ class Trajectory:
         
 
     def calculate_pka(self, output_file, extract_surface_data=False, chain='A', mutation=None, thread=None): 
-
-        def edit_pdb(pdbfile): 
-            with open(pdbfile, 'r') as file: 
-                data = file.read() 
-                corrected_amino_acids = { 
-                    'HSD' : 'HIS', 
-                    'HSP' : 'HIS', 
-                    'GLUP' : 'GLU ', 
-                    'ASPP' : 'ASP ' 
-                    }
-                for correction in corrected_amino_acids: 
-                    data = data.replace(correction, corrected_amino_acids[correction])
-            with open(pdbfile, 'w') as file: 
-                file.write(data) 
-        
-        def mutate(temp_name): 
-            lines = [] 
-            changed_lines = [] 
-            deleted_lines = [] 
-            with open(f'{temp_name}.pdb', 'r') as f: 
-                lines = f.readlines() 
-            for index, item in enumerate(lines): 
-                line = item.split()
-                if line[0] == 'ATOM' and line[5] == str(mutation): 
-                    if line[2] == 'N' or line[2] == 'HN' or line[2] == 'CA' or line[2] == 'HA' or line[2] == 'CB' or line[2] == 'O' or line[2]  == 'C': 
-                        changed_lines.append(index) 
-                    else: 
-                        deleted_lines.append(index) 
-                    residue_type = line[3] 
-            
-            with open(f'{temp_name}.pdb', 'w') as fp:
-                for number, line in enumerate(lines): 
-                    if number not in deleted_lines:
-                        if number in changed_lines: 
-                            line = line.replace(residue_type, 'ALA') 
-                        fp.write(line)
-            return residue_type 
         
         def extract_data(file, chain, time): 
 
@@ -94,9 +59,12 @@ class Trajectory:
             start = self.trajectory_slices[thread][0] 
             end = self.trajectory_slices[thread][1]
             
-            if mutation != None: 
+            if type(mutation) == int: 
                 out = f'{output_file}_{mutation}' 
                 temp_name = f'temp_{mutation}_{thread}' 
+            elif type(mutation) == list: 
+                out = f'{output_file}_{"_".join(map(str, mutation))}' 
+                temp_name = f'temp_{"_".join(map(str, mutation))}_{thread}' 
             else: 
                 out = output_file 
                 temp_name = f'temp_{thread}' 
@@ -106,7 +74,7 @@ class Trajectory:
                     w.write(self.universe) 
                 edit_pdb(f'{temp_name}.pdb')
                 if mutation != None: 
-                    residue_type = mutate(temp_name) 
+                    mutate(temp_name, mutation) 
                 run.single(f'{temp_name}.pdb')
                 time = ts.time
                 header = ','.join(extract_data(f'{temp_name}.pka', chain=chain, time=time)[0][0]) 
@@ -139,23 +107,18 @@ class Trajectory:
         pka_iterator(thread) 
 
     
-
-directory = '/Volumes/chris_drive/Simulations/GPR68/MD/Inactive/M0498/Mutations/I12A/MD1/'
-t = Trajectory(f'{directory}GPR68I_I12A_M0498_POPC_eq_md_450ns_p_fit_skip100.xtc', f'{directory}GPR68I_I12A_M0498_POPC_min_sd.pdb', 8) 
-def loop_function(index): 
-    t.calculate_pka('./temp', extract_surface_data=True, chain='A', thread=index, mutation=64) 
-
-if __name__ == '__main__':
-    pool = mp.Pool(t.cpu_number)
-    # Create jobs
-    jobs = []
-    for index, item in enumerate(t.trajectory_slices):
-        # Create asynchronous jobs that will be submitted once a processor is ready
-        job = pool.apply_async(loop_function, args=(index, ))
-        jobs.append(job)
-    # Submit jobs
-    results = [job.get() for job in jobs]
-    pool.close() 
-
-
-
+    def loop_function(self, output_file, index, extract_surface_data, chain, mutation): 
+        self.calculate_pka(output_file, extract_surface_data=extract_surface_data, chain=chain, mutation=mutation, thread=index) 
+    
+    def run(self, output_file, extract_surface_data, chain, mutation): 
+        if __name__ == '__main__':
+            pool = mp.Pool(self.cpu_number)
+            # Create jobs
+            jobs = []
+            for index, item in enumerate(self.trajectory_slices):
+                # Create asynchronous jobs that will be submitted once a processor is ready
+                job = pool.apply_async(self.loop_function, args=(output_file, index, extract_surface_data, chain, mutation,))
+                jobs.append(job)
+            # Submit jobs
+            results = [job.get() for job in jobs]
+            pool.close() 

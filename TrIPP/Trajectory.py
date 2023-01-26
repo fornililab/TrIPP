@@ -6,6 +6,7 @@ import os
 import multiprocessing as mp 
 from edit_pdb import edit_pdb 
 from edit_pdb import mutate 
+import pandas as pd
 
 class Trajectory: 
 
@@ -102,7 +103,10 @@ class Trajectory:
                         f.close() 
             
             os.remove(f'{temp_name}.pdb') 
-            os.remove(f'{temp_name}.pka') 
+            os.remove(f'{temp_name}.pka')
+        df = pd.read_csv(f'{out}_surf.csv')
+        df = df.sort_values('Time [ps]', ignore_index=True)
+        df.to_csv(f'{out}_surf.csv', index=False)
         
         pka_iterator(thread) 
 

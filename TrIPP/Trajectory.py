@@ -54,21 +54,21 @@ class Trajectory:
             data_surf = np.concatenate((time_array, data_surf_array), axis=1).tolist() 
             
             return data_pka, data_surf
+        
+        if type(mutation) == int: 
+            out = f'{output_file}_{mutation}' 
+            temp_name = f'temp_{mutation}_{thread}' 
+        elif type(mutation) == list: 
+            out = f'{output_file}_{"_".join(map(str, mutation))}' 
+            temp_name = f'temp_{"_".join(map(str, mutation))}_{thread}' 
+        else: 
+            out = output_file 
+            temp_name = f'temp_{thread}' 
 
         def pka_iterator(thread): 
             
             start = self.trajectory_slices[thread][0] 
             end = self.trajectory_slices[thread][1]
-            
-            if type(mutation) == int: 
-                out = f'{output_file}_{mutation}' 
-                temp_name = f'temp_{mutation}_{thread}' 
-            elif type(mutation) == list: 
-                out = f'{output_file}_{"_".join(map(str, mutation))}' 
-                temp_name = f'temp_{"_".join(map(str, mutation))}_{thread}' 
-            else: 
-                out = output_file 
-                temp_name = f'temp_{thread}' 
 
             for index, ts in enumerate(self.universe.trajectory[start:end]):
                 with mda.Writer(f'{temp_name}.pdb') as w: 

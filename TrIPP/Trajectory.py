@@ -123,21 +123,14 @@ class Trajectory:
         self.calculate_pka(output_file, extract_surface_data=extract_surface_data, chain=chain, mutation=mutation, core=index) 
     
     def run(self, output_file, extract_surface_data, chain, mutation): 
-        if __name__ == '__main__':
-            pool = mp.Pool(self.cpu_core_number)
-            # Create jobs
-            jobs = []
-            for index, item in enumerate(self.trajectory_slices):
-                # Create asynchronous jobs that will be submitted once a processor is ready
-                job = pool.apply_async(self.loop_function, args=(output_file, index, extract_surface_data, chain, mutation,))
-                jobs.append(job)
-            # Submit jobs
-            results = [job.get() for job in jobs]
-            pool.close() 
+        pool = mp.Pool(self.cpu_core_number)
+        # Create jobs
+        jobs = []
+        for index, item in enumerate(self.trajectory_slices):
+            # Create asynchronous jobs that will be submitted once a processor is ready
+            job = pool.apply_async(self.loop_function, args=(output_file, index, extract_surface_data, chain, mutation,))
+            jobs.append(job)
+        # Submit jobs
+        results = [job.get() for job in jobs]
+        pool.close()
 
-directory = '/Volumes/chris_drive/Simulations/GPR68/MD/Inactive/M0498/Mutations/I12A/MD1/' 
-trajectory = f'{directory}GPR68I_I12A_M0498_POPC_eq_md_450ns_p_fit_skip100.xtc' 
-topology = f'{directory}GPR68I_I12A_M0498_POPC_min_sd.pdb' 
-
-t = Trajectory(trajectory, topology, 4) 
-t.run('temp', extract_surface_data=False, chain='A', mutation=None) 

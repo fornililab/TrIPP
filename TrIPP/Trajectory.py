@@ -115,7 +115,7 @@ class Trajectory:
         pka_iterator(core) 
 
         df = pd.read_csv(f'{out}_pka.csv')
-        df = df.sort_values('Time [ps]', ignore_index=True)
+        df = df.sort_values('Time [ps]')
         df.to_csv(f'{out}_surf.csv', index=False)
 
     

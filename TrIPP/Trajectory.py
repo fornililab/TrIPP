@@ -1,4 +1,26 @@
-import MDAnalysis as mda 
+"""
+    @release_date  : $release_date
+    @version       : $release_version
+    @author        : Christos Matsingos
+    
+    This file is part of the TrIPP software
+    (https://github.com/fornililab/TrIPP).
+    Copyright (c) 2023 Christos Matsingos and Arianna Fornili.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, version 3.
+
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import MDAnalysis as mda
 import propka 
 from propka import run
 import numpy as np 

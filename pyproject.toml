@@ -1,17 +1,20 @@
 [tool.poetry]
 name = "tripp"
-version = "0.1.0"
+version = "0.1.7"
 description = "Trajectory Iterative pKa Predictor"
 authors = ["Christos Matsingos <c.matsingos@qmul.ac.uk>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-numpy = "^1.24.1"
-propka = "^3.4.0"
-mdanalysis = "^2.4.2"
-pandas = "^1.5.3"
+python = "^3.9"
+mdanalysis = "^2.5.0"
+pandas = "^2.0.3"
+numpy = "^1.25.0"
+propka = "^3.5.0"
 
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.25.1"
 
 [build-system]
 requires = ["poetry-core"]

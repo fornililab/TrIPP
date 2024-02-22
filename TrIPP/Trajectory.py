@@ -26,8 +26,8 @@ from propka import run
 import numpy as np 
 import os 
 import multiprocessing as mp 
-from edit_pdb import edit_pdb 
-from edit_pdb import mutate 
+from tripp.edit_pdb import edit_pdb 
+from tripp.edit_pdb import mutate 
 import pandas as pd 
 
 class Trajectory: 
@@ -36,7 +36,7 @@ class Trajectory:
     Main class of TrIPP. Calling this class creates an iterable object of sliced trajectories which are 
     then used with the run method to run the analysis. The arguments taken are a trajectory file (formats supported by MDAnalysis), 
     a topology file (usually a PDB file but can be all formats supported by MDAnalaysis) and the number 
-    of CPU cores to be used to run the analysis. 
+    of CPU cores to be used to run the analyss. 
     """
 
     def __init__(self, trajectory_file, topology_file, cpu_core_number): 
@@ -52,15 +52,14 @@ class Trajectory:
         start_frame = 0 
         end_frame = slice_length 
         for i in range(slices_nr): 
-            if end_frame > frames_nr: 
+            if i == slices_nr - 1: # Slice_length might not get to the end of trajectory, using this condition make sure the last trunk include the end of the trajectory
                 slices.append([start_frame, frames_nr]) 
             else: 
                 slices.append([start_frame, end_frame]) 
-            start_frame+=slice_length 
-            end_frame+=slice_length 
-        self.trajectory_slices = slices 
+                start_frame+=slice_length 
+                end_frame+=slice_length 
+        self.trajectory_slices = slices
         
-
     def calculate_pka(self, output_file, extract_surface_data=False, chain='A', mutation=None, core=None): 
         
         def extract_data(file, chain, time): 
@@ -99,14 +98,19 @@ class Trajectory:
             start = self.trajectory_slices[core][0] 
             end = self.trajectory_slices[core][1]
 
-            for index, ts in enumerate(self.universe.trajectory[start:end]): 
-                with mda.Writer(f'{temp_name}.pdb') as w: 
+            for index, ts in enumerate(self.universe.trajectory[start:end]):
+                #Check if chainID is empty or not, if so default chain A for the whole system.
+                if '' in self.universe._topology.chainIDs.values:
+                    print('Your topology file contains no chain identity. Will add chain A for your whole system by default')
+                    self.universe._topology.chainIDs.values = np.full(len(self.universe._topology.chainIDs.values),'A',dtype=str)
+                with mda.Writer(f'{temp_name}.pdb') as w:
                     w.write(self.universe)
                 edit_pdb(f'{temp_name}.pdb')
                 if mutation != None: 
                     mutate(temp_name, mutation) 
                 run.single(f'{temp_name}.pdb')
                 time = ts.time
+                #Writing pKa csv
                 header = ','.join(extract_data(f'{temp_name}.pka', chain=chain, time=time)[0][0]) 
                 data = ','.join(extract_data(f'{temp_name}.pka', chain=chain, time=time)[0][1]).replace('*', '')
                 if index == 0 and core == 0: 
@@ -117,7 +121,8 @@ class Trajectory:
                 else: 
                     f = open(f'{out}_pka.csv', "a")
                     f.write(data+'\n')
-                    f.close() 
+                    f.close()
+                #Writing buridness csv if extract_surface_data set to true.
                 if extract_surface_data == True: 
                     header = ','.join(extract_data(f'{temp_name}.pka', chain=chain, time=time)[1][0]) 
                     data = ','.join(extract_data(f'{temp_name}.pka', chain=chain, time=time)[1][1]).replace('*', '') 
@@ -135,12 +140,22 @@ class Trajectory:
             os.remove(f'{temp_name}.pka')
         
         pka_iterator(core) 
-
-        df = pd.read_csv(f'{out}_pka.csv')
-        df = df.sort_values('Time [ps]')
-        df.to_csv(f'{out}_surf.csv', index=False)
-
-    
+    #Sorting pKa data, if extract_surface_data is set to true, buridness data is sorted also.
+    def sort_data(self,output_file, extract_surface_data, mutation):
+        if type(mutation) == int: 
+            out = f'{output_file}_{mutation}' 
+        elif type(mutation) == list: 
+            out = f'{output_file}_{"_".join(map(str, mutation))}' 
+        else: 
+            out = output_file 
+        df_pka = pd.read_csv(f'{out}_pka.csv')
+        df_pka = df_pka.sort_values('Time [ps]')
+        df_pka.to_csv(f'{out}_pka.csv', index=False)
+        if extract_surface_data == True:
+            df_surf = pd.read_csv(f'{out}_surf.csv')
+            df_surf = df_surf.sort_values('Time [ps]')
+            df_surf.to_csv(f'{out}_surf.csv', index=False)
+            
     def loop_function(self, output_file, index, extract_surface_data, chain, mutation): 
         self.calculate_pka(output_file, extract_surface_data=extract_surface_data, chain=chain, mutation=mutation, core=index) 
     
@@ -155,4 +170,5 @@ class Trajectory:
         # Submit jobs
         results = [job.get() for job in jobs]
         pool.close()
+        self.sort_data(output_file, extract_surface_data, mutation) #Sorting the data only once after all calculations are done, rather than at the end of each job.
 

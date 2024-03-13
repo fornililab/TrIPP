@@ -109,7 +109,7 @@ def edit_pdb(pdbfile):
         for correction in corrected_amino_acids: 
             data = data.replace(correction, corrected_amino_acids[correction])
     with open(pdbfile, 'w') as file: 
-        file.write(data) 
+        file.write(data)
 
 def mutate(temp_name, mutation): 
     if type(mutation) == int:

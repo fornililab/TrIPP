@@ -5,7 +5,7 @@
     
     This file is part of the TrIPP software
     (https://github.com/fornililab/TrIPP).
-    Copyright (c) 2023 Christos Matsingos and Arianna Fornili.
+    Copyright (c) 2024 Christos Matsingos, Ka Fu Man and Arianna Fornili.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -171,4 +171,3 @@ class Trajectory:
         results = [job.get() for job in jobs]
         pool.close()
         self.sort_data(output_file, extract_surface_data, mutation) #Sorting the data only once after all calculations are done, rather than at the end of each job.
-

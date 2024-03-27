@@ -1,0 +1,2 @@
+from .Trajectory import Trajectory #Addtion of code so that it is not necessary to write from tripp.Trajectory import Trajectory but rather from tripp import Trajectory 
+from .Visualization import Visualization

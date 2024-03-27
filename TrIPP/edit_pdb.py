@@ -1,11 +1,11 @@
 """
     @release_date  : $release_date
     @version       : $release_version
-    @author        : Christos Matsingos
+    @author        : Christos Matsingos, Ka Fu Man 
     
     This file is part of the TrIPP software
     (https://github.com/fornililab/TrIPP).
-    Copyright (c) 2023 Christos Matsingos and Arianna Fornili.
+    Copyright (c) 2024 Christos Matsingos, Ka Fu Man and Arianna Fornili.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,10 +20,19 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-def edit_pdb(pdbfile):
+
+def edit_pdb(pdbfile): 
+
+
+    """ 
+    Function that edits pdb file naming of residues so that it is compatible 
+    with PROPKA. 
+    """ 
+
+
     with open(pdbfile, 'r') as file: 
         data = file.read() 
-        corrected_amino_acids = { 
+        corrected_amino_acids = { #contains residue names recognised by MDAnalysis and associates them with residue names recognised by PROPKA 
             'ALAD' : 'ALA', 
             'ARGN' : 'ARG ', 
             'ASN1' : 'ASN ', 
@@ -104,7 +113,9 @@ def edit_pdb(pdbfile):
             'HSP' : 'HIS', 
             'LYN' : 'LYS', 
             'LSN' : 'LYS', 
-            'MSE' : 'MET'
+            'MSE' : 'MET', 
+            'OT1' : 'O  ', #added so that the atom name is changed for residues that are part of the C-ter 
+            'OT2' : 'OXT' 
             }
         for correction in corrected_amino_acids: 
             data = data.replace(correction, corrected_amino_acids[correction])
@@ -112,6 +123,14 @@ def edit_pdb(pdbfile):
         file.write(data)
 
 def mutate(temp_name, mutation): 
+
+
+    """ 
+    Function that deletes all atoms of a residue except for a methyl group. The 
+    residue is then rename to alanine. 
+    """ 
+
+    
     if type(mutation) == int:
         mutation = [mutation] 
     else: 

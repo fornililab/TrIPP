@@ -21,41 +21,20 @@
 """
 
 
+import MDAnalysis as mda
+import numpy as np
 import pandas as pd 
-from tripp.color_palettes import color_palettes 
-from tripp.visualise_pka import visualise_pka 
+from tripp.visualize_pka import visualize_pka 
 from tripp.model_pka_values import model_pka_values 
 
 class Visualization: 
 
 
     """ 
-    This class allows for the visualisation of pKa values using PyMOL. The 
+    This class allows for the visualization of pKa values using PyMOL. The 
     class is called using a strucutre of the protein and a CSV file generated 
-    by the Trajectory class containing all pKa values. The method color_pka 
-    can be called which generated a PyMOL session file. The arguments of 
-    color_pka are the following: 
+    by the Trajectory class containing all pKa values.
     
-    coloring_method: 'mean' or 'difference_to_model_value' 
-    used to determine how the color of each residue is produced. Can be 'mean', 
-    where the mean pKa value accross all frames is used or 
-    'difference_to_model_value' where the mean pKa value is calculated 
-    and the difference to the model value of the amino acid in solution is 
-    used. 
-    
-    lower limit: int or float 
-    determines lower limit used to colour the reisdues in the PyMOL session. Any 
-    value below the limit is coloured using the lowest end of the color gradient 
-    used. 
-    
-    upper limit: int or float 
-    determines upper limit used to colour the reisdues in the PyMOL session. Any 
-    value above the limit is coloured using the highest end of the color gradient 
-    used. 
-
-    color_palette: 'red_white_blue', 'blue_white_red', 'red_white_green', and 'green_white_red' 
-    color palettes used to color the residues in the PyMOL session according to 
-    pKa value. The defaults is set to 'red_white_blue'. 
     """
 
 
@@ -65,7 +44,45 @@ class Visualization:
         self.pka_file = pka_file
         
 
-    def color_pka(self, coloring_method, lower_limit, upper_limit, color_palette='red_white_blue'): 
+    def color_pka(self, pymol_path, pse_output_prefix, coloring_method='mean', lower_limit=0, upper_limit=14, color_palette='red_white_blue'): 
+        """
+        The method color_pka can be called which generate a PyMOL session file.
+        
+        Parameters:
+        
+        pymol_path: str
+        Path to the PyMOL software needs to be specified. The script will spawn
+        a subprocess shell to run a python script in PyMOL. Preventing packaging 
+        issue.
+        
+        pse_output_prefix: str
+        The output prefix for the PyMOL .pse file. The prefix will be combined 
+        with the coloring_method ('mean' or 'difference_to_model_value') to give
+        the pse_output_filename.
+        
+        coloring_method: str, default 'mean'
+        To determine how the color of each residue is produced. Can be 'mean', 
+        where the mean pKa value accross all frames is used or 
+        'difference_to_model_value' where the mean pKa value is calculated 
+        and the difference to the model value of the amino acid in solution is 
+        used. 
+        
+        lower limit: int or float, default 0
+        Determines lower limit used to colour the reisdues in the PyMOL session. Any 
+        value below the limit is coloured using the lowest end of the color gradient 
+        used. 
+        
+        upper limit: int or float, default 14
+        Determines upper limit used to colour the reisdues in the PyMOL session. Any 
+        value above the limit is coloured using the highest end of the color gradient 
+        used. 
+
+        color_palette: str, default 'red_white_blue'
+        color palettes used to color the residues in the PyMOL session according to 
+        the pKa value. The default is set to 'red_white_blue'. See PyMOL spectrum for
+        allowed color palettes. Three colors palette is suggested.
+        """
+        u = mda.Universe(self.structure)
         
         #load pKa values and remove time column 
         pka_values = pd.read_csv(self.pka_file) 
@@ -74,6 +91,7 @@ class Visualization:
         #calculation of values depending on colouring method 
         if coloring_method == 'mean': 
             pka_values_summary = pka_values.mean(axis=0) 
+            tempfactors_output_structure= f"{self.pka_file.split('/')[-1].split('.')[0]}_mean.pdb"
 
         elif coloring_method == 'difference_to_model_value': 
             pka_values_mean = pka_values.mean(axis=0) 
@@ -84,35 +102,38 @@ class Visualization:
                     pka_values_mean[residue] = pka_values_mean[residue]-model_pka_values['CTR'] 
                 else: 
                     pka_values_mean[residue] = pka_values_mean[residue]-model_pka_values[residue[0:3]] 
-            pka_values_summary = pka_values_mean 
+            pka_values_summary = pka_values_mean
+            tempfactors_output_structure = f"{self.pka_file.split('/')[-1].split('.')[0]}_difference_to_model_value.pdb"
         
-        #create a color_dictionary where the residues and hues of colour are associated to pKa intervals 
-        color_dictionary = {} 
-        color_intervals = [] 
-        color_step = lower_limit 
-        color_palette_pka = color_palettes[color_palette] 
-        for i in range(len(color_palette_pka)): 
-            color_intervals.append([round(color_step, 2), round(color_step+(upper_limit-lower_limit)/len(color_palette_pka), 2)]) 
-            color_step+=round((upper_limit-lower_limit)/len(color_palette_pka), 2) 
-        for index, item in enumerate(color_intervals): 
-            color_dictionary['pka_group_'+str(index+1)] = {'pka interval' : color_intervals[index], 'color' : color_palette_pka[index], 'residues' : []}  
-        
-        for residue, value in pka_values_summary.items(): 
-            if 'N+' in residue: 
-                resid = 'NTR' 
-            elif 'C-' in residue: 
-                resid = 'CTR' 
-            else: 
-                resid = residue
-            if value < color_dictionary['pka_group_1']['pka interval'][0]: 
-                color_dictionary['pka_group_1']['residues'].append(resid) 
-            elif value > color_dictionary['pka_group_51']['pka interval'][1]: 
-                color_dictionary['pka_group_51']['residues'].append(resid) 
-            else: 
-                for entry in color_dictionary: 
-                    if value >= color_dictionary[entry]['pka interval'][0] and value < color_dictionary[entry]['pka interval'][1]: 
-                        color_dictionary[entry]['residues'].append(resid) 
-        
-        visualise_pka(self.structure, color_dictionary, lower_limit, upper_limit, color_palette) 
+        # GROMACS atom naming scheme, other naming scheme will not be valid, user may 
+        # need to add it by themselves for Nterm and Cterm.
+        Nterm_atoms = 'N H1 H2 H3'
+        Cterm_atoms = 'C O OC1 OC2 OT1 OT2 OXT'
+        # Looping the pka_values_summary which contains one column of the name for 
+        # residue and resid, and the other column of predicted pKa. The tempfactor 
+        # (previously known as bfactor) of individual residue is assigned according 
+        # to the predicted pKa from pka_values_summary. The structure with the 
+        # tempfactor is written as pdb and a PyMOL session is generated as pse.
+        for residue, predicted_pka in pka_values_summary.items():
+            if 'N+' in residue or 'C-' in residue:
+                resid = int(residue[2:])
+            else:
+                resid = int(residue[3:])
+            rounded_predicted_pka = round(predicted_pka,2)
+            if 'N+' in residue:
+                ag = u.select_atoms(f'resid {resid} and name {Nterm_atoms}')
+            elif 'C-' in residue:
+                ag = u.select_atoms(f'resid {resid} and name {Cterm_atoms}')
+            elif resid == u.residues.resids[0]:
+                ag = u.select_atoms(f'resid {resid} and not name {Nterm_atoms}')
+            elif resid == u.residues.resids[-1]:
+                ag = u.select_atoms(f'resid {resid} and not name {Cterm_atoms}')
+            else:
+                ag = u.select_atoms(f'resid {resid}')
+            ag.tempfactors = np.full(ag.tempfactors.shape,rounded_predicted_pka)
+        ag = u.select_atoms('all')
+        ag.write(tempfactors_output_structure)
+        pse_output_filename = f'{pse_output_prefix}_{coloring_method}.pse'
+        visualize_pka(tempfactors_output_structure, pymol_path, pse_output_filename, pka_values_summary, lower_limit, upper_limit, color_palette) 
 
  

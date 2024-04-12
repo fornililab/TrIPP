@@ -113,7 +113,9 @@ def edit_pdb(pdbfile):
             'HSP' : 'HIS', 
             'LYN' : 'LYS', 
             'LSN' : 'LYS', 
-            'MSE' : 'MET', 
+            'MSE' : 'MET',
+            'OC1' : 'O  ', #added so that the atom name is changed for residues that are part of the C-ter (GROMACS)
+            'OC2' : 'OXT',
             'OT1' : 'O  ', #added so that the atom name is changed for residues that are part of the C-ter 
             'OT2' : 'OXT' 
             }

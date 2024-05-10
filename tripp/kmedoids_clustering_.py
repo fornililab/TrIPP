@@ -1,7 +1,7 @@
 """
     @release_date  : $release_date
     @version       : $release_version
-    @author        : Christos Matsingos
+    @author        : Christos Matsingos, Ka Fu Man 
     
     This file is part of the TrIPP software
     (https://github.com/fornililab/TrIPP).
@@ -20,6 +20,20 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .Trajectory import Trajectory #Addtion of code so that it is not necessary to write from tripp.Trajectory import Trajectory but rather from tripp import Trajectory 
-from .Visualization import Visualization 
-from .Clustering import Clustering 
+from sklearn_extra.cluster import KMedoids 
+import numpy as np 
+
+def kmedoids_clustering_(n_clusters, metric, method, init, max_iter, random_state, clustering_matrix, frames): 
+
+    """
+    Function to run KMedoids clustering. 
+    """
+    
+    kmedoids_clustering = KMedoids(n_clusters=n_clusters, metric=metric, method=method, init=init, max_iter=max_iter, random_state=random_state).fit(clustering_matrix)  
+
+    labels = kmedoids_clustering.labels_ 
+    medoid_indices = kmedoids_clustering.medoid_indices_ 
+    cluster_centers = np.ravel(frames[medoid_indices]) 
+
+    return labels, cluster_centers, medoid_indices 
+        

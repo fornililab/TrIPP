@@ -1,7 +1,7 @@
 """
     @release_date  : $release_date
     @version       : $release_version
-    @author        : Christos Matsingos
+    @author        : Christos Matsingos, Ka Fu Man 
     
     This file is part of the TrIPP software
     (https://github.com/fornililab/TrIPP).

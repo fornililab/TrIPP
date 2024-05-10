@@ -1,7 +1,7 @@
 """
     @release_date  : $release_date
     @version       : $release_version
-    @author        : Christos Matsingos
+    @author        : Christos Matsingos, Ka Fu Man 
     
     This file is part of the TrIPP software
     (https://github.com/fornililab/TrIPP).
@@ -20,6 +20,27 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .Trajectory import Trajectory #Addtion of code so that it is not necessary to write from tripp.Trajectory import Trajectory but rather from tripp import Trajectory 
-from .Visualization import Visualization 
-from .Clustering import Clustering 
+import numpy as np 
+
+def calculate_rmsd_matrix(clustering_matrix, frames): 
+
+    """
+    Function that calculates the RMSD matrix. 
+    """
+
+    def calculate_rmsd(point1, point2): 
+        
+        sqr_sum = np.sum(np.square(point1-point2)) 
+        rmsd = np.sqrt(sqr_sum)  
+
+        return rmsd 
+    
+    rmsd_array = np.zeros((len(frames), len(frames))) 
+
+    for i in range(len(frames)): 
+        point1 = clustering_matrix[i] 
+        for j in range(len(frames)): 
+            point2 = clustering_matrix[j] 
+            rmsd_array[i, j] = calculate_rmsd(point1, point2) 
+    
+    return rmsd_array 

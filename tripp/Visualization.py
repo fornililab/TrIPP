@@ -24,8 +24,8 @@
 import MDAnalysis as mda
 import numpy as np
 import pandas as pd 
-from tripp.visualize_pka import visualize_pka 
-from tripp.model_pka_values import model_pka_values 
+from tripp._visualize_pka_ import visualize_pka 
+from tripp._model_pka_values_ import model_pka_values 
 
 class Visualization: 
 

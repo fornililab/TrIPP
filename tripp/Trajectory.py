@@ -26,8 +26,8 @@ from propka import run
 import numpy as np 
 import os 
 import multiprocessing as mp 
-from tripp.edit_pdb import edit_pdb 
-from tripp.edit_pdb import mutate 
+from tripp._edit_pdb_ import edit_pdb 
+from tripp._edit_pdb_ import mutate 
 import pandas as pd 
 
 class Trajectory: 

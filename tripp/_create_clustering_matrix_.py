@@ -22,7 +22,7 @@
 
 import MDAnalysis as mda 
 import numpy as np 
-from tripp.calculate_charge_center_distances import calculate_charge_center_distances 
+from tripp._calculate_charge_center_distances_ import calculate_charge_center_distances 
 
 def create_clustering_matrix(universe, pka_df, residues, include_distances=True): 
 

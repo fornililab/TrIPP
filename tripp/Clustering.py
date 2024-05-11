@@ -22,14 +22,14 @@
 
 import MDAnalysis as mda 
 import pandas as pd 
-from tripp.create_clustering_matrix import create_clustering_matrix 
-from tripp.kmedoids_clustering_ import kmedoids_clustering_ 
-from tripp.write_clustering_info import write_clustering_info 
+from tripp._create_clustering_matrix_ import create_clustering_matrix 
+from tripp._clustering_kmedoids_ import kmedoids_clustering_ 
+from tripp._write_clustering_info_ import write_clustering_info 
 from sklearn.metrics import silhouette_score 
 import numpy as np 
-from tripp.calculate_rmsd_matrix import calculate_rmsd_matrix 
-from tripp.gromos_clustering_ import gromos_clustering_ 
-from tripp.dbscan_clustering_ import dbscan_clustering_ 
+from tripp._calculate_rmsd_matrix_ import calculate_rmsd_matrix 
+from tripp._clustering_gromos_ import gromos_clustering_ 
+from tripp._clustering_dbscan_ import dbscan_clustering_ 
 
 class Clustering: 
 

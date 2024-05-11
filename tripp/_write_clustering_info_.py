@@ -20,7 +20,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from tripp.sort_clusters import sort_clusters 
+from tripp._sort_clusters_ import sort_clusters 
 import pandas as pd 
 import MDAnalysis as mda 
 

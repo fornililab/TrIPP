@@ -24,64 +24,57 @@ from tripp._sort_clusters_ import sort_clusters
 import pandas as pd 
 import MDAnalysis as mda 
 
-def write_clustering_info(universe, pka_file, times, frames, labels, cluster_centers, cluster_indices, log_file, clustering_method, sil_score): 
+def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, trajectory_names, labels, cluster_centers, cluster_indices, cluster_centers_trajectories, log_file, clustering_method): 
     
-    labels, cluster_centers, cluster_indices = sort_clusters(labels=labels, cluster_indices=cluster_indices, cluster_centers=cluster_centers, clustering_method=clustering_method) 
+    labels, cluster_centers, cluster_indices, cluster_centers_trajectories = sort_clusters(labels=labels, cluster_indices=cluster_indices, cluster_centers=cluster_centers, cluster_centers_trajectories=cluster_centers_trajectories) 
     
     def write_clustering_log(): 
-        df = pd.DataFrame({'Times' : times.flatten(), 'Frames' : frames.flatten(), 'Labels' : labels.flatten()}) 
+        df = pd.DataFrame({'Times' : times.flatten(), 'Frames' : frames.flatten(), 'Labels' : labels.flatten(), 'Trajectories' : trajectory_names.flatten()}) 
         cluster_data = {} 
         for i in range(len(cluster_centers)): 
             df_i = df[df['Labels']==i]
             cluster_data[f'Cluster {i}'] = {'Population' : f'{round((len(df_i)/len(df))*100,2)}%', 
                                             'Centroid frame' : str(cluster_centers[i]), 
                                             'Centroid time' : str(times.flatten()[cluster_indices[i]]), 
-                                            'Times' : ', '.join(map(str, df_i['Times'])), 
-                                            'Frames' : ', '.join(map(str, df_i['Frames']))} 
+                                            'Centroid trajectory' : str(trajectory_names.flatten()[cluster_indices[i]])} 
+            for traj in trajectory_dict.keys(): 
+                cluster_data[f'Cluster {i}'][traj] = {'Times' : ', '.join(map(str, df_i[df_i['Trajectories']==traj]['Times'])), 
+                                                      'Frames' : ', '.join(map(str, df_i[df_i['Trajectories']==traj]['Frames']))} 
         
         if clustering_method == 'DBSCAN': 
             df_i = df[df['Labels']==-1]
-            cluster_data['Cluster -1 (Outliers)'] = {'Population' : f'{round((len(df_i)/len(df))*100,2)}%', 
-                                                     'Times' : ', '.join(map(str, df_i['Times'])), 
-                                                     'Frames' : ', '.join(map(str, df_i['Frames']))} 
-        
-        header = """
-The Trajectory Iterative pKa Predictor (TrIPP) 
-Written by: Christos Matsingos, Ka Fu Man, and Arianna Fornili 
-
-If you are using TrIPP, please cite: 
-
------------------------------------------------------------------
-"""
-
-        summary = f"""
-Summary of clustering results: 
-
-Clustering done using the {clustering_method} method. 
-A total of {len(set(labels))} clusters were generated. 
-Calculated average silhouette score: {sil_score}. 
-
-"""
+            cluster_data['Cluster -1 (Outliers)'] = {'Population' : f'{round((len(df_i)/len(df))*100,2)}%'} 
+            for traj in trajectory_dict.keys(): 
+                cluster_data['Cluster -1 (Outliers)'][traj] = {'Times' : ', '.join(map(str, df_i[df_i['Trajectories']==traj]['Times'])), 
+                                                               'Frames' : ', '.join(map(str, df_i[df_i['Trajectories']==traj]['Frames']))} 
         
         with open(f'{log_file}_{clustering_method}.log', 'w') as l: 
-            l.write(header)
             l.write(summary) 
             for i in range(len(cluster_centers)): 
                 l.write(f'\nCluster {i}\n\n') 
                 for key in cluster_data[f'Cluster {i}'].keys(): 
-                    l.write(f'{key}\t\t'+cluster_data[f'Cluster {i}'][key]+'\n\n') 
+                    if type(cluster_data[f'Cluster {i}'][key]) == dict: 
+                        l.write(f'{key}\n\n'+'Times'+'\n'+cluster_data[f'Cluster {i}'][key]['Times']+'\n\n') 
+                        l.write(f'Frames'+'\n'+cluster_data[f'Cluster {i}'][key]['Frames']+'\n\n') 
+                    else: 
+                        l.write(f'{key}\t\t'+cluster_data[f'Cluster {i}'][key]+'\n\n') 
             
             if clustering_method == 'DBSCAN': 
                 l.write('\nCluster -1 (Outliers)\n\n') 
                 for key in cluster_data[f'Cluster -1 (Outliers)'].keys(): 
-                    l.write(f'{key}\t\t'+cluster_data['Cluster -1 (Outliers)'][key]+'\n\n') 
+                    if type(cluster_data['Cluster -1 (Outliers)'][key]) == dict: 
+                        l.write(f'{key}\n\n'+'Times'+'\n'+cluster_data['Cluster -1 (Outliers)'][key]['Times']+'\n\n') 
+                        l.write(f'Frames'+'\n'+cluster_data['Cluster -1 (Outliers)'][key]['Frames']+'\n\n') 
+                    else: 
+                        l.write(f'{key}\t\t'+cluster_data['Cluster -1 (Outliers)'][key]+'\n\n') 
     
-    write_clustering_log() 
+    write_clustering_log()  
     
     def write_cluster_centers(): 
-        for index, cluster_index in enumerate(cluster_indices): 
+        for index, cluster_center_frame in enumerate(cluster_centers): 
+            universe = trajectory_dict[cluster_centers_trajectories[index]] 
             for ts in universe.trajectory: 
-                if ts.frame == cluster_index: 
+                if ts.frame == cluster_center_frame: 
                     pdb_file = f'{log_file}_C{index}.pdb' 
                     with mda.Writer(pdb_file) as w: 
                         w.write(universe) 
@@ -89,8 +82,7 @@ Calculated average silhouette score: {sil_score}.
     write_cluster_centers() 
 
     def write_new_dataframe(): 
-        pka_df = pd.read_csv(pka_file) 
         pka_df['Clusters'] = labels 
-        pka_df.to_csv(pka_file.replace('.csv', '_cluster.csv'), index=False) 
+        pka_df.to_csv(f'{log_file}_cluster.csv') 
     
     write_new_dataframe() 

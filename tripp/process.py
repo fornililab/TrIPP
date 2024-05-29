@@ -20,21 +20,29 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from sklearn_extra.cluster import KMedoids 
+import pandas as pd 
+from tripp._model_pka_values_ import model_pka_values 
 import numpy as np 
 
-def kmedoids_clustering(n_clusters, metric, method, init, max_iter, random_state, clustering_matrix, frames, trajectory_names): 
+def calculate_difference_to_model(output_file): 
 
-    """
-    Function to run KMedoids clustering. 
-    """
-    
-    kmedoids_clustering = KMedoids(n_clusters=n_clusters, metric=metric, method=method, init=init, max_iter=max_iter, random_state=random_state).fit(clustering_matrix)  
+    df_pka = pd.read_csv(f'{output_file}_pka.csv') 
 
-    labels = kmedoids_clustering.labels_ 
-    medoid_indices = kmedoids_clustering.medoid_indices_ 
-    cluster_centers = np.ravel(frames[medoid_indices]) 
-    cluster_centers_trajectories = np.ravel(trajectory_names[medoid_indices]) 
-
-    return labels, cluster_centers, medoid_indices, cluster_centers_trajectories 
+    df_dif = pd.DataFrame() 
+    df_dif['Time [ps]'] = df_pka['Time [ps]'] 
+    del df_pka['Time [ps]'] 
+    residues = np.array(df_pka.columns) 
+    for residue in residues: 
+        if 'N+' in residue: 
+            residue_modified = residue.replace('N+', 'NTR') 
+        elif 'C-' in residue: 
+            residue_modified = residue.replace('C-', 'CTR') 
+        else: 
+            residue_modified = residue 
         
+        amino_acid = residue_modified[:3] 
+        model_value = model_pka_values[amino_acid] 
+        residue_data = np.around(df_pka[residue].to_numpy() - model_value, decimals=3) 
+        df_dif[residue] = residue_data 
+    
+    df_dif.to_csv(f'{output_file}_difference_to_model.csv', index=False) 

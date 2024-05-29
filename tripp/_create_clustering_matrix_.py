@@ -23,9 +23,11 @@
 import MDAnalysis as mda 
 import numpy as np 
 from tripp._calculate_charge_center_distances_ import calculate_charge_center_distances 
+from tripp._determine_charge_center_ import determine_charge_center 
+from scipy.stats import zscore 
+from tripp._create_mda_universe_ import create_mda_universe 
 
-def create_clustering_matrix(universe, pka_df, residues, include_distances=True): 
-
+def create_clustering_matrix(trajectory_file, topology_file, pka_df, residues, include_distances=True): 
 
     """
     Function that generates the clustering_matrix. The clustering_matrix 
@@ -34,99 +36,77 @@ def create_clustering_matrix(universe, pka_df, residues, include_distances=True)
     distances, calculated using the calculate_charge_center_distances 
     function. Normalization is done using the z-score. 
     """
+
+    if type(trajectory_file) == str: 
+        trajectory_dict = {'Unnamed Trajectory' : create_mda_universe(topology_file=topology_file, trajectory_file=trajectory_file)} 
     
+    elif type(trajectory_file) == dict: 
+        trajectory_dict = {} 
+        for key in trajectory_file.keys(): 
+            traj = trajectory_file[key] 
+            trajectory_dict[key] = create_mda_universe(topology_file=topology_file, trajectory_file=traj) 
+    
+    def extract_pka_distances(trajectory_name, universe, df_traj): 
 
-    def determine_charge_center(universe, residue_index): 
-        selection = universe.residues[residue_index-1] 
-        residue_type = selection.resname
+        pka = [] 
+        times = [] 
+        frames = [] 
+        trajectory_names = [] 
 
-        #Charge center is determined as in PROPKA3 
-        if residue_type in ['ARG', 'ARGN', 'CARG', 'NARG']: 
-            atom_coordinates = universe.select_atoms(f'resid {residue_index} and name CZ').positions 
-            charge_center = atom_coordinates[0] 
-            residue_identifier = f'ARG{residue_index}' 
-
-        elif residue_type in ['ASP', 'ASPH', 'ASPP', 'CASF', 'CASP', 'NASP', 'ASF', 'ASH']: 
-            atom_coordinates = universe.select_atoms(f'resid {residue_index} and name OD1 OD2').positions 
-            charge_center = np.mean(atom_coordinates, axis=0) 
-            residue_identifier = f'ASP{residue_index}' 
-
-        elif residue_type in ['CYS', 'CCYS', 'CCYX', 'CYS1', 'CYS2', 'CYSH', 'NCYS', 'NCYX', 'CYM', 'CYN', 'CYX']: 
-            atom_coordinates = universe.select_atoms(f'resid {residue_index} and name SG').positions 
-            charge_center = atom_coordinates[0] 
-            residue_identifier = f'CYS{residue_index}'
+        if include_distances == True: 
+            d = [] 
+            for ts in universe.trajectory: 
+                times.append([ts.time]) 
+                frames.append([ts.frame]) 
+                trajectory_names.append(trajectory_name) 
+                positions = [] 
+                pkas = [] 
+                for residue_index in residues: 
+                    charge_center, residue_identifier = determine_charge_center(universe, residue_index) 
+                    positions.append(charge_center) 
+                    pka_residue = df_traj.loc[ts.time, residue_identifier] 
+                    pkas.append(pka_residue) 
+                distances = calculate_charge_center_distances(positions) 
+                d.append(distances) 
+                pka.append(np.array(pkas)) 
+            
+            pka = np.array(pka) 
+            d = np.array(d) 
+            
+            clustering_matrix = np.concatenate((zscore(d, axis=None), zscore(pka, axis=None)), axis=1) 
         
-        elif residue_type in ['GLU', 'CGLU', 'GLUH', 'GLUP', 'NGLU', 'PGLU', 'GLH']: 
-            atom_coordinates = universe.select_atoms(f'resid {residue_index} and name OE1 OE2').positions 
-            charge_center = np.mean(atom_coordinates, axis=0) 
-            residue_identifier = f'GLU{residue_index}' 
+        elif include_distances == False: 
+            for ts in universe.trajectory: 
+                times.append([ts.time]) 
+                frames.append([ts.frame]) 
+                trajectory_names.append(trajectory_name) 
+                pkas = [] 
+                for residue_index in residues: 
+                    charge_center, residue_identifier = determine_charge_center(universe, residue_index) 
+                    pka_residue = df_traj.loc[ts.time, residue_identifier] 
+                    pkas.append(pka_residue) 
+                pka.append(np.array(pkas)) 
+            
+            pka = np.array(pka) 
+            
+            clustering_matrix = zscore(pka, axis=None) 
+        
+        times = np.array(times) 
+        frames = np.array(frames) 
+        trajectory_names = np.array(trajectory_names) 
 
-        elif residue_type in ['HIS', 'CHID', 'CHIE', 'CHIP', 'HIS1', 'HIS2', 'HISA', 'HISB', 'HISD', 'HISE', 'HISH', 'NHID', 'NHIE', 'NHIP', 'HID', 'HIE', 'HIP', 'HSD', 'HSE', 'HSP']: 
-            atom_coordinates = universe.select_atoms(f'resid {residue_index} and name CG CD2 ND1 CE1 NE2').positions 
-            charge_center = np.mean(atom_coordinates, axis=0) 
-            residue_identifier = f'HIS{residue_index}' 
-
-        elif residue_type in ['LYS', 'CLYS', 'LYSH', 'NLYS', 'LYN', 'LSN']: 
-            atom_coordinates = universe.select_atoms(f'resid {residue_index} and name NZ').positions 
-            charge_center = atom_coordinates[0] 
-            residue_identifier = f'LYS{residue_index}' 
-
-        elif residue_type in ['TYR', 'CTYR', 'NTYR']: 
-            atom_coordinates = universe.select_atoms(f'resid {residue_index} and OH' ).positions 
-            charge_center = atom_coordinates[0] 
-            residue_identifier = f'TYR{residue_index}' 
+        return clustering_matrix, times, frames, trajectory_names
+    
+    for index, key in enumerate(trajectory_dict.keys()): 
+        df_traj = pka_df[pka_df['Trajectories']==key]
+        if index == 0: 
+            clustering_matrix, times, frames, trajectory_names = extract_pka_distances(key, trajectory_dict[key], df_traj) 
         
         else: 
-            print(f'Residue type {residue_type} not recognized by TrIPP to be able to change protonation state') 
-        
-        return charge_center, residue_identifier  
-    
-    def normalize(arr): 
-        arr = np.array(arr) 
-        mean = np.mean(arr) 
-        std = np.std(arr) 
-        normalized_array = (arr-mean)/std 
-        return normalized_array 
-    
-    pka = [] 
-    times = [] 
-    frames = [] 
-    if include_distances == True: 
+            partial_clustering_matrix, partial_times, partial_frames, partial_trajectory_names = extract_pka_distances(key, trajectory_dict[key], df_traj) 
+            clustering_matrix = np.concatenate((clustering_matrix, partial_clustering_matrix), axis=0) 
+            times = np.concatenate((times, partial_times), axis=0) 
+            frames = np.concatenate((frames, partial_frames), axis=0) 
+            trajectory_names = np.concatenate((trajectory_names, partial_trajectory_names), axis=0) 
 
-        d = [] 
-        for ts in universe.trajectory: 
-
-            times.append([ts.time]) 
-            frames.append([ts.frame]) 
-            positions = [] 
-            pkas = [] 
-            for residue_index in residues: 
-                charge_center, residue_identifier = determine_charge_center(universe, residue_index) 
-                positions.append(charge_center) 
-                pka_residue = pka_df.loc[ts.time, residue_identifier] 
-                pkas.append(pka_residue) 
-            distances = calculate_charge_center_distances(positions) 
-            d.append(distances) 
-            pka.append(pkas) 
-        
-        clustering_matrix = np.concatenate((normalize(d), normalize(pka)), axis=1) 
-    
-    elif include_distances == False: 
-        
-        for ts in universe.trajectory: 
-
-            times.append([ts.time]) 
-            frames.append([ts.frame]) 
-            pkas = [] 
-            for residue_index in residues: 
-                charge_center, residue_identifier = determine_charge_center(universe, residue_index) 
-                pka_residue = pka_df.loc[ts.time, residue_identifier] 
-                pkas.append(pka_residue) 
-            pka.append(pkas) 
-        
-        clustering_matrix = normalize(pka) 
-    
-    times = np.array(times) 
-    frames = np.array(frames) 
-
-    return clustering_matrix, times, frames 
+    return clustering_matrix, times, frames, trajectory_names, trajectory_dict 

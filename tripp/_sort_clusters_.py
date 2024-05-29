@@ -22,7 +22,7 @@
 
 import numpy as np 
 
-def sort_clusters(labels, cluster_indices, cluster_centers, clustering_method): 
+def sort_clusters(labels, cluster_indices, cluster_centers, cluster_centers_trajectories): 
 
         clusters = np.unique(labels) 
         clusters = clusters[clusters != -1] 
@@ -43,10 +43,13 @@ def sort_clusters(labels, cluster_indices, cluster_centers, clustering_method):
         
         new_cluster_centers = np.zeros_like(clusters, dtype=int) 
         new_cluster_indices = np.zeros_like(clusters, dtype=int) 
+        new_cluster_centers_trajectories = np.zeros_like(clusters, dtype=object) 
+
         for i in range(len(clusters)): 
             cluster_index = cluster_indices[i] 
             new_label = new_labels[cluster_index] 
             new_cluster_indices[new_label] = cluster_indices[i] 
             new_cluster_centers[new_label] = cluster_centers[i] 
+            new_cluster_centers_trajectories[new_label] = cluster_centers_trajectories[i] 
         
-        return new_labels, new_cluster_centers, new_cluster_indices 
+        return new_labels, new_cluster_centers, new_cluster_indices, new_cluster_centers_trajectories 

@@ -20,21 +20,24 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from sklearn_extra.cluster import KMedoids 
-import numpy as np 
+from sklearn.decomposition import PCA 
 
-def kmedoids_clustering(n_clusters, metric, method, init, max_iter, random_state, clustering_matrix, frames, trajectory_names): 
+def pca(clustering_matrix): 
 
-    """
-    Function to run KMedoids clustering. 
-    """
+    pca_class = PCA() 
+    pca_class.fit(clustering_matrix) 
+    var_ratio = pca_class.explained_variance_ratio_ 
+    n_components = 0
+    cummulative_variance = 0
+    for item in var_ratio: 
+        n_components += 1
+        cummulative_variance += item 
+        if cummulative_variance >= 0.9: 
+            break 
     
-    kmedoids_clustering = KMedoids(n_clusters=n_clusters, metric=metric, method=method, init=init, max_iter=max_iter, random_state=random_state).fit(clustering_matrix)  
+    cummulative_variance = round(cummulative_variance*100, 2) 
+    
+    pca_class = PCA(n_components=n_components) 
+    clustering_matrix_transformed = pca_class.fit_transform(clustering_matrix) 
 
-    labels = kmedoids_clustering.labels_ 
-    medoid_indices = kmedoids_clustering.medoid_indices_ 
-    cluster_centers = np.ravel(frames[medoid_indices]) 
-    cluster_centers_trajectories = np.ravel(trajectory_names[medoid_indices]) 
-
-    return labels, cluster_centers, medoid_indices, cluster_centers_trajectories 
-        
+    return n_components, cummulative_variance, clustering_matrix_transformed 

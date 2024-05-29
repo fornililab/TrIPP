@@ -22,7 +22,7 @@
 
 import numpy as np 
 
-def gromos_clustering_(cutoff, rmsd_matrix, frames): 
+def gromos_clustering(cutoff, rmsd_matrix, frames, trajectory_names): 
 
     """
     Function to run GROMOS clustering. 
@@ -37,6 +37,7 @@ def gromos_clustering_(cutoff, rmsd_matrix, frames):
     cluster = 1 
     cluster_centers = [] 
     cluster_center_indices = [] 
+    cluster_centers_trajectories = [] 
 
     for i in range(n_structures): 
         #A boolean array neighbor_mask is generated to determine what RMSDs are under the cutoff. 
@@ -50,6 +51,7 @@ def gromos_clustering_(cutoff, rmsd_matrix, frames):
             neighbor_counts = np.sum(neighbor_mask, axis=0) #The amount of neighbors (structures within the cutoff) is ddetermined for each structure. 
             central_structure = np.argmax(neighbor_counts) #The structure with the most neighbors is determined to be the center of the cluster 
             cluster_centers.append(frames[central_structure]) 
+            cluster_centers_trajectories.append(trajectory_names[central_structure]) 
             cluster_center_indices.append(central_structure) 
             neighbors = np.ravel(neighbor_mask[central_structure,:]) #All structures neighboring the central structure are determined and are assigned to the same cluster 
             labels[neighbors] = cluster 
@@ -62,6 +64,7 @@ def gromos_clustering_(cutoff, rmsd_matrix, frames):
 
     cluster_centers = list(np.ravel(np.array(cluster_centers))) 
     cluster_center_indices = list(np.ravel(np.array(cluster_center_indices))) 
-    labels = labels - 1 #All labels are changed to fit the numbering of the otheer clustering methods. 
+    cluster_centers_trajectories = list(np.ravel(np.array(cluster_centers_trajectories))) 
+    labels = labels - 1 #All labels are changed to fit the numbering of the other clustering methods. 
     
-    return labels, cluster_centers, cluster_center_indices 
+    return labels, cluster_centers, cluster_center_indices, cluster_centers_trajectories  

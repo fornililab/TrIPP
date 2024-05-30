@@ -118,4 +118,5 @@ class Trajectory:
         # Submit jobs
         results = [job.get() for job in jobs]
         pool.close()
-        sort_pka_df(topology_file=self.topology_file, output_file=output_file, extract_surface_data=extract_surface_data, mutation=mutation, disulphide_bond_detection=disulphide_bond_detection, universe=self.universe, chain=chain) #Sorting the data only once after all calculations are done, rather than at the end of each job.
+        pool.join()
+        sort_pka_df(cores=self.cpu_core_number, topology_file=self.topology_file, output_file=output_file, extract_surface_data=extract_surface_data, mutation=mutation, disulphide_bond_detection=disulphide_bond_detection, universe=self.universe, chain=chain) #Sorting the data only once after all calculations are done, rather than at the end of each job.

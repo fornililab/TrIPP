@@ -44,7 +44,7 @@ class Visualization:
         self.pka_file = pka_file
         
 
-    def color_pka(self, pymol_path, pse_output_prefix, coloring_method='mean', lower_limit=0, upper_limit=14, color_palette='red_white_blue'): 
+    def color_pka(self, pymol_path, output_prefix, coloring_method='mean', lower_limit=0, upper_limit=14, color_palette='red_white_blue'): 
         """
         The method color_pka can be called which generate a PyMOL session file.
         
@@ -91,7 +91,7 @@ class Visualization:
         #calculation of values depending on colouring method 
         if coloring_method == 'mean': 
             pka_values_summary = pka_values.mean(axis=0) 
-            tempfactors_output_structure= f"{self.pka_file.split('/')[-1].split('.')[0]}_mean.pdb"
+            tempfactors_output_structure= f"{output_prefix}_mean.pdb"
 
         elif coloring_method == 'difference_to_model_value': 
             pka_values_mean = pka_values.mean(axis=0) 
@@ -103,7 +103,7 @@ class Visualization:
                 else: 
                     pka_values_mean[residue] = pka_values_mean[residue]-model_pka_values[residue[0:3]] 
             pka_values_summary = pka_values_mean
-            tempfactors_output_structure = f"{self.pka_file.split('/')[-1].split('.')[0]}_difference_to_model_value.pdb"
+            tempfactors_output_structure = f"{output_prefix}_difference_to_model_value.pdb"
         
         # GROMACS atom naming scheme, other naming scheme will not be valid, user may 
         # need to add it by themselves for Nterm and Cterm.
@@ -133,7 +133,7 @@ class Visualization:
             ag.tempfactors = np.full(ag.tempfactors.shape,rounded_predicted_pka)
         ag = u.select_atoms('all')
         ag.write(tempfactors_output_structure)
-        pse_output_filename = f'{pse_output_prefix}_{coloring_method}.pse'
+        pse_output_filename = f'{output_prefix}_{coloring_method}.pse'
         visualize_pka(tempfactors_output_structure, pymol_path, pse_output_filename, pka_values_summary, lower_limit, upper_limit, color_palette) 
 
  

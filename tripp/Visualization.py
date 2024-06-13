@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd 
 from tripp._visualize_pka_ import visualize_pka 
 from tripp._model_pka_values_ import model_pka_values 
+from tripp._create_mda_universe_ import create_mda_universe 
 
 class Visualization: 
 
@@ -41,10 +42,20 @@ class Visualization:
     def __init__(self, structure, pka_file):
 
         self.structure = structure
-        self.pka_file = pka_file
+        self.pka_file = pka_file 
+        self.u = create_mda_universe(topology_file=self.structure, trajectory_file=None) 
+        
+        if type(self.pka_file) == list: 
+            pka_file_l = [] 
+            for file in pka_file: 
+                pka_file_l.append(pd.read_csv(file)) 
+            self.pka_values = pd.concat(pka_file_l) 
+        
+        else: 
+            self.pka_values = pd.read_csv(self.pka_file) 
         
 
-    def color_pka(self, pymol_path, output_prefix, coloring_method='mean', lower_limit=0, upper_limit=14, color_palette='red_white_blue'): 
+    def color_pka(self, pymol_path, output, coloring_method='mean', lower_limit=0, upper_limit=14, color_palette='red_white_blue'): 
         """
         The method color_pka can be called which generate a PyMOL session file.
         
@@ -55,17 +66,18 @@ class Visualization:
         a subprocess shell to run a python script in PyMOL. Preventing packaging 
         issue.
         
-        pse_output_prefix: str
+        output: str
         The output prefix for the PyMOL .pse file. The prefix will be combined 
         with the coloring_method ('mean' or 'difference_to_model_value') to give
         the pse_output_filename.
         
-        coloring_method: str, default 'mean'
+        coloring_method: str, int, float default 'mean'
         To determine how the color of each residue is produced. Can be 'mean', 
         where the mean pKa value accross all frames is used or 
         'difference_to_model_value' where the mean pKa value is calculated 
         and the difference to the model value of the amino acid in solution is 
-        used. 
+        used. A specific timestep can also be selected for visualisation by setting the 
+        coloring_method to the timestep in question. 
         
         lower limit: int or float, default 0
         Determines lower limit used to colour the reisdues in the PyMOL session. Any 
@@ -82,19 +94,16 @@ class Visualization:
         the pKa value. The default is set to 'red_white_blue'. See PyMOL spectrum for
         allowed color palettes. Three colors palette is suggested.
         """
-        u = mda.Universe(self.structure)
-        
-        #load pKa values and remove time column 
-        pka_values = pd.read_csv(self.pka_file) 
-        del pka_values['Time [ps]'] 
-        
+
         #calculation of values depending on colouring method 
         if coloring_method == 'mean': 
-            pka_values_summary = pka_values.mean(axis=0) 
-            tempfactors_output_structure= f"{output_prefix}_mean.pdb"
+            del self.pka_values['Time [ps]'] 
+            pka_values_summary = self.pka_values.mean(axis=0) 
+            tempfactors_output_structure= f"{output}_mean.pdb"
 
         elif coloring_method == 'difference_to_model_value': 
-            pka_values_mean = pka_values.mean(axis=0) 
+            del self.pka_values['Time [ps]'] 
+            pka_values_mean = self.pka_values.mean(axis=0) 
             for residue, value in pka_values_mean.items(): 
                 if 'N+' in residue: 
                     pka_values_mean[residue] = pka_values_mean[residue]-model_pka_values['NTR'] 
@@ -103,7 +112,18 @@ class Visualization:
                 else: 
                     pka_values_mean[residue] = pka_values_mean[residue]-model_pka_values[residue[0:3]] 
             pka_values_summary = pka_values_mean
-            tempfactors_output_structure = f"{output_prefix}_difference_to_model_value.pdb"
+            tempfactors_output_structure = f"{output}_difference_to_model_value.pdb" 
+
+        elif type(coloring_method) == int or type(coloring_method) == float: 
+
+            if type(self.pka_file) == list and len(self.pka_file) != 1: 
+                print('Please select only one CSV file when selecting a specific time step.') 
+                
+            else: 
+                self.pka_values = self.pka_values[self.pka_values['Time [ps]'] == coloring_method] 
+                del self.pka_values['Time [ps]'] 
+                pka_values_summary = self.pka_values.mean(axis=0) 
+                tempfactors_output_structure = f"{output}_time{coloring_method}.pdb" 
         
         # GROMACS atom naming scheme, other naming scheme will not be valid, user may 
         # need to add it by themselves for Nterm and Cterm.
@@ -121,19 +141,19 @@ class Visualization:
                 resid = int(residue[3:])
             rounded_predicted_pka = round(predicted_pka,2)
             if 'N+' in residue:
-                ag = u.select_atoms(f'resid {resid} and name {Nterm_atoms}')
+                ag = self.u.select_atoms(f'resid {resid} and name {Nterm_atoms}')
             elif 'C-' in residue:
-                ag = u.select_atoms(f'resid {resid} and name {Cterm_atoms}')
-            elif resid == u.residues.resids[0]:
-                ag = u.select_atoms(f'resid {resid} and not name {Nterm_atoms}')
-            elif resid == u.residues.resids[-1]:
-                ag = u.select_atoms(f'resid {resid} and not name {Cterm_atoms}')
+                ag = self.u.select_atoms(f'resid {resid} and name {Cterm_atoms}')
+            elif resid == self.u.residues.resids[0]:
+                ag = self.u.select_atoms(f'resid {resid} and not name {Nterm_atoms}')
+            elif resid == self.u.residues.resids[-1]:
+                ag = self.u.select_atoms(f'resid {resid} and not name {Cterm_atoms}')
             else:
-                ag = u.select_atoms(f'resid {resid}')
+                ag = self.u.select_atoms(f'resid {resid}')
             ag.tempfactors = np.full(ag.tempfactors.shape,rounded_predicted_pka)
-        ag = u.select_atoms('all')
+        ag = self.u.select_atoms('all')
         ag.write(tempfactors_output_structure)
-        pse_output_filename = f'{output_prefix}_{coloring_method}.pse'
+        pse_output_filename = tempfactors_output_structure.replace('.pdb', '.pse') 
         visualize_pka(tempfactors_output_structure, pymol_path, pse_output_filename, pka_values_summary, lower_limit, upper_limit, color_palette) 
 
- 
+        

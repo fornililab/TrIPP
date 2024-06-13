@@ -35,4 +35,4 @@ model_pka_values = {'ASP' : 3.8,
                     'CYS' : 9, 
                     'TYR' : 10, 
                     'LYS' : 10.5, 
-                    'ARG' : 15.5} 
+                    'ARG' : 12.5} 

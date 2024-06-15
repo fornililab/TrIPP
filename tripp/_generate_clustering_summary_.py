@@ -20,7 +20,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-def generate_clustering_summary(trajectory_file, topology_file, pka_file, residues, include_distances, clustering_method, automatic, silhouette_scores, n_components, cummulative_variance):
+def generate_clustering_summary(trajectory_file, topology_file, pka_file, residues, include_distances, include_buriedness, clustering_method, automatic, silhouette_scores, n_components, cummulative_variance, surf_file=None):
 
     #header of log file 
     header = """
@@ -44,12 +44,20 @@ If you are using TrIPP, please cite:
     #information on files 
     if type(trajectory_file) == str: 
         trajectory_name = 'Unnnamed Trajectory' 
-        trajectory_file_summary= f'{trajectory_name} \nTrajectory file: {trajectory_file} \npKa file: {pka_file} \n\n' 
+        if include_buriedness == False: 
+            trajectory_file_summary= f'{trajectory_name} \nTrajectory file: {trajectory_file} \npKa file: {pka_file} \n\n' 
+        elif include_buriedness == True: 
+            trajectory_file_summary= f'{trajectory_name} \nTrajectory file: {trajectory_file} \npKa file: {pka_file}\nBuriedness file: {surf_file} \n\n' 
 
     else: 
-        trajectory_file_summary = '' 
-        for trajectory_index, trajectory_name in enumerate(trajectory_file.keys()): 
-            trajectory_file_summary+=f'{trajectory_name} \nTrajectory file: {trajectory_file[trajectory_name]} \npKa file: {pka_file[trajectory_index]} \n\n' 
+        if include_buriedness == False: 
+            trajectory_file_summary = '' 
+            for trajectory_index, trajectory_name in enumerate(trajectory_file.keys()): 
+                trajectory_file_summary+=f'{trajectory_name} \nTrajectory file: {trajectory_file[trajectory_name]} \npKa file: {pka_file[trajectory_index]} \n\n' 
+        elif include_buriedness == True: 
+            trajectory_file_summary = '' 
+            for trajectory_index, trajectory_name in enumerate(trajectory_file.keys()): 
+                trajectory_file_summary+=f'{trajectory_name} \nTrajectory file: {trajectory_file[trajectory_name]} \npKa file: {pka_file[trajectory_index]}\nBuriedness file: {surf_file[trajectory_index]} \n\n' 
 
     file_summary = f"""
 Topology file: {topology_file} 
@@ -73,6 +81,17 @@ Trajectories:
     
     elif include_distances == False: 
         include_distances_summary = f'No distances between charge centers were included in the clustering.' 
+    
+    #information on whether buriedness measures were used for the clustering 
+    if include_buriedness== True: 
+        n = len(residues) 
+        if n == 1: 
+            include_buriedness_summary = f'In total {n} buriedness measure was included in the clustering.' 
+        else: 
+            include_buriedness_summary = f'In total {n} buriedness measures were included in the clustering.' 
+    
+    elif include_buriedness == False: 
+        include_buriedness_summary = f'No buriedness measures were included in the clustering.' 
     
     #information on clustering method 
     clustering_method_summary = f'The {clustering_method} method was used for the clustering.' 
@@ -104,6 +123,7 @@ Trajectories:
 {file_summary} 
 {residue_summary} 
 {include_distances_summary} 
+{include_buriedness_summary} 
 {clustering_method_summary} 
 {dimensionality_reduction_summary} 
 

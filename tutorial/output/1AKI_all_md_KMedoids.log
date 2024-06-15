@@ -17,26 +17,27 @@ If you are using TrIPP, please cite:
 ----------------------------------------------------------------- 
 
 
-Topology file: tutorial/files/1AKI_clean_min_cg_pbc_p.pdb 
+Topology file: tutorial/files/1AKI_minstr.pdb 
 
 Trajectories: 
 
 MD1 
-Trajectory file: tutorial/files/1AKI_clean_eq_md1_T300_300ns_p_fit_skip100.xtc 
-pKa file: tutorial/output/1AKI_clean_md1_pka.csv 
+Trajectory file: tutorial/files/1AKI_md1_300ns.xtc 
+pKa file: tutorial/output/1AKI_md1_pka.csv 
 
 MD2 
-Trajectory file: tutorial/files/1AKI_clean_eq_md2_T300_300ns_p_fit_skip100.xtc 
-pKa file: tutorial/output/1AKI_clean_md2_pka.csv 
+Trajectory file: tutorial/files/1AKI_md2_300ns.xtc 
+pKa file: tutorial/output/1AKI_md2_pka.csv 
 
 MD3 
-Trajectory file: tutorial/files/1AKI_clean_eq_md3_T300_300ns_p_fit_skip100.xtc 
-pKa file: tutorial/output/1AKI_clean_md3_pka.csv 
+Trajectory file: tutorial/files/1AKI_md3_300ns.xtc 
+pKa file: tutorial/output/1AKI_md3_pka.csv 
 
 
  
 Clustering was done using residues 35 and 52. 
 No distances between charge centers were included in the clustering. 
+No buriedness measures were included in the clustering. 
 The KMedoids method was used for the clustering. 
 No dimensionality reduction was done. 
 

@@ -81,28 +81,38 @@ class Clustering:
     """
 
 
-    def __init__(self, trajectory_file, topology_file, pka_file, residues, log_file, include_distances=True, dimensionality_reduction=False):
+    def __init__(self, trajectory_file, topology_file, pka_file, residues, log_file, surf_file=None, include_distances=False, include_buriedness=False, dimensionality_reduction=False):
 
         self.trajectory_file = trajectory_file
         self.topology_file = topology_file 
         self.pka_file = pka_file 
         self.residues = residues 
         self.log_file = log_file 
+        self.surf_file = surf_file 
+        self.include_buriedness = include_buriedness 
         self.include_distances = include_distances 
         
-        if type(self.pka_file) == str: 
-            self.pka_df = pd.read_csv(self.pka_file, index_col='Time [ps]') 
-            self.pka_df['Trajectories'] = 'Unnamed trajectory' 
+        def make_pka_or_surf_df(file): 
+            if type(file) == str: 
+                df = pd.read_csv(file, index_col='Time [ps]') 
+                df['Trajectories'] = 'Unnamed trajectory' 
+            
+            elif type(file) == list: 
+                df_list = [] 
+                for index, f in enumerate(file): 
+                    df = pd.read_csv(f, index_col='Time [ps]') 
+                    df['Trajectories'] = list(self.trajectory_file.keys())[index] 
+                    df_list.append(df) 
+                df = pd.concat(df_list) 
+            
+            elif file == None: 
+                df = None 
+            return df 
+            
+        self.pka_df = make_pka_or_surf_df(pka_file) 
+        self.surf_df = make_pka_or_surf_df(surf_file) 
         
-        elif type(self.pka_file) == list: 
-            pka_df_list = [] 
-            for index, pka_f in enumerate(self.pka_file): 
-                df = pd.read_csv(pka_f, index_col='Time [ps]') 
-                df['Trajectories'] = list(self.trajectory_file.keys())[index] 
-                pka_df_list.append(df) 
-            self.pka_df = pd.concat(pka_df_list) 
-        
-        self.clustering_matrix, self.times, self.frames, self.trajectory_names, self.trajectory_dict = create_clustering_matrix(self.trajectory_file, self.topology_file, self.pka_df, self.residues, self.include_distances) 
+        self.clustering_matrix, self.times, self.frames, self.trajectory_names, self.trajectory_dict = create_clustering_matrix(self.trajectory_file, self.topology_file, self.pka_df, self.residues, self.include_distances, self.surf_df, self.include_buriedness) 
 
         if dimensionality_reduction == True: 
             self.n_components, self.cummulative_variance, self.clustering_matrix = pca(self.clustering_matrix) 
@@ -157,7 +167,7 @@ class Clustering:
 
             silhouette_scores = pd.DataFrame({'Number of clusters' : cluster_nums, 'Average silhouette score' : sil_scores}) 
         
-        summary = generate_clustering_summary(trajectory_file=self.trajectory_file, topology_file=self.topology_file, pka_file=self.pka_file, residues=self.residues, include_distances=self.include_distances, clustering_method=clustering_method, automatic=automatic, silhouette_scores=silhouette_scores, n_components=self.n_components, cummulative_variance=self.cummulative_variance) 
+        summary = generate_clustering_summary(trajectory_file=self.trajectory_file, topology_file=self.topology_file, pka_file=self.pka_file, residues=self.residues, include_distances=self.include_distances, include_buriedness=self.include_buriedness, clustering_method=clustering_method, automatic=automatic, silhouette_scores=silhouette_scores, n_components=self.n_components, cummulative_variance=self.cummulative_variance, surf_file=self.surf_file) 
         return write_clustering_info(summary=summary, trajectory_dict=self.trajectory_dict, pka_df=self.pka_df, times=self.times, frames=self.frames, trajectory_names=self.trajectory_names, labels=labels, cluster_centers=cluster_centers, cluster_indices=medoid_indices, cluster_centers_trajectories=cluster_centers_trajectories, log_file=self.log_file, clustering_method=clustering_method) 
     
 
@@ -234,7 +244,7 @@ class Clustering:
 
             silhouette_scores = pd.DataFrame({'Number of clusters' : cluster_nums, 'RMSD cutoff' : cutoffs, 'Average silhouette score' : sil_scores}) 
         
-        summary = generate_clustering_summary(trajectory_file=self.trajectory_file, topology_file=self.topology_file, pka_file=self.pka_file, residues=self.residues, include_distances=self.include_distances, clustering_method=clustering_method, automatic=automatic, silhouette_scores=silhouette_scores, n_components=self.n_components, cummulative_variance=self.cummulative_variance) 
+        summary = generate_clustering_summary(trajectory_file=self.trajectory_file, topology_file=self.topology_file, pka_file=self.pka_file, residues=self.residues, include_distances=self.include_distances, include_buriedness=self.include_buriedness, clustering_method=clustering_method, automatic=automatic, silhouette_scores=silhouette_scores, n_components=self.n_components, cummulative_variance=self.cummulative_variance, surf_file=self.surf_file) 
         return write_clustering_info(summary=summary, trajectory_dict=self.trajectory_dict, pka_df=self.pka_df, times=self.times, frames=self.frames, trajectory_names=self.trajectory_names, labels=labels, cluster_centers=cluster_centers, cluster_indices=cluster_center_indices, cluster_centers_trajectories=cluster_centers_trajectories, log_file=self.log_file, clustering_method=clustering_method) 
     
 
@@ -309,6 +319,6 @@ class Clustering:
 
             silhouette_scores = pd.DataFrame({'Number of clusters' : cluster_nums, 'Epsilon' : params[:,0], 'Minimum samples' : params[:,1], 'Average silhouette score' : sil_scores}) 
         
-        summary = generate_clustering_summary(trajectory_file=self.trajectory_file, topology_file=self.topology_file, pka_file=self.pka_file, residues=self.residues, include_distances=self.include_distances, clustering_method=clustering_method, automatic=automatic, silhouette_scores=silhouette_scores, n_components=self.n_components, cummulative_variance=self.cummulative_variance) 
+        summary = generate_clustering_summary(trajectory_file=self.trajectory_file, topology_file=self.topology_file, pka_file=self.pka_file, residues=self.residues, include_distances=self.include_distances, include_buriedness=self.include_buriedness, clustering_method=clustering_method, automatic=automatic, silhouette_scores=silhouette_scores, n_components=self.n_components, cummulative_variance=self.cummulative_variance, surf_file=self.surf_file) 
         return write_clustering_info(summary=summary, trajectory_dict=self.trajectory_dict, pka_df=self.pka_df, times=self.times, frames=self.frames, trajectory_names=self.trajectory_names, labels=labels, cluster_centers=cluster_centers, cluster_indices=cluster_center_indices, cluster_centers_trajectories=cluster_centers_trajectories, log_file=self.log_file, clustering_method=clustering_method) 
     

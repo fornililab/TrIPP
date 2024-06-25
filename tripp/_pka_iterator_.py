@@ -15,10 +15,9 @@ def pka_iterator(trajectory_slices, core, universe, temp_name, mutation, chain, 
     for index, ts in enumerate(universe.trajectory[start:end]):
         with mda.Writer(f'{temp_name}.pdb') as w:
             w.write(universe)
-        edit_pdb(f'{temp_name}.pdb')
         if mutation != None: 
             mutate(temp_name, mutation) 
-        run.single(f'{temp_name}.pdb')
+        run.single(f'{temp_name}.pdb',optargs=['-k'])
         time = ts.time
         #Writing pKa csv
         header = ','.join(extract_pka_file_data(f'{temp_name}.pka', chain=chain, time=time)[0][0])

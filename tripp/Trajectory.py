@@ -20,18 +20,11 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-import MDAnalysis as mda
-import propka 
-from propka import run
-import numpy as np 
-import os 
+import os
+from tripp._edit_pdb_ import edit_pdb
 import multiprocessing as mp 
-from tripp._edit_pdb_ import edit_pdb 
-from tripp._edit_pdb_ import mutate 
-import pandas as pd 
 from tripp._detect_disulphide_bonds_ import detect_disulphide_bonds 
-from tripp._create_mda_universe_ import create_mda_universe 
-from tripp._extract_pka_file_data_ import extract_pka_file_data 
+from tripp._create_mda_universe_ import create_mda_universe,create_propka_compatible_universe
 from tripp._pka_iterator_ import pka_iterator 
 from tripp._sort_pka_df_ import sort_pka_df 
 
@@ -70,8 +63,9 @@ class Trajectory:
         else: 
             self.cpu_core_number = cpu_core_number 
 
-        self.universe = create_mda_universe(topology_file=self.topology_file, trajectory_file=self.trajectory_file) 
-        frames_nr = len(self.universe.trajectory) 
+        self.universe = create_mda_universe(topology_file=self.topology_file, trajectory_file=self.trajectory_file)
+        self.corrected_universe = create_propka_compatible_universe(self.universe)
+        frames_nr = len(self.universe.trajectory)
         slices_nr = self.cpu_core_number 
         slice_length = round(frames_nr/slices_nr) 
         slices = [] 
@@ -102,12 +96,12 @@ class Trajectory:
             out = output_file 
             temp_name = f'temp_{core}' 
 
-        pka_iterator(trajectory_slices=self.trajectory_slices, core=core, universe=self.universe, temp_name=temp_name, mutation=mutation, chain=chain, out=out, extract_surface_data=extract_surface_data) 
+        pka_iterator(trajectory_slices=self.trajectory_slices, core=core, universe=self.corrected_universe, temp_name=temp_name, mutation=mutation, chain=chain, out=out, extract_surface_data=extract_surface_data) 
             
     def loop_function(self, output_file, index, extract_surface_data, chain, mutation, disulphide_bond_detection): 
         self.calculate_pka(output_file, extract_surface_data=extract_surface_data, chain=chain, mutation=mutation, core=index, disulphide_bond_detection=disulphide_bond_detection) 
     
-    def run(self, output_file, extract_surface_data, chain, mutation, disulphide_bond_detection): 
+    def run(self, output_file, extract_surface_data, chain, mutation, disulphide_bond_detection):
         pool = mp.Pool(self.cpu_core_number)
         # Create jobs
         jobs = []

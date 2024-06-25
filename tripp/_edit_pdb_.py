@@ -23,107 +23,20 @@
 
 def edit_pdb(pdbfile): 
 
-
     """ 
     Function that edits pdb file naming of residues so that it is compatible 
     with PROPKA. 
     """ 
-
+    
+    from tripp._correction_dictionary_ import corrected_amino_acids
 
     with open(pdbfile, 'r') as file: 
         data = file.read() 
-        corrected_amino_acids = { #contains residue names recognised by MDAnalysis and associates them with residue names recognised by PROPKA 
-            'ALAD' : 'ALA', 
-            'ARGN' : 'ARG ', 
-            'ASN1' : 'ASN ', 
-            'ASPH' : 'ASP ', 
-            'ASPP' : 'ASP ',  
-            'CALA' : 'ALA ', 
-            'CARG' : 'ARG ', 
-            'CASF' : 'ASP ', 
-            'CASN' : 'ASN ', 
-            'CASP' : 'ASP ', 
-            'CCYS' : 'CYS ', 
-            'CCYX' : 'CYS ', 
-            'CGLN' : 'GLN ', 
-            'CGLU' : 'GLU ', 
-            'CGLY' : 'GLY ', 
-            'CHID' : 'HIS ', 
-            'CHIE' : 'HIS ', 
-            'CHIP' : 'HIS ', 
-            'CILE' : 'ILE ', 
-            'CLEU' : 'LEU ', 
-            'CLYS' : 'LYS ', 
-            'CMET' : 'MET ', 
-            'CPHE' : 'PHE ', 
-            'CPRO' : 'PRO ', 
-            'CSER' : 'SER ', 
-            'CTHR' : 'THR ', 
-            'CTRP' : 'TRP ', 
-            'CTYR' : 'TYR ', 
-            'CVAL' : 'VAL ', 
-            'CYS1' : 'CYS ', 
-            'CYS2' : 'CYS ', 
-            'CYSH' : 'CYS ', 
-            'GLUH' : 'GLU ', 
-            'GLUP' : 'GLU ', 
-            'HIS1' : 'HIS ', 
-            'HIS2' : 'HIS ', 
-            'HISA' : 'HIS ', 
-            'HISB' : 'HIS ', 
-            'HISD' : 'HIS ', 
-            'HISE' : 'HIS ', 
-            'HISH' : 'HIS ', 
-            'LYSH' : 'LYS ', 
-            'NALA' : 'ALA ', 
-            'NARG' : 'ARG ', 
-            'NASN' : 'ASN ', 
-            'NASP' : 'ASP ', 
-            'NCYS' : 'CYS ', 
-            'NCYX' : 'CYS ', 
-            'NGLN' : 'GLY ', 
-            'NGLU' : 'GLU ', 
-            'NGLY' : 'GLY ', 
-            'NHID' : 'HIS ', 
-            'NHIE' : 'HIS ', 
-            'NHIP' : 'HIS ', 
-            'NILE' : 'ILE ', 
-            'NLEU' : 'LEU ', 
-            'NLYS' : 'LYS ', 
-            'NMET' : 'MET ', 
-            'NPHE' : 'PHE ', 
-            'NPRO' : 'PRO ', 
-            'NSER' : 'SER ', 
-            'NTHR' : 'THR ', 
-            'NTRP' : 'TRP ', 
-            'NTYR' : 'TYR ', 
-            'NVAL' : 'VAL ', 
-            'PGLU' : 'GLU ',
-            'ASF' : 'ASP', 
-            'ASH' : 'ASP', 
-            'CYM' : 'CYS', 
-            'CYN' : 'CYS', 
-            'CYX' : 'CYS', 
-            'GLH' : 'GLU', 
-            'HID' : 'HIS', 
-            'HIE' : 'HIS', 
-            'HIP' : 'HIS', 
-            'HSD' : 'HIS', 
-            'HSE' : 'HIS', 
-            'HSP' : 'HIS', 
-            'LYN' : 'LYS', 
-            'LSN' : 'LYS', 
-            'MSE' : 'MET',
-            'OC1' : 'O  ', #added so that the atom name is changed for residues that are part of the C-ter (GROMACS)
-            'OC2' : 'OXT',
-            'OT1' : 'O  ', #added so that the atom name is changed for residues that are part of the C-ter 
-            'OT2' : 'OXT' 
-            }
-        for correction in corrected_amino_acids: 
-            data = data.replace(correction, corrected_amino_acids[correction])
-    with open(pdbfile, 'w') as file: 
+        for incorrect_resname, corrected_resname in corrected_amino_acids.items(): 
+            data = data.replace(incorrect_resname, corrected_resname)            
+    with open(pdbfile, 'w') as file:
         file.write(data)
-
+    
 def mutate(temp_name, mutation): 
 
 

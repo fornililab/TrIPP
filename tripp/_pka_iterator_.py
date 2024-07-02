@@ -5,7 +5,7 @@ from propka import run
 from tripp._extract_pka_file_data_ import extract_pka_file_data 
 import os 
 
-def pka_iterator(trajectory_slices, core, universe, temp_name, mutation, chain, out, extract_surface_data): 
+def pka_iterator(trajectory_slices, core, universe, temp_name, mutation, chain, extract_surface_data, optargs): 
             
     start = trajectory_slices[core][0] 
     end = trajectory_slices[core][1]
@@ -17,7 +17,7 @@ def pka_iterator(trajectory_slices, core, universe, temp_name, mutation, chain, 
             w.write(universe)
         if mutation != None: 
             mutate(temp_name, mutation) 
-        run.single(f'{temp_name}.pdb',optargs=['-k'])
+        run.single(f'{temp_name}.pdb',optargs=optargs)
         time = ts.time
         #Writing pKa csv
         header = ','.join(extract_pka_file_data(f'{temp_name}.pka', chain=chain, time=time)[0][0])

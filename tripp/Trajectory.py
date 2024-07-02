@@ -21,9 +21,7 @@
 """
 
 import os
-from tripp._edit_pdb_ import edit_pdb
 import multiprocessing as mp 
-from tripp._detect_disulphide_bonds_ import detect_disulphide_bonds 
 from tripp._create_mda_universe_ import create_mda_universe,create_propka_compatible_universe
 from tripp._pka_iterator_ import pka_iterator 
 from tripp._sort_pka_df_ import sort_pka_df 
@@ -84,30 +82,24 @@ class Trajectory:
 
         self.trajectory_slices = slices
         
-    def calculate_pka(self, output_file, extract_surface_data, chain, mutation, core, disulphide_bond_detection): 
+    def calculate_pka(self, extract_surface_data, chain, mutation, core, optargs): 
         
         if type(mutation) == int: 
-            out = f'{output_file}_{mutation}' 
             temp_name = f'temp_{mutation}_{core}' 
         elif type(mutation) == list: 
-            out = f'{output_file}_{"_".join(map(str, mutation))}' 
             temp_name = f'temp_{"_".join(map(str, mutation))}_{core}' 
         else: 
-            out = output_file 
             temp_name = f'temp_{core}' 
 
-        pka_iterator(trajectory_slices=self.trajectory_slices, core=core, universe=self.corrected_universe, temp_name=temp_name, mutation=mutation, chain=chain, out=out, extract_surface_data=extract_surface_data) 
+        pka_iterator(trajectory_slices=self.trajectory_slices, core=core, universe=self.corrected_universe, temp_name=temp_name, mutation=mutation, chain=chain, extract_surface_data=extract_surface_data,optargs=optargs) 
             
-    def loop_function(self, output_file, index, extract_surface_data, chain, mutation, disulphide_bond_detection): 
-        self.calculate_pka(output_file, extract_surface_data=extract_surface_data, chain=chain, mutation=mutation, core=index, disulphide_bond_detection=disulphide_bond_detection) 
-    
-    def run(self, output_file, extract_surface_data, chain, mutation, disulphide_bond_detection):
+    def run(self, output_file, extract_surface_data, chain, mutation, disulphide_bond_detection,optargs=[]):
         pool = mp.Pool(self.cpu_core_number)
         # Create jobs
         jobs = []
-        for index, item in enumerate(self.trajectory_slices):
+        for index, _ in enumerate(self.trajectory_slices):
             # Create asynchronous jobs that will be submitted once a processor is ready
-            job = pool.apply_async(self.loop_function, args=(output_file, index, extract_surface_data, chain, mutation, disulphide_bond_detection,))
+            job = pool.apply_async(self.calculate_pka, args=(extract_surface_data, chain, mutation, index, optargs))
             jobs.append(job)
         # Submit jobs
         results = [job.get() for job in jobs]

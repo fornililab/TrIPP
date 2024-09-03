@@ -23,15 +23,15 @@ Trajectories:
 
 MD1 
 Trajectory file: tutorial/files/1AKI_md1_300ns.xtc 
-pKa file: tutorial/output/1AKI_md1_pka.csv 
+pKa file: tutorial/output/1AKI_md1/1AKI_md1_pka.csv 
 
 MD2 
 Trajectory file: tutorial/files/1AKI_md2_300ns.xtc 
-pKa file: tutorial/output/1AKI_md2_pka.csv 
+pKa file: tutorial/output/1AKI_md2/1AKI_md2_pka.csv 
 
 MD3 
 Trajectory file: tutorial/files/1AKI_md3_300ns.xtc 
-pKa file: tutorial/output/1AKI_md3_pka.csv 
+pKa file: tutorial/output/1AKI_md3/1AKI_md3_pka.csv 
 
 
  

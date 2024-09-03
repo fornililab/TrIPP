@@ -20,7 +20,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-def generate_clustering_summary(trajectory_file, topology_file, pka_file, residues, include_distances, include_buriedness, clustering_method, automatic, silhouette_scores, n_components, cummulative_variance, surf_file=None):
+def generate_clustering_summary(trajectory_file, topology_file, pka_file, residues, include_distances, include_buriedness, clustering_method, automatic, silhouette_scores, n_components, cummulative_variance, buridness_file=None):
 
     #header of log file 
     header = """
@@ -47,7 +47,7 @@ If you are using TrIPP, please cite:
         if include_buriedness == False: 
             trajectory_file_summary= f'{trajectory_name} \nTrajectory file: {trajectory_file} \npKa file: {pka_file} \n\n' 
         elif include_buriedness == True: 
-            trajectory_file_summary= f'{trajectory_name} \nTrajectory file: {trajectory_file} \npKa file: {pka_file}\nBuriedness file: {surf_file} \n\n' 
+            trajectory_file_summary= f'{trajectory_name} \nTrajectory file: {trajectory_file} \npKa file: {pka_file}\nBuriedness file: {buridness_file} \n\n' 
 
     else: 
         if include_buriedness == False: 
@@ -57,7 +57,7 @@ If you are using TrIPP, please cite:
         elif include_buriedness == True: 
             trajectory_file_summary = '' 
             for trajectory_index, trajectory_name in enumerate(trajectory_file.keys()): 
-                trajectory_file_summary+=f'{trajectory_name} \nTrajectory file: {trajectory_file[trajectory_name]} \npKa file: {pka_file[trajectory_index]}\nBuriedness file: {surf_file[trajectory_index]} \n\n' 
+                trajectory_file_summary+=f'{trajectory_name} \nTrajectory file: {trajectory_file[trajectory_name]} \npKa file: {pka_file[trajectory_index]}\nBuriedness file: {buridness_file[trajectory_index]} \n\n' 
 
     file_summary = f"""
 Topology file: {topology_file} 

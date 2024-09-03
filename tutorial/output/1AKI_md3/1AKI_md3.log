@@ -1,0 +1,69 @@
+
+888888888888         88  88888888ba   88888888ba   
+     88              88  88      "8b  88      "8b  
+     88              88  88      ,8P  88      ,8P  
+     88  8b,dPPYba,  88  88aaaaaa8P'  88aaaaaa8P'  
+     88  88P'   "Y8  88  88'    88'    
+     88  88          88  88           88           
+     88  88          88  88           88           
+     88  88          88  88           88           
+
+
+The Trajectory Iterative pKa Predictor (TrIPP) 
+Written by: Christos Matsingos, Ka Fu Man, and Arianna Fornili 
+
+If you are using TrIPP, please cite: 
+
+-----------------------------------------------------------------
+
+Start time: 2024-08-30 23:19:34
+End time: 2024-08-30 23:20:10
+
+Parmeters selected:
+
+Output directory: tutorial/output/1AKI_md3
+Output prefix: 1AKI_md3
+Number of cores:12
+Trajectory slices: [[0, 257], [257, 514], [514, 771], [771, 1028], [1028, 1285], [1285, 1542], [1542, 1799], [1799, 2056], [2056, 2313], [2313, 2570], [2570, 2827], [2827, 3086]]
+Chain: A
+Mutation: None
+Extract buridness: True
+Remove cysteines from pKa calulations: True
+PropKa optional arguments: []
+-----------------------------------------------------------------
+
+pKa Statistics:
+Residue,Mean,Median,Standard,Deviation
+ASP18,3.43,3.49,0.47
+ASP48,1.75,1.67,0.39
+ASP52,3.70,3.62,0.45
+ASP66,1.51,1.44,0.37
+ASP87,2.51,2.54,0.67
+ASP101,3.35,3.38,0.42
+ASP119,2.41,2.36,0.30
+GLU7,3.89,3.87,0.58
+GLU35,6.00,6.03,0.49
+C-129,2.50,2.24,0.54
+HIS15,5.91,5.86,0.29
+TYR20,9.31,9.30,0.42
+TYR23,10.01,9.98,0.23
+TYR53,10.75,10.70,0.50
+LYS1,10.69,10.46,0.42
+LYS13,11.36,11.52,0.35
+LYS33,10.10,10.11,0.09
+LYS96,10.16,10.15,0.20
+LYS97,10.28,10.24,0.22
+LYS116,10.23,10.24,0.13
+ARG5,12.16,12.16,0.05
+ARG14,12.59,12.41,0.51
+ARG21,12.66,12.55,0.26
+ARG45,12.24,12.26,0.18
+ARG61,13.03,13.15,0.35
+ARG68,12.73,12.66,0.32
+ARG73,12.25,12.30,0.14
+ARG112,12.23,12.22,0.06
+ARG114,12.25,12.25,0.08
+ARG125,13.83,13.91,0.31
+ARG128,12.50,12.47,0.17
+N+1,7.44,7.44,0.06
+

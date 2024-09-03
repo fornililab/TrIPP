@@ -25,6 +25,8 @@ import multiprocessing as mp
 from tripp._create_mda_universe_ import create_mda_universe,create_propka_compatible_universe
 from tripp._pka_iterator_ import pka_iterator 
 from tripp._sort_pka_df_ import sort_pka_df 
+from datetime import datetime
+from tripp._generate_trajectory_log_ import trajectory_log
 
 class Trajectory: 
 
@@ -81,28 +83,59 @@ class Trajectory:
                 end_frame+=slice_length 
 
         self.trajectory_slices = slices
-        
-    def calculate_pka(self, extract_surface_data, chain, mutation, core, optargs): 
-        
-        if type(mutation) == int: 
-            temp_name = f'temp_{mutation}_{core}' 
-        elif type(mutation) == list: 
-            temp_name = f'temp_{"_".join(map(str, mutation))}_{core}' 
-        else: 
-            temp_name = f'temp_{core}' 
 
-        pka_iterator(trajectory_slices=self.trajectory_slices, core=core, universe=self.corrected_universe, temp_name=temp_name, mutation=mutation, chain=chain, extract_surface_data=extract_surface_data,optargs=optargs) 
+    def run(self,
+            output_directory,
+            output_prefix, 
+            extract_buridness_data, 
+            chain, 
+            mutation, 
+            disulphide_bond_detection,
+            optargs):
+        start = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+        
+        if os.path.isdir(output_directory) != True:
+            os.makedirs(output_directory)
             
-    def run(self, output_file, extract_surface_data, chain, mutation, disulphide_bond_detection,optargs=[]):
         pool = mp.Pool(self.cpu_core_number)
         # Create jobs
         jobs = []
         for index, _ in enumerate(self.trajectory_slices):
             # Create asynchronous jobs that will be submitted once a processor is ready
-            job = pool.apply_async(self.calculate_pka, args=(extract_surface_data, chain, mutation, index, optargs))
+            job = pool.apply_async(pka_iterator, args=(self.trajectory_slices, 
+                                                       index,
+                                                       self.corrected_universe,
+                                                       output_directory,
+                                                       mutation,
+                                                       chain,
+                                                       extract_buridness_data,
+                                                       optargs))
             jobs.append(job)
         # Submit jobs
         results = [job.get() for job in jobs]
         pool.close()
         pool.join()
-        sort_pka_df(cores=self.cpu_core_number, topology_file=self.topology_file, output_file=output_file, extract_surface_data=extract_surface_data, mutation=mutation, disulphide_bond_detection=disulphide_bond_detection, universe=self.universe, chain=chain) #Sorting the data only once after all calculations are done, rather than at the end of each job.
+        # Post-processing the data
+        sort_pka_df(cores=self.cpu_core_number, 
+                    topology_file=self.topology_file,
+                    output_directory=output_directory,
+                    output_prefix=output_prefix, 
+                    extract_buridness_data=extract_buridness_data, 
+                    mutation=mutation, 
+                    disulphide_bond_detection=disulphide_bond_detection) 
+        # Generate pKa summary
+        # pka_statistics_table(output_directory,output_prefix)
+        
+        end = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+        # Logging
+        trajectory_log(output_directory,
+                       output_prefix, 
+                       extract_buridness_data,
+                       chain, 
+                       mutation, 
+                       disulphide_bond_detection,
+                       optargs,
+                       self.cpu_core_number,
+                       self.trajectory_slices,
+                       start,
+                       end)

@@ -75,7 +75,7 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
             universe = trajectory_dict[cluster_centers_trajectories[index]] 
             for ts in universe.trajectory: 
                 if ts.frame == cluster_center_frame: 
-                    pdb_file = f'{log_file}_C{index}.pdb' 
+                    pdb_file = f'{log_file}_{clustering_method}_C{index}.pdb' 
                     with mda.Writer(pdb_file) as w: 
                         w.write(universe) 
     
@@ -83,6 +83,6 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
 
     def write_new_dataframe(): 
         pka_df['Clusters'] = labels 
-        pka_df.to_csv(f'{log_file}_cluster.csv') 
+        pka_df.to_csv(f'{log_file}_{clustering_method}_cluster.csv') 
     
     write_new_dataframe() 

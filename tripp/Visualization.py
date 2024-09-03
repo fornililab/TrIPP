@@ -153,7 +153,8 @@ class Visualization:
             ag.tempfactors = np.full(ag.tempfactors.shape,rounded_predicted_pka)
         ag = self.u.select_atoms('all')
         ag.write(tempfactors_output_structure)
-        pse_output_filename = tempfactors_output_structure.replace('.pdb', '.pse') 
+        pse_output_filename = tempfactors_output_structure.replace('.pdb', '.pse')
+        print(tempfactors_output_structure)
         visualize_pka(tempfactors_output_structure, pymol_path, pse_output_filename, pka_values_summary, lower_limit, upper_limit, color_palette) 
 
         

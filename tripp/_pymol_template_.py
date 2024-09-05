@@ -23,11 +23,11 @@
 
 import subprocess
 import os
-def visualize_pka(tempfactors_structure, pymol_path, pse_output_filename, pka_value_summary, lower_limit, upper_limit, color_palette): 
+def gen_pymol_template(tempfactors_structure, pymol_path, pse_output_filename, values_df, lower_limit, upper_limit, color_palette): 
     
     """ 
-    Function that can visualize the pka values of residues using PyMOL.
-    No parameters need to be adjusted as they are determined from the color_pka()
+    Function that can visualize the values of residues using PyMOL.
+    No parameters need to be adjusted as they are determined from the gen_pse()
     in Visualization class.
     
     Parameters:
@@ -41,11 +41,11 @@ def visualize_pka(tempfactors_structure, pymol_path, pse_output_filename, pka_va
     
     pse_output_filename: str
     The output name for pse session, automatically combined with the 
-    pse_output_prefix and the coloring_method in color_pka().
+    pse_output_prefix and the coloring_method in gen_pse().
     
-    pka_value_summary: Pandas Series
-    Pandas series containing one column of the name of residue with resid,
-    and another column of the predicted pKa.
+    values_df: Pandas dataframe
+    Pandas dartaframe containing one column of the name of residue with resid,
+    and another column of the value (pKa or correlation).
     
     lower limit: int or float
     Determines lower limit used to colour the reisdues in the PyMOL session. Any 
@@ -69,8 +69,9 @@ cmd.color("white", "protein_str")\n""")
     Nterm_atoms = 'N+H1+H2+H3'
     Cterm_atoms = 'C+OC1+OC2+OT1+OT2'
     names = []
-    for residue,predicted_pka in pka_value_summary.items():
-        rounded_predicted_pka = round(predicted_pka,2)
+    residues, values = (columns for _,columns in values_df.items()) 
+    for residue,value in zip(residues,values):
+        rounded_value = round(value,2)
         if 'N+' in residue:
             name = 'NTR'
             resid = residue[2:]
@@ -88,7 +89,7 @@ cmd.color("white", "protein_str")\n""")
             output.write(f"""cmd.select('{name}', '{selection}') 
 cmd.show('licorice', '{name}') 
 cmd.spectrum('b','{color_palette}','{name}',{lower_limit},{upper_limit})
-cmd.label('{name} and name CB','{rounded_predicted_pka}')\n""")
+cmd.label('{name} and name CB','{rounded_value}')\n""")
     
     sorted_residues = ' '.join(['NTR']+sorted(names, key=lambda x: int(x[3:]))+['CTR'])
     with open('.pymol_template.py','a') as output:

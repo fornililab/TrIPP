@@ -122,9 +122,7 @@ class Trajectory:
                     output_prefix=output_prefix, 
                     extract_buridness_data=extract_buridness_data, 
                     mutation=mutation, 
-                    disulphide_bond_detection=disulphide_bond_detection) 
-        # Generate pKa summary
-        # pka_statistics_table(output_directory,output_prefix)
+                    disulphide_bond_detection=disulphide_bond_detection)
         
         end = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
         # Logging

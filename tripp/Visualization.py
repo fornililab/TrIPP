@@ -49,22 +49,22 @@ class Visualization:
     """
 
 
-    def __init__(self, structure, pka_file, correlation_file=None):
+    def __init__(self, structure, pka_file=None, correlation_file=None):
 
         self.structure = structure
-        self.pka_file = pka_file
         if correlation_file != None:
             self.correlation_file = pd.read_csv(correlation_file)
         self.u = create_mda_universe(topology_file=self.structure, trajectory_file=None) 
         
-        if type(self.pka_file) == list: 
-            pka_file_l = [] 
-            for file in pka_file: 
-                pka_file_l.append(pd.read_csv(file)) 
-            self.pka_values = pd.concat(pka_file_l) 
-        
-        else: 
-            self.pka_values = pd.read_csv(self.pka_file) 
+        if pka_file != None:
+            if type(pka_file) == list: 
+                pka_file_l = [] 
+                for file in pka_file: 
+                    pka_file_l.append(pd.read_csv(file)) 
+                self.pka_values = pd.concat(pka_file_l) 
+            
+            else: 
+                self.pka_values = pd.read_csv(pka_file) 
 
 
     def gen_pse(self, pymol_path, output, coloring_method='mean', lower_limit=0, upper_limit=14, color_palette='red_white_blue'): 

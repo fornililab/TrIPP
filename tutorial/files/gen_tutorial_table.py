@@ -8,7 +8,7 @@ def ReturnResid(x):
 pKaMeans = []
 pKaSTDs = []
 Names = []
-for i in range(1,4):
+for i in range(1,6):
     df = pd.read_csv(f'tutorial/output/1AKI_md{i}/1AKI_md{i}_pka.csv')
     del df['Time [ps]']
     df.sort_index(axis=1,key=lambda x:[int(ReturnResid(i)) for i in x],inplace=True)
@@ -17,9 +17,9 @@ for i in range(1,4):
         pKaMeans.append("{:.2f}".format(df[key].mean()))
         pKaSTDs.append("{:.2f}".format(df[key].std()))
         
-pKaMeans = np.asarray(pKaMeans).reshape(3,-1)
-pKaSTDs = np.asarray(pKaSTDs).reshape(3,-1)
-Names = np.asarray(Names).reshape(3,-1)
+pKaMeans = np.asarray(pKaMeans).reshape(5,-1)
+pKaSTDs = np.asarray(pKaSTDs).reshape(5,-1)
+Names = np.asarray(Names).reshape(5,-1)
 tmp = np.char.add(pKaMeans,np.full(pKaMeans.shape,'±'))
 pKaMeansSTDs = np.char.add(tmp,pKaSTDs)
 

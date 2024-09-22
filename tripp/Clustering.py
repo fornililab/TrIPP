@@ -249,7 +249,20 @@ class Clustering:
     
 
     
-    def dbscan(self, automatic=False, max_cluster_population=0.95, max_clusters=20, eps=0.5, min_samples=5, metric='euclidean', metric_params=None, algorithm='auto', leaf_size=30, p=None, n_jobs=None): 
+    def dbscan(self, 
+               automatic=False, 
+               eps_range = (0.005, 0.505, 0.005), 
+               min_samples_range = (2, 11, 1), 
+               max_cluster_population=0.95, 
+               max_clusters=20, 
+               eps=0.5, 
+               min_samples=5, 
+               metric='euclidean', 
+               metric_params=None, 
+               algorithm='auto', 
+               leaf_size=30, 
+               p=None, 
+               n_jobs=None): 
         
         """
         This function implements the DBSCAN method to do the clustering. 
@@ -262,9 +275,14 @@ class Clustering:
         allowed max number of clusters (defined by max_clusters) or 
         that produce only one cluster are excluded. 
         
-        cutoff: float, default=0.1, cutoff used for clustering. Ignored 
-        if automatic=True. 
-
+        eps_range: tuple, default=(0.005, 0.505, 0.005), the range of
+        epsilon value screened in the automatic grid search. Value is
+        generated with np.arange(start, stop, step).
+        
+        min_samples_range: tuple, default=(2, 11, 1), the range of
+        min_samples value screend in the automatic grid search. Value 
+        is generated with np.arange(start, stop, step).
+        
         max_clusters: int, default=20, max number of clusters allowed 
         when automatic=True. 
 
@@ -285,9 +303,9 @@ class Clustering:
             sil_scores = [] 
             params = [] 
             cluster_nums = [] 
-            for eps in np.arange(0.005, 0.505, 0.005): 
+            for eps in np.arange(eps_range[0],eps_range[1],eps_range[2]): 
                 eps = round(eps, 4) 
-                for min_samples in np.arange(2, 11, 1): 
+                for min_samples in np.arange(min_samples_range[0],min_samples_range[1],min_samples_range[2]): 
                     labels = dbscan_clustering(eps=eps, min_samples=min_samples, metric=metric, metric_params=metric_params, algorithm=algorithm, leaf_size=leaf_size, p=p, n_jobs=n_jobs, clustering_matrix=self.clustering_matrix, frames=self.frames, find_centroid=False, trajectory_names=self.trajectory_names)
 
                     if len(set(labels)) == len(labels): 

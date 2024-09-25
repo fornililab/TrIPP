@@ -121,7 +121,7 @@ class Clustering:
             self.cummulative_variance = None 
             self.n_components = None 
 
-    def kmedoids(self, automatic=False, n_clusters=8, metric='euclidean', method='alternate', init='heuristic', max_iter=300, random_state=None, max_clusters=20): 
+    def kmedoids(self, automatic=False, n_clusters=8, metric='euclidean', method='alternate', init='k-medoids++', max_iter=300, random_state=None, max_clusters=20): 
         """
         This function implements the KMedoids method to do the clustering. 
         
@@ -142,11 +142,11 @@ class Clustering:
         """
 
         clustering_method = 'KMedoids' 
-        
+            
         if automatic == False: 
             labels, cluster_centers, medoid_indices, cluster_centers_trajectories = kmedoids_clustering(n_clusters=n_clusters, metric=metric, method=method, init=init, max_iter=max_iter, random_state=random_state, clustering_matrix=self.clustering_matrix, frames=self.frames, trajectory_names=self.trajectory_names) 
             sil_score = round(silhouette_score(self.clustering_matrix, labels), 4) 
-            print(f'Clustering with {clusters} clusters produces an average silhouette score of {sil_score}.') 
+            print(f'Clustering with {n_clusters} clusters produces an average silhouette score of {sil_score}.') 
             silhouette_scores = pd.DataFrame({'Number of clusters' : n_clusters, 'Average silhouette score' : sil_score}) 
         
         elif automatic == True: 

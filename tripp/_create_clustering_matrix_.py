@@ -27,7 +27,7 @@ from tripp._determine_charge_center_ import determine_charge_center
 from scipy.stats import zscore 
 from tripp._create_mda_universe_ import create_mda_universe 
 
-def create_clustering_matrix(trajectory_file, topology_file, pka_df, residues, include_distances, buridness_df, include_buriedness=False): 
+def create_clustering_matrix(trajectory_file, topology_file, pka_df, residues, include_distances, buriedness_df, include_buriedness=False): 
 
     """
     Function that generates the clustering_matrix. The clustering_matrix 
@@ -46,7 +46,7 @@ def create_clustering_matrix(trajectory_file, topology_file, pka_df, residues, i
             traj = trajectory_file[key] 
             trajectory_dict[key] = create_mda_universe(topology_file=topology_file, trajectory_file=traj) 
     
-    def extract_pka_distances_buridness(trajectory_name, universe, df_traj_pka, df_traj_buridness): 
+    def extract_pka_distances_buriedness(trajectory_name, universe, df_traj_pka, df_traj_buriedness): 
 
         pka = [] 
         times = [] 
@@ -71,7 +71,7 @@ def create_clustering_matrix(trajectory_file, topology_file, pka_df, residues, i
                     positions.append(charge_center) 
                 
                 if include_buriedness == True: 
-                    buriedness_residue = df_traj_buridness.loc[ts.time, residue_identifier] 
+                    buriedness_residue = df_traj_buriedness.loc[ts.time, residue_identifier] 
                     buriedness.append(buriedness_residue) 
             
             pka.append(np.array(pkas)) 
@@ -110,14 +110,14 @@ def create_clustering_matrix(trajectory_file, topology_file, pka_df, residues, i
     for index, key in enumerate(trajectory_dict.keys()): 
         df_traj_pka = pka_df[pka_df['Trajectories']==key] 
         if include_buriedness == True: 
-            df_traj_buridness = buridness_df[buridness_df['Trajectories']==key] 
+            df_traj_buriedness = buriedness_df[buriedness_df['Trajectories']==key] 
         elif include_buriedness == False: 
-            df_traj_buridness = None 
+            df_traj_buriedness = None 
         if index == 0: 
-            clustering_matrix, times, frames, trajectory_names = extract_pka_distances_buridness(key, trajectory_dict[key], df_traj_pka, df_traj_buridness) 
+            clustering_matrix, times, frames, trajectory_names = extract_pka_distances_buriedness(key, trajectory_dict[key], df_traj_pka, df_traj_buriedness) 
         
         else: 
-            partial_clustering_matrix, partial_times, partial_frames, partial_trajectory_names = extract_pka_distances_buridness(key, trajectory_dict[key], df_traj_pka, df_traj_buridness) 
+            partial_clustering_matrix, partial_times, partial_frames, partial_trajectory_names = extract_pka_distances_buriedness(key, trajectory_dict[key], df_traj_pka, df_traj_buriedness) 
             clustering_matrix = np.concatenate((clustering_matrix, partial_clustering_matrix), axis=0) 
             times = np.concatenate((times, partial_times), axis=0) 
             frames = np.concatenate((frames, partial_frames), axis=0) 

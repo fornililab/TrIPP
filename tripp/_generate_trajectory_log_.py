@@ -2,7 +2,7 @@ import pandas as pd
 
 def trajectory_log(output_directory,
                    output_prefix, 
-                   extract_buridness_data,
+                   extract_buriedness_data,
                    chain, 
                    mutation, 
                    disulphide_bond_detection,
@@ -45,7 +45,7 @@ Number of cores:{cores}
 Trajectory slices: {trajectory_slices}
 Chain: {chain}
 Mutation: {mutation}
-Extract buridness: {extract_buridness_data}
+Extract buriedness: {extract_buriedness_data}
 Remove cysteines from pKa calulations: {disulphide_bond_detection}
 PropKa optional arguments: {optargs}
 -----------------------------------------------------------------

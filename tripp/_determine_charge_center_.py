@@ -59,7 +59,7 @@ def determine_charge_center(universe, residue_index):
         residue_identifier = f'LYS{residue_index}' 
 
     elif residue_type in ['TYR', 'CTYR', 'NTYR']: 
-        atom_coordinates = universe.select_atoms(f'resid {residue_index} and OH' ).positions 
+        atom_coordinates = universe.select_atoms(f'resid {residue_index} and name OH' ).positions 
         charge_center = atom_coordinates[0] 
         residue_identifier = f'TYR{residue_index}' 
     

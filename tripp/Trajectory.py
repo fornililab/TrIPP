@@ -87,7 +87,7 @@ class Trajectory:
     def run(self,
             output_directory,
             output_prefix, 
-            extract_buridness_data, 
+            extract_buriedness_data, 
             chain, 
             mutation, 
             disulphide_bond_detection,
@@ -108,7 +108,7 @@ class Trajectory:
                                                        output_directory,
                                                        mutation,
                                                        chain,
-                                                       extract_buridness_data,
+                                                       extract_buriedness_data,
                                                        optargs))
             jobs.append(job)
         # Submit jobs
@@ -120,7 +120,7 @@ class Trajectory:
                     topology_file=self.topology_file,
                     output_directory=output_directory,
                     output_prefix=output_prefix, 
-                    extract_buridness_data=extract_buridness_data, 
+                    extract_buriedness_data=extract_buriedness_data, 
                     mutation=mutation, 
                     disulphide_bond_detection=disulphide_bond_detection)
         
@@ -128,7 +128,7 @@ class Trajectory:
         # Logging
         trajectory_log(output_directory,
                        output_prefix, 
-                       extract_buridness_data,
+                       extract_buriedness_data,
                        chain, 
                        mutation, 
                        disulphide_bond_detection,

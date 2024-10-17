@@ -16,24 +16,24 @@ If you are using TrIPP, please cite:
 
 -----------------------------------------------------------------
 
-Start time: 2024-09-12 21:01:17
-End time: 2024-09-12 21:01:51
+Start time: 2024-10-17 13:26:38
+End time: 2024-10-17 13:27:15
 
 Parmeters selected:
 
-Output directory: tutorial/output/1AKI_md2
+Output directory: output/1AKI_md2
 Output prefix: 1AKI_md2
 Number of cores:12
 Trajectory slices: [[0, 257], [257, 514], [514, 771], [771, 1028], [1028, 1285], [1285, 1542], [1542, 1799], [1799, 2056], [2056, 2313], [2313, 2570], [2570, 2827], [2827, 3086]]
 Chain: A
 Mutation: None
-Extract buridness: True
+Extract buriedness: True
 Remove cysteines from pKa calulations: True
 PropKa optional arguments: []
 -----------------------------------------------------------------
 
 pKa Statistics:
-Residue,Mean,Median,Standard,Deviation
+Residue,Mean,Median,Standard Deviation
 ASP18,3.51,3.57,0.41
 ASP48,1.83,1.73,0.41
 ASP52,3.94,3.93,0.49

@@ -89,9 +89,9 @@ class Trajectory:
             output_prefix, 
             extract_buriedness_data, 
             chain, 
-            mutation, 
-            disulphide_bond_detection,
-            optargs):
+            mutation=None, 
+            disulphide_bond_detection=True,
+            optargs=[]):
         start = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
         
         if os.path.isdir(output_directory) != True:

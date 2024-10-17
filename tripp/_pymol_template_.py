@@ -23,7 +23,15 @@
 
 import subprocess
 import os
-def gen_pymol_template(tempfactors_structure, pymol_path, pse_output_filename, values_df, lower_limit, upper_limit, color_palette): 
+def gen_pymol_template(tempfactors_structure,
+                       NtermCap_atom_name,
+                       CtermCap_atom_name,
+                       pymol_path, 
+                       pse_output_filename, 
+                       values_df, 
+                       lower_limit, 
+                       upper_limit, 
+                       color_palette): 
     
     """ 
     Function that can visualize the values of residues using PyMOL.
@@ -66,8 +74,8 @@ def gen_pymol_template(tempfactors_structure, pymol_path, pse_output_filename, v
         output.write(f"""cmd.load('{tempfactors_structure}', 'protein_str')
 cmd.show("cartoon", 'protein_str')
 cmd.color("white", "protein_str")\n""")
-    Nterm_atoms = 'N+H1+H2+H3'
-    Cterm_atoms = 'C+OC1+OC2+OT1+OT2'
+    NtermCap_atom_name = "+".join(NtermCap_atom_name.split(' '))
+    CtermCap_atom_name = "+".join(CtermCap_atom_name.split(' '))
     names = []
     residues, values = (columns for _,columns in values_df.items()) 
     for residue,value in zip(residues,values):
@@ -75,16 +83,16 @@ cmd.color("white", "protein_str")\n""")
         if 'N+' in residue:
             name = 'NTR'
             resid = residue[2:]
-            selection = f'resi {resid} and name {Nterm_atoms}'
+            selection = f'resi {resid} and name {NtermCap_atom_name}'
         elif 'C-' in residue:
             name = 'CTR'
             resid = residue[2:]
-            selection = f'resi {resid} and name {Cterm_atoms}'
+            selection = f'resi {resid} and name {CtermCap_atom_name}'
         else:
             name = residue
             names.append(name)
             resid = residue[3:]
-            selection = f'resi {resid}'
+            selection = f'((byres resi {resid})&(sc.|(n. CA|n. N&r. PRO)))'
         with open('.pymol_template.py','a') as output:
             output.write(f"""cmd.select('{name}', '{selection}') 
 cmd.show('licorice', '{name}') 
@@ -96,8 +104,9 @@ cmd.label('{name} and name CB','{rounded_value}')\n""")
         output.write(f"""cmd.order('{sorted_residues}') 
 cmd.ramp_new('colorbar', 'none', [{lower_limit}, ({lower_limit} + {upper_limit})/2, {upper_limit}], {color_palette.split('_')})
 cmd.set('label_size','-2')
-cmd.set('label_position','(1.2,1.2,1.2)') 
+cmd.set('label_position','(1.2,1.2,1.2)')
+cmd.hide("(all and hydro and (elem C extend 1))")
 cmd.save('{pse_output_filename}')
 cmd.quit()\n""")
-    subprocess.run([f'{pymol_path} .pymol_template.py'],shell=True)
+    subprocess.run([f'{pymol_path} -c .pymol_template.py'],shell=True)
     os.remove('.pymol_template.py')

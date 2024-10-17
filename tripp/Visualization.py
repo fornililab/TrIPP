@@ -37,10 +37,10 @@ class Visualization:
     Parameters:
     
     structure: str
-    The file path of the structure being used for visualisation
+    The file path of the structure being used for visualization
     
     pKa_file: str or list
-    The file path or a list of file paths of the CSV file containing the pKa to visualise.
+    The file path or a list of file paths of the CSV file containing the pKa to visualize.
     
     correlation_file: str
     The file path of the CSV file containing the correlation between the time evolution 
@@ -67,7 +67,15 @@ class Visualization:
                 self.pka_values = pd.read_csv(pka_file) 
 
 
-    def gen_pse(self, pymol_path, output, coloring_method='mean', lower_limit=0, upper_limit=14, color_palette='red_white_blue'): 
+    def gen_pse(self, 
+                pymol_path, 
+                output, 
+                NtermCap_atom_name = 'N H1 H2 H3',
+                CtermCap_atom_name = 'C OC1 OC2',
+                coloring_method='mean', 
+                lower_limit=0, 
+                upper_limit=14, 
+                color_palette='red_white_blue'): 
         """
         The method gen_pse can be called which generate a PyMOL session file.
         
@@ -88,11 +96,11 @@ class Visualization:
         where the mean pKa value accross all frames is used or 
         'difference_to_model_value' where the mean pKa value is calculated 
         and the difference to the model value of the amino acid in solution is 
-        used. A specific timestep can also be selected for visualisation by setting 
+        used. A specific timestep can also be selected for visualization by setting 
         the coloring_method to the timestep in question. 'correlation' can be also 
         be used when the projection screening of all ionisable residues has been 
         performed. In that case the correlation_file will need to be specified in 
-        the Visualisation class
+        the Visualization class
         
         lower limit: int or float, default 0
         Determines lower limit used to colour the reisdues in the PyMOL session. Any 
@@ -147,10 +155,6 @@ class Visualization:
                 values_df = self.pka_values.mean(axis=0).to_frame(name='pKa').reset_index(names='Residue')
                 tempfactors_output_structure = f"{output}_time{coloring_method}.pdb" 
         
-        # GROMACS atom naming scheme, other naming scheme will not be valid, user may 
-        # need to add it by themselves for Nterm and Cterm.
-        Nterm_atoms = 'N H1 H2 H3'
-        Cterm_atoms = 'C O OC1 OC2 OT1 OT2 OXT'
         # Unpacking the residues and values (pka or correlation) from values_df.
         # Looping through them to assign the value onto the tempfactor of ionisable
         # residues. The structure with the tempfactor is written as pdb and a PyMOL
@@ -163,18 +167,22 @@ class Visualization:
                 resid = int(residue[3:])
             rounded_predicted_pka = round(value,2)
             if 'N+' in residue:
-                ag = self.u.select_atoms(f'resid {resid} and name {Nterm_atoms}') #Only tempfactor of Nterm_atoms of the first residue will be written 
+                ag = self.u.select_atoms(f'resid {resid} and name {NtermCap_atom_name}') #Only tempfactor of NtermCap_atom_name of the first residue will be written 
             elif 'C-' in residue:
-                ag = self.u.select_atoms(f'resid {resid} and name {Cterm_atoms}') #Only tempfactor of Cterm_atoms of the last residue will be written 
-            elif resid == self.u.residues.resids[0]:
-                ag = self.u.select_atoms(f'resid {resid} and not name {Nterm_atoms}') #Tempfactor of backbone and sidechain of the first residue (if also an ionisable residue), the tempfactor will be written
-            elif resid == self.u.residues.resids[-1]:
-                ag = self.u.select_atoms(f'resid {resid} and not name {Cterm_atoms}') #Tempfactor of backbone and sidechain of the last residue (if also an ionisable residue), the tempfactor will be written
+                ag = self.u.select_atoms(f'resid {resid} and name {CtermCap_atom_name}') #Only tempfactor of NtermCap_atom_name of the last residue will be written 
             else:
-                ag = self.u.select_atoms(f'resid {resid}') #All atoms in the ionisable residue will be written
+                ag = self.u.select_atoms(f'(resid {resid} and not backbone) or (resid {resid} and name CA)') #All atoms in the ionisable residue will be written
             ag.tempfactors = np.full(ag.tempfactors.shape,rounded_predicted_pka)
         ag = self.u.select_atoms('all')
         ag.write(tempfactors_output_structure)
         pse_output_filename = tempfactors_output_structure.replace('.pdb', '.pse')
         print(tempfactors_output_structure)
-        gen_pymol_template(tempfactors_output_structure, pymol_path, pse_output_filename, values_df, lower_limit, upper_limit, color_palette)
+        gen_pymol_template(tempfactors_output_structure,
+                           NtermCap_atom_name,
+                           CtermCap_atom_name,
+                           pymol_path, 
+                           pse_output_filename, 
+                           values_df, 
+                           lower_limit, 
+                           upper_limit, 
+                           color_palette)

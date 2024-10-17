@@ -5,12 +5,15 @@ TrIPP is a Python tool based on PROPKA to calculate the pKa values during Molecu
 
 ## Prerequisites
 
-This project requires Python (version 3.7 or later). To make sure you have the right version available on your machine, try running the following command. 
+This project requires Python (version 3.9 or later). To make sure you have the right version available on your machine, try running the following command. 
 
 ```sh
 $ python --version
-Python 3.7
+Python 3.9
 ```
+
+If using the visualization class in TrIPP, we require user to have pre-installed PyMOL (https://www.pymol.org/) in your machine.
+Note down the path to your PyMOL executable and then provide it in the function.
 
 ## Table of contents
 
@@ -29,32 +32,33 @@ Python 3.7
 These instructions will get you a copy of the project up and running on your local machine for analysis and development purposes. 
 
 ## Installation
+The poetry installation requires one to install poetry in their system.
+Please follow https://python-poetry.org/docs/#installing-with-the-official-installer to install it if you do not already have one.
+```sh
+poetry env use PATH/TO/python3.9
+poetry shell
+poetry install 
+```
 
-
+Note that you may experience the installation of one/some get stuck in 'depending' mode.
+This is related to the keyring issue as mentioned in this thread https://github.com/python-poetry/poetry/issues/8623.
+A workaround of this is to unlock it with the following code:
+```sh
+export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
+poetry install
+```
 
 ## Usage 
 
 ### Workflow
 
-Input for main class Trajectory:
-- Molecular Dynamics trajectory 
-- Topology File
-- CPU cores 
-
-Input for run method: 
-- name of output file
-- extract_surface_data boolean 
-- chain identifier 
-- mutation integer or list of integers 
-
-Output:
-- .csv file containing the pKa values 
-- .csv file containing surface data 
+Follow tutorial for a comprehensive workflow.
 
 
 ### Authors
 
 * **Christos Matsingos** - [chmatsingos](https://github.com/chmatsingos)
+* **Ka Fu Man** [mkf30](https://github.com/mkf30)
 * **Arianna Fornili** [fornililab](https://github.com/fornililab)
 
 ### License

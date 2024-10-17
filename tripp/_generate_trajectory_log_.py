@@ -70,7 +70,7 @@ def pka_statistics_table(output_directory,
                                         columns=['Residue',
                                                 'Mean',
                                                 'Median',
-                                                'Standard Deviation'])
+                                                'Standard_Deviation'])
     tmp = pka_statistics_table.to_string(index=False).split('\n')
     tmp = [','.join(ele.split()) for ele in tmp]
     tmp = [element.replace('_',' ') for element in tmp]

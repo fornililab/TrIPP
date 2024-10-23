@@ -14,9 +14,9 @@ def pka_iterator(trajectory_slices, core, universe, output_directory, mutation, 
     
     if os.path.isfile(f'{output_directory}/.temp_pka_worker{core}.csv'):
         os.remove(f'{output_directory}/.temp_pka_worker{core}.csv')
-    if extract_buriedness_data == True:
-        if os.path.isfile(f'{output_directory}/.temp_buriedness_worker{core}.csv'):
-            os.remove(f'{output_directory}/.temp_buriedness_worker{core}.csv')
+        
+    if os.path.isfile(f'{output_directory}/.temp_buriedness_worker{core}.csv'):
+        os.remove(f'{output_directory}/.temp_buriedness_worker{core}.csv')
             
     cwd = os.getcwd()
     for index, ts in enumerate(universe.trajectory[start:end]):

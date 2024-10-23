@@ -36,8 +36,8 @@ class Visualization:
     
     Parameters:
     
-    structure: str
-    The file path of the structure being used for visualization
+    topology_file: str
+    The file path of the topology_file being used for visualization
     
     pKa_file: str or list
     The file path or a list of file paths of the CSV file containing the pKa to visualize.
@@ -49,12 +49,12 @@ class Visualization:
     """
 
 
-    def __init__(self, structure, pka_file=None, correlation_file=None):
+    def __init__(self, topology_file, pka_file=None, correlation_file=None):
 
-        self.structure = structure
+        self.topology_file = topology_file
         if correlation_file != None:
             self.correlation_file = pd.read_csv(correlation_file)
-        self.u = create_mda_universe(topology_file=self.structure, trajectory_file=None) 
+        self.u = create_mda_universe(topology_file=self.topology_file, trajectory_file=None) 
         
         if pka_file != None:
             if type(pka_file) == list: 
@@ -122,7 +122,7 @@ class Visualization:
         if coloring_method == 'mean': 
             del self.pka_values['Time [ps]'] 
             values_df = self.pka_values.mean(axis=0).to_frame(name='pKa').reset_index(names='Residue')
-            tempfactors_output_structure= f"{output}_mean.pdb"
+            tempfactors_output_topology_file= f"{output}_mean.pdb"
 
         elif coloring_method == 'difference_to_model_value': 
             del self.pka_values['Time [ps]'] 
@@ -135,13 +135,13 @@ class Visualization:
                 else: 
                     pka_values_mean[residue] = pka_values_mean[residue]-model_pka_values[residue[0:3]] 
             values_df = pka_values_mean.to_frame(name='pKa').reset_index(names='Residue')
-            tempfactors_output_structure = f"{output}_difference_to_model_value.pdb" 
+            tempfactors_output_topology_file = f"{output}_difference_to_model_value.pdb" 
         
         
         elif coloring_method == 'correlation':
             correlation_df = self.correlation_file
             values_df = correlation_df[['Residue','Correlation']]
-            tempfactors_output_structure= f"{output}_correlation.pdb"
+            tempfactors_output_topology_file= f"{output}_correlation.pdb"
             
             
         elif type(coloring_method) == int or type(coloring_method) == float: 
@@ -153,11 +153,11 @@ class Visualization:
                 self.pka_values = self.pka_values[self.pka_values['Time [ps]'] == coloring_method] 
                 del self.pka_values['Time [ps]'] 
                 values_df = self.pka_values.mean(axis=0).to_frame(name='pKa').reset_index(names='Residue')
-                tempfactors_output_structure = f"{output}_time{coloring_method}.pdb" 
+                tempfactors_output_topology_file = f"{output}_time{coloring_method}.pdb" 
         
         # Unpacking the residues and values (pka or correlation) from values_df.
         # Looping through them to assign the value onto the tempfactor of ionisable
-        # residues. The structure with the tempfactor is written as pdb and a PyMOL
+        # residues. The topology_file with the tempfactor is written as pdb and a PyMOL
         # session is generated as .pse.
         residues, values = (columns for _,columns in values_df.items()) 
         for residue, value in zip(residues,values):
@@ -174,10 +174,10 @@ class Visualization:
                 ag = self.u.select_atoms(f'(resid {resid} and not backbone) or (resid {resid} and name CA)') #All atoms in the ionisable residue will be written
             ag.tempfactors = np.full(ag.tempfactors.shape,rounded_predicted_pka)
         ag = self.u.select_atoms('all')
-        ag.write(tempfactors_output_structure)
-        pse_output_filename = tempfactors_output_structure.replace('.pdb', '.pse')
-        print(tempfactors_output_structure)
-        gen_pymol_template(tempfactors_output_structure,
+        ag.write(tempfactors_output_topology_file)
+        pse_output_filename = tempfactors_output_topology_file.replace('.pdb', '.pse')
+        print(tempfactors_output_topology_file)
+        gen_pymol_template(tempfactors_output_topology_file,
                            NtermCap_atom_name,
                            CtermCap_atom_name,
                            pymol_path, 

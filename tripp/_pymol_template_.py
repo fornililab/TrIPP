@@ -23,7 +23,7 @@
 
 import subprocess
 import os
-def gen_pymol_template(tempfactors_structure,
+def gen_pymol_template(tempfactors_topology_file,
                        NtermCap_atom_name,
                        CtermCap_atom_name,
                        pymol_path, 
@@ -39,8 +39,8 @@ def gen_pymol_template(tempfactors_structure,
     in Visualization class.
     
     Parameters:
-    tempfactors_structure: str
-    The input of the structure pdb file which has tempfactors assigned.
+    tempfactors_topology_file: str
+    The input of the topology_file pdb file which has tempfactors assigned.
     
     pymol_path: str
     The path to the PyMOL software needs to be specified. The script will 
@@ -71,7 +71,7 @@ def gen_pymol_template(tempfactors_structure,
     allowed color palettes. Three colors palette is suggested.
     """
     with open('.pymol_template.py','a') as output:
-        output.write(f"""cmd.load('{tempfactors_structure}', 'protein_str')
+        output.write(f"""cmd.load('{tempfactors_topology_file}', 'protein_str')
 cmd.show("cartoon", 'protein_str')
 cmd.color("white", "protein_str")\n""")
     NtermCap_atom_name = "+".join(NtermCap_atom_name.split(' '))
@@ -92,9 +92,9 @@ cmd.color("white", "protein_str")\n""")
             name = residue
             names.append(name)
             resid = residue[3:]
-            selection = f'((byres resi {resid})&(sc.|(n. CA|n. N&r. PRO)))'
+            selection = f'((byres resi {resid})&(sc.|(n. CA|n. N&r. PRO))) and not name H1+H2+H3'
         with open('.pymol_template.py','a') as output:
-            output.write(f"""cmd.select('{name}', '{selection}') 
+            output.write(f"""cmd.create('{name}', '{selection}') 
 cmd.show('licorice', '{name}') 
 cmd.spectrum('b','{color_palette}','{name}',{lower_limit},{upper_limit})
 cmd.label('{name} and name CB','{rounded_value}')\n""")
@@ -106,6 +106,10 @@ cmd.ramp_new('colorbar', 'none', [{lower_limit}, ({lower_limit} + {upper_limit})
 cmd.set('label_size','-2')
 cmd.set('label_position','(1.2,1.2,1.2)')
 cmd.hide("(all and hydro and (elem C extend 1))")
+cmd.orient('protein_str')
+cmd.bg_color('white')
+cmd.set('orthoscopic')
+cmd.set('depth_cue',0)
 cmd.save('{pse_output_filename}')
 cmd.quit()\n""")
     subprocess.run([f'{pymol_path} -c .pymol_template.py'],shell=True)

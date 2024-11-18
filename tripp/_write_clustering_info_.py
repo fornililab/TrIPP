@@ -24,7 +24,7 @@ from tripp._sort_clusters_ import sort_clusters
 import pandas as pd 
 import MDAnalysis as mda 
 
-def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, trajectory_names, labels, cluster_centers, cluster_indices, cluster_centers_trajectories, log_file, clustering_method): 
+def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, trajectory_names, labels, cluster_centers, cluster_indices, cluster_centers_trajectories, output_directory, output_prefix, clustering_method): 
     
     labels, cluster_centers, cluster_indices, cluster_centers_trajectories = sort_clusters(labels=labels, cluster_indices=cluster_indices, cluster_centers=cluster_centers, cluster_centers_trajectories=cluster_centers_trajectories) 
     
@@ -48,7 +48,7 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
                 cluster_data['Cluster -1 (Outliers)'][traj] = {'Times' : ', '.join(map(str, df_i[df_i['Trajectories']==traj]['Times'])), 
                                                                'Frames' : ', '.join(map(str, df_i[df_i['Trajectories']==traj]['Frames']))} 
         
-        with open(f'{log_file}_{clustering_method}.log', 'w') as l: 
+        with open(f'{output_directory}/{output_prefix}_{clustering_method}.log', 'w') as l: 
             l.write(summary) 
             for i in range(len(cluster_centers)): 
                 l.write(f'\nCluster {i}\n\n') 
@@ -75,7 +75,7 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
             universe = trajectory_dict[cluster_centers_trajectories[index]] 
             for ts in universe.trajectory: 
                 if ts.frame == cluster_center_frame: 
-                    pdb_file = f'{log_file}_{clustering_method}_C{index}.pdb' 
+                    pdb_file = f'{output_directory}/{output_prefix}_{clustering_method}_C{index}.pdb' 
                     with mda.Writer(pdb_file) as w: 
                         w.write(universe) 
     
@@ -83,6 +83,6 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
 
     def write_new_dataframe(): 
         pka_df['Clusters'] = labels 
-        pka_df.to_csv(f'{log_file}_{clustering_method}_cluster.csv') 
+        pka_df.to_csv(f'{output_directory}/{output_prefix}_{clustering_method}_cluster.csv') 
     
     write_new_dataframe() 

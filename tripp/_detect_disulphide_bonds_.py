@@ -59,6 +59,4 @@ def detect_disulphide_bonds(topology_file):
 
     disulphide_cysteines = cysteines[cysteine_indices] 
     
-    print(f'Cysteines involved in disulphide bonds: {", ".join(list(disulphide_cysteines))}.\npKa will not be calculated for these cysteines.') 
-
-    return disulphide_cysteines 
+    return disulphide_cysteines

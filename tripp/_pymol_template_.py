@@ -24,58 +24,60 @@
 import subprocess
 import os
 def gen_pymol_template(tempfactors_topology_file,
-                       NtermCap_atom_name,
-                       CtermCap_atom_name,
+                       chain,
                        pymol_path, 
                        pse_output_filename, 
                        values_df, 
                        lower_limit, 
                        upper_limit, 
                        color_palette): 
-    
-    """ 
+
+    """
     Function that can visualize the values of residues using PyMOL.
     No parameters need to be adjusted as they are determined from the gen_pse()
     in Visualization class.
-    
+
     Parameters:
     tempfactors_topology_file: str
     The input of the topology_file pdb file which has tempfactors assigned.
     
+    chain: str
+    The chain where the PyMOL labelling will be performed on. If you perfromed
+    TrIPP on a specific chain, make sure you use the same chain in here.
+    Otherwise, chain A by default will be labelled.
+    
     pymol_path: str
-    The path to the PyMOL software needs to be specified. The script will 
+    The path to the PyMOL software needs to be specified. The script will
     spawn a subprocess shell to run a python script in PyMOL. Preventing
     packaging issue.
-    
+
     pse_output_filename: str
-    The output name for pse session, automatically combined with the 
+    The output name for pse session, automatically combined with the
     pse_output_prefix and the coloring_method in gen_pse().
-    
+
     values_df: Pandas dataframe
     Pandas dartaframe containing one column of the name of residue with resid,
     and another column of the value (pKa or correlation).
-    
+
     lower limit: int or float
-    Determines lower limit used to colour the reisdues in the PyMOL session. Any 
-    value below the limit is coloured using the lowest end of the color gradient 
-    used. 
-    
+    Determines lower limit used to colour the reisdues in the PyMOL session.
+    Any value below the limit is coloured using the lowest end of the color
+    gradient used.
+
     upper limit: int or float
-    Determines upper limit used to colour the reisdues in the PyMOL session. Any 
-    value above the limit is coloured using the highest end of the color gradient 
-    used. 
+    Determines upper limit used to colour the reisdues in the PyMOL session.
+    Any value above the limit is coloured using the highest end of the color
+    gradient used.
 
     color_palette: str
-    color palettes used to color the residues in the PyMOL session according to 
-    the pKa value. The default is set to 'red_white_blue'. See PyMOL spectrum for
-    allowed color palettes. Three colors palette is suggested.
+    color palettes used to color the residues in the PyMOL session according
+    to the pKa value. The default is set to 'red_white_blue'. See PyMOL spectrum
+    for allowed color palettes. Three colors palette is suggested.
     """
     with open('.pymol_template.py','a') as output:
         output.write(f"""cmd.load('{tempfactors_topology_file}', 'protein_str')
 cmd.show("cartoon", 'protein_str')
 cmd.color("white", "protein_str")\n""")
-    NtermCap_atom_name = "+".join(NtermCap_atom_name.split(' '))
-    CtermCap_atom_name = "+".join(CtermCap_atom_name.split(' '))
     names = []
     residues, values = (columns for _,columns in values_df.items()) 
     for residue,value in zip(residues,values):
@@ -83,29 +85,31 @@ cmd.color("white", "protein_str")\n""")
         if 'N+' in residue:
             name = 'NTR'
             resid = residue[2:]
-            selection = f'resi {resid} and name {NtermCap_atom_name}'
+            selection = f'(bb. and not elem O and not elem C and byres (first (protein_str and chain {chain}))) extend 1 and not elem C'
+            label_sel = f'{name} and bb. and elem N'
         elif 'C-' in residue:
             name = 'CTR'
             resid = residue[2:]
-            selection = f'resi {resid} and name {CtermCap_atom_name}'
+            selection = f'((bb. and byres (last (protein_str and chain {chain}))) and elem C and not name CA) extend 1 and not name CA'
+            label_sel = f'{name} and bb. and elem C and not name CA'
         else:
             name = residue
             names.append(name)
             resid = residue[3:]
-            selection = f'((byres resi {resid})&(sc.|(n. CA|n. N&r. PRO))) and not name H1+H2+H3'
-        with open('.pymol_template.py','a') as output:
+            selection = f'((byres protein_str and chain {chain} and resi {resid})&(sc.|(n. CA|n. N&r. PRO))) and not name H1+H2+H3'
+            label_sel = f'{name} and name CB'
+        with open('.pymol_template.py', 'a') as output:
             output.write(f"""cmd.create('{name}', '{selection}') 
 cmd.show('licorice', '{name}') 
 cmd.spectrum('b','{color_palette}','{name}',{lower_limit},{upper_limit})
-cmd.label('{name} and name CB','{rounded_value}')\n""")
+cmd.label('{label_sel}','{rounded_value}')\n""")
     
     sorted_residues = ' '.join(['NTR']+sorted(names, key=lambda x: int(x[3:]))+['CTR'])
-    with open('.pymol_template.py','a') as output:
-        output.write(f"""cmd.order('{sorted_residues}') 
+    with open('.pymol_template.py', 'a') as output:
+        output.write(f"""cmd.order('{sorted_residues}')
 cmd.ramp_new('colorbar', 'none', [{lower_limit}, ({lower_limit} + {upper_limit})/2, {upper_limit}], {color_palette.split('_')})
 cmd.set('label_size','-2')
 cmd.set('label_position','(1.2,1.2,1.2)')
-cmd.hide("(all and hydro and (elem C extend 1))")
 cmd.orient('protein_str')
 cmd.bg_color('white')
 cmd.set('orthoscopic')

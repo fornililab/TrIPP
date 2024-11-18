@@ -1,0 +1,25 @@
+
+888888888888         88  88888888ba   88888888ba   
+     88              88  88      "8b  88      "8b  
+     88              88  88      ,8P  88      ,8P  
+     88  8b,dPPYba,  88  88aaaaaa8P'  88aaaaaa8P'  
+     88  88P'   "Y8  88  88'    88'    
+     88  88          88  88           88           
+     88  88          88  88           88           
+     88  88          88  88           88           
+
+
+The Trajectory Iterative pKa Predictor (TrIPP) 
+Written by: Christos Matsingos, Ka Fu Man, and Arianna Fornili 
+
+If you are using TrIPP, please cite: 
+
+-----------------------------------------------------------------
+
+Trajectory class initialised:
+Your topology file contains no chain identity for at least one atom. Will add chain A for your whole system by default
+Your topology file contains no formal charges. Will set formal charges to 0 for your whole system by default
+Terminal oxygens list supplied and are modified:
+OC1 -> O
+OC2 -> OXT
+PROPKA compatibility checked.

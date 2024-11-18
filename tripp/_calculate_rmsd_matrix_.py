@@ -1,8 +1,8 @@
 """
     @release_date  : $release_date
     @version       : $release_version
-    @author        : Christos Matsingos, Ka Fu Man 
-    
+    @author        : Christos Matsingos, Ka Fu Man
+
     This file is part of the TrIPP software
     (https://github.com/fornililab/TrIPP).
     Copyright (c) 2024 Christos Matsingos, Ka Fu Man and Arianna Fornili.
@@ -20,27 +20,27 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-import numpy as np 
+import numpy as np
 
-def calculate_rmsd_matrix(clustering_matrix, frames): 
 
+def calculate_rmsd_matrix(clustering_matrix, frames):
     """
-    Function that calculates the RMSD matrix. 
+    Function that calculates the RMSD matrix.
     """
 
-    def calculate_rmsd(point1, point2): 
-        
-        sqr_sum = np.sum(np.square(point1-point2)) 
-        rmsd = np.sqrt(sqr_sum)  
+    def calculate_rmsd(point1, point2):
 
-        return rmsd 
-    
-    rmsd_array = np.zeros((len(frames), len(frames))) 
+        sqr_sum = np.sum(np.square(point1 - point2))
+        rmsd = np.sqrt(sqr_sum)
 
-    for i in range(len(frames)): 
-        point1 = clustering_matrix[i] 
-        for j in range(len(frames)): 
-            point2 = clustering_matrix[j] 
-            rmsd_array[i, j] = calculate_rmsd(point1, point2) 
-    
-    return rmsd_array 
+        return rmsd
+
+    rmsd_array = np.zeros((len(frames), len(frames)))
+
+    for i in range(len(frames)):
+        point1 = clustering_matrix[i]
+        for j in range(len(frames)):
+            point2 = clustering_matrix[j]
+            rmsd_array[i, j] = calculate_rmsd(point1, point2)
+
+    return rmsd_array

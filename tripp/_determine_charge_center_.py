@@ -23,47 +23,47 @@
 import MDAnalysis as mda 
 import numpy as np 
 
-def determine_charge_center(universe, residue_index): 
-    selection = universe.residues[residue_index-1] 
-    residue_type = selection.resname
+def determine_charge_center(universe, resid):
+    selection = universe.select_atoms(f'resid {resid}')
+    residue_type = selection.residues.resnames
 
-    #Charge center is determined as in PROPKA3 
-    if residue_type in ['ARG', 'ARGN', 'CARG', 'NARG']: 
-        atom_coordinates = universe.select_atoms(f'resid {residue_index} and name CZ').positions 
-        charge_center = atom_coordinates[0] 
-        residue_identifier = f'ARG{residue_index}' 
+    # Charge center is determined as in PROPKA3
+    if residue_type in ['ARG', 'ARGN', 'CARG', 'NARG']:
+        atom_coordinates = universe.select_atoms(f'resid {resid} and name CZ').positions
+        charge_center = atom_coordinates[0]
+        residue_identifier = f'ARG{resid}'
 
-    elif residue_type in ['ASP', 'ASPH', 'ASPP', 'CASF', 'CASP', 'NASP', 'ASF', 'ASH']: 
-        atom_coordinates = universe.select_atoms(f'resid {residue_index} and name OD1 OD2').positions 
+    elif residue_type in ['ASP', 'ASPH', 'ASPP', 'CASF', 'CASP', 'NASP', 'ASF', 'ASH']:
+        atom_coordinates = universe.select_atoms(f'resid {resid} and name OD1 OD2').positions
+        charge_center = np.mean(atom_coordinates, axis=0)
+        residue_identifier = f'ASP{resid}'
+
+    elif residue_type in ['CYS', 'CCYS', 'CCYX', 'CYS1', 'CYS2', 'CYSH', 'NCYS', 'NCYX', 'CYM', 'CYN', 'CYX']:
+        atom_coordinates = universe.select_atoms(f'resid {resid} and name SG').positions
+        charge_center = atom_coordinates[0]
+        residue_identifier = f'CYS{resid}'
+
+    elif residue_type in ['GLU', 'CGLU', 'GLUH', 'GLUP', 'NGLU', 'PGLU', 'GLH']:
+        atom_coordinates = universe.select_atoms(f'resid {resid} and name OE1 OE2').positions
         charge_center = np.mean(atom_coordinates, axis=0) 
-        residue_identifier = f'ASP{residue_index}' 
+        residue_identifier = f'GLU{resid}'
 
-    elif residue_type in ['CYS', 'CCYS', 'CCYX', 'CYS1', 'CYS2', 'CYSH', 'NCYS', 'NCYX', 'CYM', 'CYN', 'CYX']: 
-        atom_coordinates = universe.select_atoms(f'resid {residue_index} and name SG').positions 
-        charge_center = atom_coordinates[0] 
-        residue_identifier = f'CYS{residue_index}'
-    
-    elif residue_type in ['GLU', 'CGLU', 'GLUH', 'GLUP', 'NGLU', 'PGLU', 'GLH']: 
-        atom_coordinates = universe.select_atoms(f'resid {residue_index} and name OE1 OE2').positions 
-        charge_center = np.mean(atom_coordinates, axis=0) 
-        residue_identifier = f'GLU{residue_index}' 
+    elif residue_type in ['HIS', 'CHID', 'CHIE', 'CHIP', 'HIS1', 'HIS2', 'HISA', 'HISB', 'HISD', 'HISE', 'HISH', 'NHID', 'NHIE', 'NHIP', 'HID', 'HIE', 'HIP', 'HSD', 'HSE', 'HSP']:
+        atom_coordinates = universe.select_atoms(f'resid {resid} and name CG CD2 ND1 CE1 NE2').positions
+        charge_center = np.mean(atom_coordinates, axis=0)
+        residue_identifier = f'HIS{resid}'
 
-    elif residue_type in ['HIS', 'CHID', 'CHIE', 'CHIP', 'HIS1', 'HIS2', 'HISA', 'HISB', 'HISD', 'HISE', 'HISH', 'NHID', 'NHIE', 'NHIP', 'HID', 'HIE', 'HIP', 'HSD', 'HSE', 'HSP']: 
-        atom_coordinates = universe.select_atoms(f'resid {residue_index} and name CG CD2 ND1 CE1 NE2').positions 
-        charge_center = np.mean(atom_coordinates, axis=0) 
-        residue_identifier = f'HIS{residue_index}' 
+    elif residue_type in ['LYS', 'CLYS', 'LYSH', 'NLYS', 'LYN', 'LSN']:
+        atom_coordinates = universe.select_atoms(f'resid {resid} and name NZ').positions
+        charge_center = atom_coordinates[0]
+        residue_identifier = f'LYS{resid}'
 
-    elif residue_type in ['LYS', 'CLYS', 'LYSH', 'NLYS', 'LYN', 'LSN']: 
-        atom_coordinates = universe.select_atoms(f'resid {residue_index} and name NZ').positions 
-        charge_center = atom_coordinates[0] 
-        residue_identifier = f'LYS{residue_index}' 
+    elif residue_type in ['TYR', 'CTYR', 'NTYR']:
+        atom_coordinates = universe.select_atoms(f'resid {resid} and name OH').positions
+        charge_center = atom_coordinates[0]
+        residue_identifier = f'TYR{resid}'
 
-    elif residue_type in ['TYR', 'CTYR', 'NTYR']: 
-        atom_coordinates = universe.select_atoms(f'resid {residue_index} and name OH' ).positions 
-        charge_center = atom_coordinates[0] 
-        residue_identifier = f'TYR{residue_index}' 
-    
-    else: 
-        print(f'Residue type {residue_type} not recognized by TrIPP to be able to change protonation state') 
-    
-    return charge_center, residue_identifier  
+    else:
+        raise Exception(f'Residue {residue_type}{resid} is not recognized by TrIPP to be able to determine charge centre')
+
+    return charge_center, residue_identifier

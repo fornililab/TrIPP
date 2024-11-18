@@ -58,7 +58,7 @@ def mutate(temp_name, mutation):
         lines = f.readlines() 
     for index, item in enumerate(lines): 
         line = item.split() 
-        if line[0] == 'ATOM' and int(line[5]) in mutation: 
+        if line[0] == 'ATOM' and int(line[5]) in mutation:  # int(line[5]) is the resid column in the .temp_*.pdb
             if line[2] == 'N' or line[2] == 'HN' or line[2] == 'CA' or line[2] == 'HA' or line[2] == 'CB' or line[2] == 'O' or line[2]  == 'C': 
                 changed_lines.append(index) 
             else: 
@@ -74,4 +74,16 @@ def mutate(temp_name, mutation):
                     line = line.replace(a, 'ALA') 
                 fp.write(line) 
             elif number not in deleted_lines and number not in changed_lines:
-                fp.write(line) 
+                fp.write(line)
+
+def find_mutation(mutations, corrected_universe):
+    if type(mutations) == int:
+        mutations = [mutations]
+    selected_mutations = []
+    for mutation in mutations:
+        resname = corrected_universe.select_atoms(f'resid {mutation}').residues.resnames[0]
+        resid = corrected_universe.select_atoms(f'resid {mutation}').residues.resids[0]
+        selected_mutations.append(f'{resname}{resid}')
+    selected_mutations = ', '.join(set(selected_mutations))
+    mutation_arg = f'{mutations} \n{selected_mutations}'
+    return mutation_arg

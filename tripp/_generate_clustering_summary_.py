@@ -19,27 +19,9 @@
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
+from tripp._generate_trajectory_log_ import log_header
 
 def generate_clustering_summary(trajectory_file, topology_file, pka_file, residues, include_distances, include_buriedness, clustering_method, automatic, silhouette_scores, n_components, cummulative_variance, buriedness_file=None):
-
-    #header of log file 
-    header = """
-888888888888         88  88888888ba   88888888ba   
-     88              88  88      "8b  88      "8b  
-     88              88  88      ,8P  88      ,8P  
-     88  8b,dPPYba,  88  88aaaaaa8P'  88aaaaaa8P'  
-     88  88P'   "Y8  88  88""""""'    88""""""'    
-     88  88          88  88           88           
-     88  88          88  88           88           
-     88  88          88  88           88           
-
-
-The Trajectory Iterative pKa Predictor (TrIPP) 
-Written by: Christos Matsingos, Ka Fu Man, and Arianna Fornili 
-
-If you are using TrIPP, please cite: 
-
------------------------------------------------------------------""" 
 
     #information on files 
     if type(trajectory_file) == str: 
@@ -118,7 +100,7 @@ Trajectories:
     elif automatic == False: 
         automatic_clustering_summary = 'No automatic clustering was done' 
     
-    summary = f"""{header} 
+    summary = f"""{log_header()} 
 
 {file_summary} 
 {residue_summary} 

@@ -27,6 +27,7 @@ import pandas as pd
 from tripp._pymol_template_ import gen_pymol_template 
 from tripp._model_pka_values_ import model_pka_values 
 from tripp._create_mda_universe_ import create_mda_universe 
+import logging
 
 class Visualization: 
 
@@ -49,8 +50,17 @@ class Visualization:
     """
 
 
-    def __init__(self, topology_file, pka_file=None, correlation_file=None):
-
+    def __init__(self, 
+                 topology_file,
+                 pka_file=None, 
+                 correlation_file=None):
+        self.logger = logging.getLogger()
+        if self.logger.hasHandlers:
+            for handler in self.logger.handlers[:]:
+                self.logger.removeHandler(handler)
+        logging.Formatter('%(message)s')
+        self.logger.setLevel(logging.WARNING)
+        
         self.topology_file = topology_file
         if correlation_file != None:
             self.correlation_file = pd.read_csv(correlation_file)
@@ -69,30 +79,36 @@ class Visualization:
 
     def gen_pse(self, 
                 pymol_path, 
-                output, 
-                NtermCap_atom_name = 'N H1 H2 H3',
-                CtermCap_atom_name = 'C OC1 OC2',
+                output_directory,
+                output_prefix,
+                chain = 'A',
                 coloring_method='mean', 
                 lower_limit=0, 
-                upper_limit=14, 
+                upper_limit=14,
+                correlation_threshold=None,
                 color_palette='red_white_blue'): 
         """
         The method gen_pse can be called which generate a PyMOL session file.
         
-        Parameters:
-        
+        Parameters
+        ----------
         pymol_path: str
-        Path to the PyMOL software needs to be specified. The script will spawn
+            Path to the PyMOL software needs to be specified. The script will spawn
         a subprocess shell to run a python script in PyMOL. Preventing packaging 
         issue.
         
         output: str
-        The output prefix for the PyMOL .pse file. The prefix will be combined 
+            The output prefix for the PyMOL .pse file. The prefix will be combined 
         with the coloring_method ('mean' or 'difference_to_model_value') to give
         the pse_output_filename.
         
+        chain: str, default = 'A'
+            The chain where the PyMOL labelling will be performed on. If you perfromed
+        TrIPP on a specific chain, make sure you use the same chain in here.
+        Otherwise, chain A by default will be labelled.
+    
         coloring_method: str, int, or float, default 'mean'
-        To determine how the color of each residue is produced. Can be 'mean', 
+            To determine how the color of each residue is produced. Can be 'mean', 
         where the mean pKa value accross all frames is used or 
         'difference_to_model_value' where the mean pKa value is calculated 
         and the difference to the model value of the amino acid in solution is 
@@ -103,83 +119,85 @@ class Visualization:
         the Visualization class
         
         lower limit: int or float, default 0
-        Determines lower limit used to colour the reisdues in the PyMOL session. Any 
+            Determines lower limit used to colour the reisdues in the PyMOL session. Any 
         value below the limit is coloured using the lowest end of the color gradient 
         used. 
         
         upper limit: int or float, default 14
-        Determines upper limit used to colour the reisdues in the PyMOL session. Any 
+            Determines upper limit used to colour the reisdues in the PyMOL session. Any 
         value above the limit is coloured using the highest end of the color gradient 
         used. 
 
         color_palette: str, default 'red_white_blue'
-        color palettes used to color the residues in the PyMOL session according to 
+            color palettes used to color the residues in the PyMOL session according to 
         the pKa value. The default is set to 'red_white_blue'. See PyMOL spectrum for
         allowed color palettes. Three colors palette is suggested.
         """
 
-        #calculation of values depending on colouring method 
-        if coloring_method == 'mean': 
-            del self.pka_values['Time [ps]'] 
+        # Calculation of values depending on colouring method
+        if coloring_method == 'mean':
+            del self.pka_values['Time [ps]']
             values_df = self.pka_values.mean(axis=0).to_frame(name='pKa').reset_index(names='Residue')
-            tempfactors_output_topology_file= f"{output}_mean.pdb"
+            tempfactors_output_topology_file = f"{output_directory}/{output_prefix}_mean.pdb"
 
-        elif coloring_method == 'difference_to_model_value': 
-            del self.pka_values['Time [ps]'] 
+        elif coloring_method == 'difference_to_model_value':
+            del self.pka_values['Time [ps]']
             pka_values_mean = self.pka_values.mean(axis=0)
-            for residue in pka_values_mean.keys(): 
-                if 'N+' in residue: 
-                    pka_values_mean[residue] = pka_values_mean[residue]-model_pka_values['NTR'] 
-                elif 'C-' in residue: 
-                    pka_values_mean[residue] = pka_values_mean[residue]-model_pka_values['CTR'] 
-                else: 
-                    pka_values_mean[residue] = pka_values_mean[residue]-model_pka_values[residue[0:3]] 
+            for residue in pka_values_mean.keys():
+                if 'N+' in residue:
+                    pka_values_mean[residue] = pka_values_mean[residue] - model_pka_values['NTR']
+                elif 'C-' in residue:
+                    pka_values_mean[residue] = pka_values_mean[residue] - model_pka_values['CTR']
+                else:
+                    pka_values_mean[residue] = pka_values_mean[residue] - model_pka_values[residue[0:3]]
             values_df = pka_values_mean.to_frame(name='pKa').reset_index(names='Residue')
-            tempfactors_output_topology_file = f"{output}_difference_to_model_value.pdb" 
-        
-        
+            tempfactors_output_topology_file = f"{output_directory}/{output_prefix}_difference_to_model_value.pdb"
+
+
         elif coloring_method == 'correlation':
             correlation_df = self.correlation_file
-            values_df = correlation_df[['Residue','Correlation']]
-            tempfactors_output_topology_file= f"{output}_correlation.pdb"
-            
-            
-        elif type(coloring_method) == int or type(coloring_method) == float: 
+            if correlation_threshold is not None:
+                correlation_df = correlation_df[abs(correlation_df['Correlation']) > correlation_threshold]
+            values_df = correlation_df[['Residue', 'Correlation']]
+            tempfactors_output_topology_file = f"{output_directory}/{output_prefix}_correlation.pdb"
 
-            if type(self.pka_file) == list and len(self.pka_file) != 1: 
-                print('Please select only one CSV file when selecting a specific time step.') 
-                
-            else: 
-                self.pka_values = self.pka_values[self.pka_values['Time [ps]'] == coloring_method] 
-                del self.pka_values['Time [ps]'] 
+        elif type(coloring_method) == int or type(coloring_method) == float:
+
+            if type(self.pka_file) == list and len(self.pka_file) != 1:
+                print('Please select only one CSV file when selecting a specific time step.')
+
+            else:
+                self.pka_values = self.pka_values[self.pka_values['Time [ps]'] == coloring_method]
+                del self.pka_values['Time [ps]']
                 values_df = self.pka_values.mean(axis=0).to_frame(name='pKa').reset_index(names='Residue')
-                tempfactors_output_topology_file = f"{output}_time{coloring_method}.pdb" 
+                tempfactors_output_topology_file = f"{output_directory}/{output_prefix}_time{coloring_method}.pdb"
         
         # Unpacking the residues and values (pka or correlation) from values_df.
         # Looping through them to assign the value onto the tempfactor of ionisable
         # residues. The topology_file with the tempfactor is written as pdb and a PyMOL
         # session is generated as .pse.
-        residues, values = (columns for _,columns in values_df.items()) 
-        for residue, value in zip(residues,values):
+        residues, values = (columns for _, columns in values_df.items())
+        for residue, value in zip(residues, values):
             if 'N+' in residue or 'C-' in residue:
                 resid = int(residue[2:])
             else:
                 resid = int(residue[3:])
-            rounded_predicted_pka = round(value,2)
+            rounded_predicted_pka = round(value, 2)
             if 'N+' in residue:
-                ag = self.u.select_atoms(f'resid {resid} and name {NtermCap_atom_name}') #Only tempfactor of NtermCap_atom_name of the first residue will be written 
+                #Only tempfactor of NtermCap_atom_name of the first residue will be written
+                ag = self.u.select_atoms(f'((around 2 (chainID {chain} and resid {resid} and backbone and type N)) and chainID {chain} and resid {resid}) and type H or (chainID {chain} and resid {resid} and backbone and type N)')
             elif 'C-' in residue:
-                ag = self.u.select_atoms(f'resid {resid} and name {CtermCap_atom_name}') #Only tempfactor of NtermCap_atom_name of the last residue will be written 
+                # Only tempfactor of NtermCap_atom_name of the last residue will be written
+                ag = self.u.select_atoms(f'((around 2 (chainID {chain} and resid {resid} and backbone and type C and not name CA)) and chainID {chain} and resid {resid}) and type O or (chainID {chain} and resid {resid} and backbone and type C and not name CA)')
             else:
-                ag = self.u.select_atoms(f'(resid {resid} and not backbone) or (resid {resid} and name CA)') #All atoms in the ionisable residue will be written
+                # All atoms in the ionisable residue will be written
+                ag = self.u.select_atoms(f'(chainID {chain} and resid {resid} and not backbone) or (chainID {chain} and resid {resid} and name CA)')
             ag.tempfactors = np.full(ag.tempfactors.shape,rounded_predicted_pka)
         ag = self.u.select_atoms('all')
         ag.write(tempfactors_output_topology_file)
         pse_output_filename = tempfactors_output_topology_file.replace('.pdb', '.pse')
-        print(tempfactors_output_topology_file)
         gen_pymol_template(tempfactors_output_topology_file,
-                           NtermCap_atom_name,
-                           CtermCap_atom_name,
+                           chain,
                            pymol_path, 
                            pse_output_filename, 
                            values_df, 

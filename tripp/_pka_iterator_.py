@@ -3,49 +3,69 @@ from tripp._edit_pdb_ import mutate
 from propka import run 
 from tripp._extract_pka_file_data_ import extract_pka_file_data 
 import os
+import pandas as pd
 
 
-def pka_iterator(trajectory_slices, core, universe, output_directory, mutation, chain, extract_buriedness_data, optargs=[]):
-
-    temp_name = f'{output_directory}/.temp_{core}' 
-        
-    start = trajectory_slices[core][0] 
-    end = trajectory_slices[core][1]
+def pka_iterator(trajectory_slice, universe,
+                 output_directory, mutation, chain,
+                 extract_buriedness_data, optargs=[]):
+    """
+    Function to run propka.run.single on the distributed trajectory slice.
     
-    if os.path.isfile(f'{output_directory}/.temp_pka_worker{core}.csv'):
-        os.remove(f'{output_directory}/.temp_pka_worker{core}.csv')
+    Parameters
+    ----------
+    trajectory_slices: list of int
+        Inherited from the Trajectory class initialisation, where trajectory
+        slicing is performed.
+    universe: MDAnalysis Universe object
+        Inherited from the Trajectory class initialisation, which is the
+        corrected universe
         
-    if os.path.isfile(f'{output_directory}/.temp_buriedness_worker{core}.csv'):
-        os.remove(f'{output_directory}/.temp_buriedness_worker{core}.csv')
-            
+    """
+    
+    pid = os.getpid()
+    
+    temp_name = f'{output_directory}/.temp_{pid}'
+
+    start = trajectory_slice[0]
+    end = trajectory_slice[1]
+
+    # Note if you run two pka_iterator process in the same folder, this would 
+    if os.path.isfile(f'{output_directory}/.temp_pka_worker_{pid}.csv'):
+        os.remove(f'{output_directory}/.temp_pka_worker_{pid}.csv')
+
+    if os.path.isfile(f'{output_directory}/.temp_buriedness_worker_{pid}.csv'):
+        os.remove(f'{output_directory}/.temp_buriedness_worker_{pid}.csv')
+
     cwd = os.getcwd()
-    for index, ts in enumerate(universe.trajectory[start:end]):
+    pka_data = []
+    buriedness_data = []
+    for ts in universe.trajectory[start:end]:
         with mda.Writer(f'{temp_name}.pdb') as w:
             w.write(universe)
-        if mutation != None: 
+        if mutation is not None:
             mutate(temp_name, mutation)
-            
+
         os.chdir(output_directory)
-        run.single(f'.temp_{core}.pdb',optargs=optargs)
+        run.single(f'.temp_{pid}.pdb', optargs=optargs)
         os.chdir(cwd)
-        
+
         time = ts.time
-        #Writing pKa csv
-        header = ','.join(extract_pka_file_data(f'{temp_name}.pka', chain=chain, time=time)[0][0])
-        data = ','.join(extract_pka_file_data(f'{temp_name}.pka', chain=chain, time=time)[0][1]).replace('*', '')
-        with open(f'{output_directory}/.temp_pka_worker{core}.csv','a') as output:
-            if index == 0 and core == 0:
-                output.write(header+'\n')
-            output.write(data+'\n')
+        # Write pKa csv
+        pka, buriedness = extract_pka_file_data(f'{temp_name}.pka', chain=chain, time=time)
+        pka_data.append(pka[1])
+        # Write buriedness data if True
+        if extract_buriedness_data:
+            buriedness_data.append(buriedness[1])
 
-        #Writing buriedness csv if extract_burideness_data set to true.
-        if extract_buriedness_data == True:
-            header = ','.join(extract_pka_file_data(f'{temp_name}.pka', chain=chain, time=time)[1][0]) 
-            data = ','.join(extract_pka_file_data(f'{temp_name}.pka', chain=chain, time=time)[1][1]).replace('*', '') 
-            with open(f'{output_directory}/.temp_buriedness_worker{core}.csv','a') as output:
-                if index == 0 and core == 0:
-                    output.write(header+'\n')
-                output.write(data+'\n')
-
-    os.remove(f'{temp_name}.pdb') 
-    os.remove(f'{temp_name}.pka')
+        os.remove(f'{temp_name}.pdb') 
+        os.remove(f'{temp_name}.pka')
+        
+    pka_df = pd.DataFrame(pka_data, columns = pka[0])
+    # pka_df.to_csv(f'{output_directory}/.temp_pka_worker_{pid}.csv', sep=',', index=False)
+    
+    buriedness_df = None
+    if extract_buriedness_data:
+        buriedness_df = pd.DataFrame(buriedness_data, columns=buriedness[0])
+        # buriedness_df.to_csv(f'{output_directory}/.temp_buriedness_worker_{pid}.csv', sep=',', index=False)
+    return pka_df, buriedness_df

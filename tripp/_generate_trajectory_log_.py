@@ -1,17 +1,7 @@
 import pandas as pd
+import logging
 
-def trajectory_log(output_directory,
-                   output_prefix, 
-                   extract_buriedness_data,
-                   chain, 
-                   mutation, 
-                   disulphide_bond_detection,
-                   optargs,
-                   cores,
-                   trajectory_slices,
-                   start,
-                   end):
-    
+def log_header():
     header = """
 888888888888         88  88888888ba   88888888ba   
      88              88  88      "8b  88      "8b  
@@ -28,32 +18,9 @@ Written by: Christos Matsingos, Ka Fu Man, and Arianna Fornili
 
 If you are using TrIPP, please cite: 
 
------------------------------------------------------------------""" 
-
-    
-    with open(f'{output_directory}/{output_prefix}.log','w') as output:
-        output.write(f"""{header}
-
-Start time: {start}
-End time: {end}
-
-Parmeters selected:
-
-Output directory: {output_directory}
-Output prefix: {output_prefix}
-Number of cores:{cores}
-Trajectory slices: {trajectory_slices}
-Chain: {chain}
-Mutation: {mutation}
-Extract buriedness: {extract_buriedness_data}
-Remove cysteines from pKa calulations: {disulphide_bond_detection}
-PropKa optional arguments: {optargs}
 -----------------------------------------------------------------
-
-pKa Statistics:
-{pka_statistics_table(output_directory,output_prefix)}
-
-""")
+"""
+    return header
 
 def pka_statistics_table(output_directory,
                         output_prefix):
@@ -76,3 +43,47 @@ def pka_statistics_table(output_directory,
     tmp = [element.replace('_',' ') for element in tmp]
     pka_statistics_table_in_str = '\r\n'.join(tmp)
     return pka_statistics_table_in_str
+
+def trajectory_log(output_directory,
+                   output_prefix, 
+                   extract_buriedness_data,
+                   chain, 
+                   mutation_arg, 
+                   disulphide_cysteines_list,
+                   optargs,
+                   cores,
+                   trajectory_slices,
+                   start,
+                   end):
+    logger = logging.getLogger(__name__)
+    if len(disulphide_cysteines_list) > 0:
+        disulphide_bond_detection = True
+    else:
+        disulphide_bond_detection = False
+    logger.info(f"""
+-----------------------------------------------------------------                
+
+Start time: {start}
+End time: {end}
+
+Parmeters selected:
+
+Output directory: {output_directory}
+Output prefix: {output_prefix}
+Number of cores: {cores}
+Trajectory slices:
+{trajectory_slices}
+Chain: {chain}
+Mutation: {mutation_arg}
+Extract buriedness: {extract_buriedness_data}
+Remove cysteines from pKa or buriedness CSV: {disulphide_bond_detection}
+{disulphide_cysteines_list}
+PropKa optional arguments: {optargs}
+
+-----------------------------------------------------------------
+
+pKa Statistics:
+{pka_statistics_table(output_directory,output_prefix)}
+
+-----------------------------------------------------------------
+""")

@@ -1,8 +1,8 @@
 """
     @release_date  : $release_date
     @version       : $release_version
-    @author        : Christos Matsingos, Ka Fu Man 
-    
+    @author        : Christos Matsingos, Ka Fu Man
+
     This file is part of the TrIPP software
     (https://github.com/fornililab/TrIPP).
     Copyright (c) 2024 Christos Matsingos, Ka Fu Man and Arianna Fornili.
@@ -20,25 +20,26 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-import numpy as np 
-def calculate_charge_center_distances(positions): 
+import numpy as np
 
+
+def calculate_charge_center_distances(positions):
     """
-    Function that calculates the distances between the charge centers 
-    of n residues. The function takes as input the n x 3 matrix 
-    positions, which includes the coordinates of the charge centers 
-    and calculates n(n-1)/2 distances. 
+    Function that calculates the distances between the charge centers
+    of n residues. The function takes as input the n x 3 matrix
+    positions, which includes the coordinates of the charge centers
+    and calculates n(n-1)/2 distances.
     """
-    
-    distances = [] 
-    for i in range(len(positions)): 
-        center_i = positions[i] 
-        for j in range(i+1,len(positions)): 
-            center_j = positions[j] 
-            sqr_sum = np.sum(np.square(center_i-center_j)) 
-            d = np.sqrt(sqr_sum)  
-            distances.append(d) 
-    
-    distance_array = np.array(distances) 
-    
-    return distance_array 
+
+    distances = []
+    for i in range(len(positions)):
+        center_i = positions[i]
+        for j in range(i + 1, len(positions)):
+            center_j = positions[j]
+            sqr_sum = np.sum(np.square(center_i - center_j))
+            d = np.sqrt(sqr_sum)
+            distances.append(d)
+
+    distance_array = np.array(distances)
+
+    return distance_array

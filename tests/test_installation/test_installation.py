@@ -75,7 +75,7 @@ if __name__ == '__main__':
                             dimensionality_reduction=False)
 
 
-    np.savetxt('All_md_clustering_matrix.csv',TrIPP_Clust.clustering_matrix,delimiter=',',fmt='%.3f')
+    np.savetxt('test_output/All_md_clustering_matrix.csv',TrIPP_Clust.clustering_matrix,delimiter=',',fmt='%.3f')
 
 
     try:

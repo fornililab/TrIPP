@@ -12,7 +12,7 @@ $ python --version
 Python 3.9
 ```
 
-If using the visualization class in TrIPP, we require user to have pre-installed PyMOL (https://www.pymol.org/) in your machine.
+The visualization class in TrIPP requires a working installation of PyMOL (https://www.pymol.org/) on your machine.
 
 Note down the path to your PyMOL executable and then provide it in the function.
 

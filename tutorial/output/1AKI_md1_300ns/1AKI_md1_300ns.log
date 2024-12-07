@@ -1,0 +1,84 @@
+
+888888888888         88  88888888ba   88888888ba   
+     88              88  88      "8b  88      "8b  
+     88              88  88      ,8P  88      ,8P  
+     88  8b,dPPYba,  88  88aaaaaa8P'  88aaaaaa8P'  
+     88  88P'   "Y8  88  88'    88'    
+     88  88          88  88           88           
+     88  88          88  88           88           
+     88  88          88  88           88           
+
+
+The Trajectory Iterative pKa Predictor (TrIPP) 
+Written by: Christos Matsingos, Ka Fu Man, and Arianna Fornili 
+
+If you are using TrIPP, please cite: 
+
+-----------------------------------------------------------------
+
+Trajectory class initialised:
+Your topology file contains no chain identity for at least one atom. Will add chain A for your whole system by default
+Your topology file contains no formal charges. Will set formal charges to 0 for your whole system by default
+Terminal oxygens will be modified with our predefined dictionary:
+OC1 -> O
+OC2 -> OXT
+PROPKA compatibility checked.
+
+-----------------------------------------------------------------                
+
+Start time: 2024-12-07 22:45:09
+End time: 2024-12-07 22:46:05
+
+Parmeters selected:
+
+Output directory: output/1AKI_md1_300ns
+Output prefix: 1AKI_md1_300ns
+Number of cores: 8
+Trajectory slices:
+[[0, 385], [385, 770], [770, 1155], [1155, 1540], [1540, 1925], [1925, 2310], [2310, 2695], [2695, 3086]]
+Chain: A
+Mutation: None
+Extract buriedness: True
+Remove cysteines from pKa or buriedness CSV: True
+['CYS6' 'CYS30' 'CYS64' 'CYS76' 'CYS80' 'CYS94' 'CYS115' 'CYS127']
+PropKa optional arguments: []
+
+-----------------------------------------------------------------
+
+pKa Statistics:
+Residue,Mean,Median,Standard Deviation
+ASP18,3.54,3.57,0.42
+ASP48,1.71,1.65,0.43
+ASP52,4.33,4.51,0.65
+ASP66,1.62,1.57,0.39
+ASP87,2.57,2.52,0.44
+ASP101,3.28,3.34,0.47
+ASP119,2.55,2.38,0.51
+GLU7,3.82,3.82,0.57
+GLU35,4.77,4.44,0.96
+C-129,2.44,2.23,0.55
+HIS15,5.85,5.84,0.25
+TYR20,9.51,9.56,0.46
+TYR23,10.06,10.01,0.26
+TYR53,10.98,10.88,0.52
+LYS1,10.71,10.48,0.42
+LYS13,11.33,11.50,0.38
+LYS33,10.06,10.09,0.12
+LYS96,10.20,10.19,0.19
+LYS97,10.33,10.25,0.31
+LYS116,10.20,10.20,0.11
+ARG5,12.15,12.15,0.06
+ARG14,12.51,12.40,0.40
+ARG21,12.63,12.55,0.22
+ARG45,12.28,12.30,0.21
+ARG61,13.07,13.16,0.37
+ARG68,12.71,12.65,0.33
+ARG73,12.26,12.31,0.14
+ARG112,12.19,12.20,0.08
+ARG114,12.77,12.68,0.52
+ARG125,13.62,13.85,0.57
+ARG128,12.52,12.47,0.24
+N+1,7.44,7.44,0.07
+
+-----------------------------------------------------------------
+

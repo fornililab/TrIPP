@@ -15,10 +15,10 @@ def compare_output(file1, file2):
 
 if __name__ == '__main__':
     # Trajectory class test
-    topology_file = 'data/1AKI_minstr.pdb'
-    trajectory_file = 'data/1AKI_md1_300ns.xtc'
-    output_directory = 'test_output/1AKI_md1_300ns'
-    output_prefix = '1AKI_md1_300ns'
+    topology_file = 'files/1AKI_minstr.pdb'
+    trajectory_file = 'files/1AKI_md1_300ns.xtc'
+    output_directory = 'test_output/MD1'
+    output_prefix = 'MD1'
     TrIPP_Traj = Trajectory(topology_file=topology_file,  
                                 trajectory_file=trajectory_file,  
                                 output_directory = output_directory ,  
@@ -33,10 +33,10 @@ if __name__ == '__main__':
                     disulphide_bond_detection=True,
                     optargs=[])
 
-    topology_file = 'data/1AKI_minstr.pdb'
-    trajectory_file = 'data/1AKI_md1_300ns.xtc'
-    output_directory = 'test_output/1AKI_md1_300ns_ASN44ALA'
-    output_prefix = '1AKI_md1_300ns_ASN44ALA'
+    topology_file = 'files/1AKI_minstr.pdb'
+    trajectory_file = 'files/1AKI_md1_300ns.xtc'
+    output_directory = 'test_output/MD1_44'
+    output_prefix = 'MD1_44'
     TrIPP_Traj = Trajectory(topology_file=topology_file,  
                                 trajectory_file=trajectory_file,  
                                 output_directory = output_directory ,  
@@ -52,17 +52,17 @@ if __name__ == '__main__':
                     optargs=[])
 
     try:
-        assert compare_output('test_output/1AKI_md1_300ns/1AKI_md1_300ns_pka.csv','reference_output/1AKI_md1_300ns/1AKI_md1_300ns_pka.csv')
-        assert compare_output('test_output/1AKI_md1_300ns/1AKI_md1_300ns_buriedness.csv','reference_output/1AKI_md1_300ns/1AKI_md1_300ns_buriedness.csv')
-        assert compare_output('test_output/1AKI_md1_300ns_ASN44ALA/1AKI_md1_300ns_ASN44ALA_pka.csv','reference_output/1AKI_md1_300ns_ASN44ALA/1AKI_md1_300ns_ASN44ALA_pka.csv')
-        assert compare_output('test_output/1AKI_md1_300ns_ASN44ALA/1AKI_md1_300ns_ASN44ALA_buriedness.csv','reference_output/1AKI_md1_300ns_ASN44ALA/1AKI_md1_300ns_ASN44ALA_buriedness.csv')
+        assert compare_output('test_output/MD1/MD1_pka.csv','reference_output/MD1/MD1_pka.csv')
+        assert compare_output('test_output/MD1/MD1_buriedness.csv','reference_output/MD1/MD1_buriedness.csv')
+        assert compare_output('test_output/MD1_44/MD1_44_pka.csv','reference_output/MD1_44/MD1_44_pka.csv')
+        assert compare_output('test_output/MD1_44/MD1_44_buriedness.csv','reference_output/MD1_44/MD1_44_buriedness.csv')
         print('Trajectory class test passed')
     except AssertionError as e:
         raise e
 
     # Clustering class test
     output_directory = 'test_output'
-    pka_file = 'test_output/1AKI_md1_300ns/1AKI_md1_300ns_pka.csv'
+    pka_file = 'test_output/MD1/MD1_pka.csv'
     TrIPP_Clust = Clustering(topology_file=topology_file,
                             trajectory_file=trajectory_file,
                             pka_file=pka_file, 
@@ -71,7 +71,7 @@ if __name__ == '__main__':
                             output_directory=output_directory,
                             output_prefix='All_md', 
                             include_distances=False,  
-                           include_buriedness=False,
+                            include_buriedness=False,
                             dimensionality_reduction=False)
 
 

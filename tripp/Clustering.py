@@ -64,9 +64,10 @@ class Clustering:
         pka_file argument the order of the files needs to be the same as in the
         trajectory_file dictionary.
 
-    residues: list of int
-        List of resid (MDAnalysis resid) for which the clustering will be done.
-        The residues have a pKa value assigned to them by PROPKA.
+    selections: list of str
+        List of selections (MDAnalysis selection algebra) for which the clustering will be done.
+        The residues have a pKa value assigned to them by PROPKA. Note if your system is
+        multichain, your topology and selection must include chain identity.
 
     log_file: str
         File name for log file
@@ -88,7 +89,7 @@ class Clustering:
         topology_file,
         trajectory_file,
         pka_file,
-        residues,
+        selections,
         output_directory,
         output_prefix,
         buriedness_file=None,
@@ -105,7 +106,7 @@ class Clustering:
         self.topology_file = topology_file
         self.trajectory_file = trajectory_file
         self.pka_file = pka_file
-        self.residues = residues
+        self.selections = selections
         self.output_directory = output_directory
         self.output_prefix = output_prefix
         self.buriedness_file = buriedness_file
@@ -143,7 +144,7 @@ class Clustering:
             self.trajectory_file,
             self.topology_file,
             self.pka_df,
-            self.residues,
+            self.selections,
             self.include_distances,
             self.buriedness_df,
             self.include_buriedness,
@@ -235,12 +236,16 @@ class Clustering:
                     frames=self.frames,
                     trajectory_names=self.trajectory_names,
                 )
-                sil_score = round(silhouette_score(self.clustering_matrix, labels), 4)
-                sil_scores.append(sil_score)
-                cluster_nums.append(clusters)
-                print(
-                    f"Clustering with {clusters} clusters produces an average silhouette score of {sil_score}."
-                )
+                try:
+                    sil_score = round(silhouette_score(self.clustering_matrix, labels), 4)
+                    sil_scores.append(sil_score)
+                    cluster_nums.append(clusters)
+                    print(
+                        f"Clustering with {clusters} clusters produces an average silhouette score of {sil_score}."
+                    )
+                except Exception as e:
+                    print(f'Evaluating silhouette score with {clusters} encountered error so skipping this: {e}.')
+                    continue
             sil_scores = np.array(sil_scores)
             best_cluster_n_index = np.argmax(sil_scores)
             sil_score = sil_scores[best_cluster_n_index]
@@ -273,7 +278,7 @@ class Clustering:
             trajectory_file=self.trajectory_file,
             topology_file=self.topology_file,
             pka_file=self.pka_file,
-            residues=self.residues,
+            selections=self.selections,
             include_distances=self.include_distances,
             include_buriedness=self.include_buriedness,
             clustering_method=clustering_method,
@@ -326,7 +331,7 @@ class Clustering:
         max_clusters: int, default=20, max number of clusters allowed
         when automatic=True.
 
-        max_cutoffs: int, default=20, max nmber of cutoffs used to find
+        max_cutoffs: int, default=20, max number of cutoffs used to find
         the most suitable one for clustering.
         """
         clustering_method = "GROMOS"
@@ -406,14 +411,15 @@ class Clustering:
 
                 else:
                     cutoffs.append(cutoff_i)
-                    sil_score = round(
-                        silhouette_score(self.clustering_matrix, labels), 4
-                    )
-                    sil_scores.append(sil_score)
-                    cluster_nums.append(len(set(labels)))
-                    print(
-                        f"Clustering with a cutoff of {cutoff_i} produces {len(set(labels))} clusters with an average silhouette score of {sil_score}."
-                    )
+                    try: 
+                        sil_score = round(silhouette_score(self.clustering_matrix, labels), 4)
+                        sil_scores.append(sil_score)
+                        cluster_nums.append(len(set(labels)))
+                        print(f"Clustering with a cutoff of {cutoff_i} produces {len(set(labels))} clusters with an average silhouette score of {sil_score}.")
+                    except Exception as e:
+                        print(f'Evaluating silhouette score with {cutoff_i} encountered error so skipping this: {e}.')
+                        continue
+                        
 
             sil_scores = np.array(sil_scores)
             best_cutoff_index = np.argmax(sil_scores)
@@ -446,7 +452,7 @@ class Clustering:
             trajectory_file=self.trajectory_file,
             topology_file=self.topology_file,
             pka_file=self.pka_file,
-            residues=self.residues,
+            selections=self.selections,
             include_distances=self.include_distances,
             include_buriedness=self.include_buriedness,
             clustering_method=clustering_method,
@@ -602,15 +608,19 @@ class Clustering:
                         )
 
                     else:
-                        sil_score = round(
-                            silhouette_score(self.clustering_matrix, labels), 4
-                        )
-                        sil_scores.append(sil_score)
-                        cluster_nums.append(len(set(labels)))
-                        params.append([eps, min_samples])
-                        print(
-                            f"Clustering with parameters eps={eps} and min_samples={min_samples} produces {len(set(labels))} clusters with an average silhouette score of {sil_score}."
-                        )
+                        try:
+                            sil_score = round(
+                                silhouette_score(self.clustering_matrix, labels), 4
+                            )
+                            sil_scores.append(sil_score)
+                            cluster_nums.append(len(set(labels)))
+                            params.append([eps, min_samples])
+                            print(
+                                f"Clustering with parameters eps={eps} and min_samples={min_samples} produces {len(set(labels))} clusters with an average silhouette score of {sil_score}."
+                            )
+                        except Exception as e:
+                            print(f'Evaluating silhouette score with eps={eps} and min_samples={min_samples} encountered error so skipping this: {e}.')
+                            continue
 
             sil_scores = np.array(sil_scores)
             best_params_index = np.argmax(sil_scores)
@@ -653,7 +663,7 @@ class Clustering:
             trajectory_file=self.trajectory_file,
             topology_file=self.topology_file,
             pka_file=self.pka_file,
-            residues=self.residues,
+            selections=self.selections,
             include_distances=self.include_distances,
             include_buriedness=self.include_buriedness,
             clustering_method=clustering_method,

@@ -49,7 +49,8 @@ poetry install
 Please test the installation by:
 ```
 poetry shell
-python tests/test_installation/test_installation.py
+cd tests
+python test_installation.py
 ```
 You will need to provide the path to the PyMOL executable when testing the Visualization class.
 

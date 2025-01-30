@@ -33,9 +33,10 @@ def detect_disulphide_bonds(topology_file):
     for residue in residues: 
         residue_type = residue.resname
         resid = residue.resid
+        resindex = residue.resindex
 
         if residue_type in ['CYS', 'CCYS', 'CCYX', 'CYS1', 'CYS2', 'CYSH', 'NCYS', 'NCYX', 'CYM', 'CYN', 'CYX']: 
-            atom_coordinates = universe.select_atoms(f'resid {resid} and name SG').positions 
+            atom_coordinates = universe.select_atoms(f'resindex {resindex} and name SG').positions 
             sulphur_atom = atom_coordinates[0] 
             residue_identifier = f'CYS{resid}' 
             cysteines.append(residue_identifier) 

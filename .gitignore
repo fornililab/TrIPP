@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.npz
+*.lock
+.DS_store
+.DS_store?
+tutorial/output/
+tests/test_output/*
+tmp
+tmp/*

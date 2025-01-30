@@ -1,22 +1,30 @@
 import numpy as np 
 
-def extract_pka_file_data(file, chain, time): 
-
-    pkafile = open(file, 'r') 
-    data_pka_list = [] 
-    data_buriedness_list = [] 
+def extract_pka_buriedness_data(file, chains, time):
+    compatible_resnames = ['ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 
+                           'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 
+                           'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL', 'N+', 'C-'] # N+ and C- added for terminal in propka file
+    chains = list(chains)
+    pkafile = open(file, 'r')
+    resname_list = []
+    pka_list = [] 
+    buriedness_list = []
+    chain_list = []
     for line in pkafile: 
         line_processed = line.rstrip() 
-        line_list = line_processed.strip().split() 
-        if len(line_list) > 15 and line_list[2] == chain: 
-            data_pka_list.append([line_list[0]+line_list[1], line_list[3]]) 
-            data_buriedness_list.append([line_list[0]+line_list[1], line_list[4]]) 
-    
-    time_array = np.array([['Time [ps]'], [time]]) 
-    data_pka_array = np.array(data_pka_list).T 
-    data_pka = np.concatenate((time_array, data_pka_array), axis=1).tolist() 
-    
-    data_buriedness_array = np.array(data_buriedness_list).T 
-    data_buriedness = np.concatenate((time_array, data_buriedness_array), axis=1).tolist() 
-    
-    return data_pka, data_buriedness
+        line_list = line_processed.strip().split()
+        # make sure each chain is looped through and save to different file
+        for chain in chains:
+            # identify the line containing the pka, only considering line with amino acids (compatible_resnames).
+            if len(line_list) > 15 and line_list[2] == chain and line_list[0] in compatible_resnames:
+                resname_list.append(line_list[0]+line_list[1])
+                pka_list.append(line_list[3])
+                buriedness_list.append(line_list[4])
+                chain_list.append(line_list[2])
+    data = {}
+    for chain in chains:
+        data[chain] = {'Time [ps]':time,
+                    'resname_list':np.array(resname_list)[np.array(chain_list) == chain],
+                    'pka_list':np.array(pka_list)[np.array(chain_list) == chain],
+                    'buriedness_list':np.array(buriedness_list)[np.array(chain_list) == chain]}
+    return data

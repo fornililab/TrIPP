@@ -23,9 +23,10 @@
 import MDAnalysis as mda 
 import numpy as np 
 
-def determine_charge_center(universe, resid):
-    selection = universe.select_atoms(f'resid {resid}')
-    residue_type = selection.residues.resnames
+def determine_charge_center(universe, selection):
+    ag = universe.select_atoms(selection)
+    residue_type = ag.residues.resnames
+    resid = ag.residues.resids[0]
 
     # Charge center is determined as in PROPKA3
     if residue_type in ['ARG', 'ARGN', 'CARG', 'NARG']:

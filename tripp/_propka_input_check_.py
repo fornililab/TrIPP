@@ -24,27 +24,6 @@ import numpy as np
 
 
 logger = logging.getLogger(__name__)
-def input_check(universe):
-    
-    """ 
-    Function that checks all the naming of residues has been modified to 
-    be PROPKA compatible. If not, user will have to add the correction 
-    manually in _correction_dictionary_.py. If the system contains 
-    non-protein atoms and user named its record type to 'ATOM', PROPKA 
-    would not recognise them. We recommend changing them to 'HETATM'.
-    """ 
-    
-    non_protein_ag = universe.select_atoms('not protein')
-    
-    check_terminal_oxygens(universe)
-    
-    incorrect_resnames = check_resname_HETATM(non_protein_ag)
-    if len(incorrect_resnames) > 0:
-        raise NameError(f"""Your system still contain resname not recognisable by PROPKA: {', '.join(incorrect_resnames)}
-If it is an amino acid, please use custom_resname_correction argument to add the corrections for the resname(s) identified above.
-If it is a ligand, please use hetatm_resid argument to convert the record type of the ligand to HETATM.""")
-    else:
-        logger.info('PROPKA compatibility checked.')
     
 def check_resname_HETATM(non_protein_ag):
     compatible_resnames = ['ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 
@@ -54,29 +33,23 @@ def check_resname_HETATM(non_protein_ag):
     for resname, resid, record_types in zip(non_protein_ag.residues.resnames,
                                             non_protein_ag.residues.resids,
                                             non_protein_ag.residues.record_types):
-        if resname not in compatible_resnames and np.all(record_types == 'HETATM'):
-            logger.info(f'Your system contains non protein residues {resname}{resid}, but the record type is HETATM so proceeding.')
-        else:
-            incorrect_resnames.append(f'{resname}{resid}')
-    return incorrect_resnames
-
-def check_terminal_oxygens(universe):
-    last_residue_names = universe.residues.names[-1]
-    if 'O' not in last_residue_names or 'OXT' not in last_residue_names:
-        raise NameError('Terminal oxygens is not named O and OXT, please either modify from your topology_file or via argument terminal_oxygens')
-            
-    
-#     non_protein_ag = universe.select_atoms('not protein')
-#     if len(non_protein_ag) > 0:
-#         incorrect_record_types = []
-#         for record_type,resid in zip(non_protein_ag.residues.record_types,non_protein_ag.residues.resids):
-#             if 'ATOM' in record_type:
-#                 incorrect_record_types.append(resid)
+        if resname not in compatible_resnames and np.all(record_types != 'HETATM'):
+            incorrect_resnames.append(f'{resname}')
+    if len(incorrect_resnames) > 0:
+        raise NameError(f"""Your system still contains resname not recognisable by PROPKA: {', '.join(incorrect_resnames)}
+If it is an amino acid, please use custom_resname_correction argument to add the corrections for the resname(s) identified above.
+If it is a ligand, please use hetatm_resname argument to convert the record type of the ligand to HETATM.""")
+    else:
+        logger.info('Resname and record type check passed.\n')
         
-#         if len(incorrect_record_types) >0:
-#             print(f"""The record type of the following resids contains \'ATOM\':\n
-# {incorrect_record_types}\n
-# These will not be recognised by PROPKA, TrIPP will proceed without any modifications.\n
-# We recommend changing your topology file of their record type to \'HETATM\' if you want to take them into account during pKa prediction.""")
-#         else:
-#             print('The record type for all non-protein atoms are \'HETATM\'.')
+def check_terminal_oxygens(universe):
+    terminals = []
+    for index, name in zip(universe.residues.resindices, universe.residues.names):
+        if np.isin('O', name).any() and np.isin('OXT', name).any():
+            ag = universe.select_atoms(f'resindex {index}')
+            terminals.append(f'{ag.residues.resnames[0]}{ag.residues.resids[0]}')
+    if len(terminals) > 0:
+        logger.info(f"""Terminal oxygen check passed, involving: 
+{', '.join(terminals)}\n""")
+    else:
+        raise NameError('No terminal oxygen named O and OXT, please either modify from your topology_file or via custom_terminal_oxygens argument')

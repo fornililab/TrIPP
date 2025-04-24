@@ -51,11 +51,20 @@ def create_propka_compatible_universe(universe,
     # Correct resname to propka compatible with predefined list.
     corrected_resnames = []
     corrected_resnames_trace = []
-    for resname, resid in zip(corrected_universe.residues.resnames,
-                              corrected_universe.residues.resids):
+    for resname, residx in zip(corrected_universe.residues.resnames,
+                              corrected_universe.residues.resindices):
         if resname in corrected_amino_acids:
             corrected_resnames_trace.append(f'{resname}->{corrected_amino_acids[resname]}')
             resname = corrected_amino_acids[resname]
+        # Special care taken for MSE -> MET, where the SE atomname needs to be modified as well.
+        elif resname == 'MSE':
+            corrected_resnames_trace.append(f'{resname}->MET (SE->SD)')
+            resname = 'MET'
+            atom_names = corrected_universe.select_atoms(f'resindex {residx}').atoms.names
+            atom_types = corrected_universe.select_atoms(f'resindex {residx}').atoms.types
+            corrected_universe.select_atoms(f'resindex {residx}').atoms.names = np.char.replace(atom_names.astype(str), 'SE', 'SD')
+            corrected_universe.select_atoms(f'resindex {residx}').atoms.types = np.char.replace(atom_types.astype(str), 'SE', 'S')
+            
         corrected_resnames.append(resname)
         
     corrected_universe.residues.resnames = corrected_resnames
@@ -65,7 +74,8 @@ def create_propka_compatible_universe(universe,
         logger.info(f"""The resnames of the following residues have been modified to be compatible with PROPKA:
 {corrected_resnames_trace}""")
     
-    # When hetatm_resname is provided, for example if the system contains ligand, the record type will be corrected to HETATM.
+    # When hetatm_resname is provided, for example if the system contains ligand, 
+    # the record type will be corrected to HETATM.
     if hetatm_resname is not None:
         if isinstance(hetatm_resname, list):
             hetatm_resname = ' '.join([str(i) for i in hetatm_resname])
@@ -74,7 +84,7 @@ def create_propka_compatible_universe(universe,
         corrected_hetatm = []
         for resid, resname in zip(correction_ag.residues.resids, correction_ag.residues.resnames):
             corrected_hetatm.append(f'{resname}{resid}')
-        logger.info(f"""The record type of the following residues is modified to HETATM:
+        logger.info(f"""The record type of the following residues has been modified to HETATM:
 {', '.join(corrected_hetatm)}""")
     
     check_resname_HETATM(corrected_universe.select_atoms('not protein'))

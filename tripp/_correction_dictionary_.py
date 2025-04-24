@@ -66,7 +66,6 @@ corrected_amino_acids = {
     "NTRP": "TRP",
     "NTYR": "TYR",
     "NVAL": "VAL",
-    "PGLU": "GLU",
     "ASF": "ASP",
     "ASH": "ASP",
     "CYM": "CYS",
@@ -81,7 +80,6 @@ corrected_amino_acids = {
     "HSP": "HIS",
     "LYN": "LYS",
     "LSN": "LYS",
-    "MSE": "MET",
 }
 # Dictionary for correcting C-terminal oxygen to O and OXT
 # for typical GROMOS, AMBER, and CHARMM forcefield.

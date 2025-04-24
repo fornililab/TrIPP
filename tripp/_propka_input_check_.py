@@ -30,13 +30,12 @@ def check_resname_HETATM(non_protein_ag):
                            'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 
                            'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL']
     incorrect_resnames=[]
-    for resname, resid, record_types in zip(non_protein_ag.residues.resnames,
-                                            non_protein_ag.residues.resids,
-                                            non_protein_ag.residues.record_types):
+    for resname, record_types in zip(non_protein_ag.residues.resnames,
+                                     non_protein_ag.residues.record_types):
         if resname not in compatible_resnames and np.all(record_types != 'HETATM'):
             incorrect_resnames.append(f'{resname}')
     if len(incorrect_resnames) > 0:
-        raise NameError(f"""Your system still contains resname not recognisable by PROPKA: {', '.join(incorrect_resnames)}
+        raise NameError(f"""Your system still contains resname that are not recognisable by PROPKA: {', '.join(incorrect_resnames)}
 If it is an amino acid, please use custom_resname_correction argument to add the corrections for the resname(s) identified above.
 If it is a ligand, please use hetatm_resname argument to convert the record type of the ligand to HETATM.""")
     else:

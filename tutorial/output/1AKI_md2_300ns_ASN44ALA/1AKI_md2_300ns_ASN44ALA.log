@@ -26,8 +26,8 @@ PROPKA compatibility checked.
 
 -----------------------------------------------------------------                
 
-Start time: 2024-12-14 14:57:26
-End time: 2024-12-14 14:58:25
+Start time: 2025-04-26 23:11:09
+End time: 2025-04-26 23:12:12
 
 Parmeters selected:
 
@@ -83,5 +83,3 @@ N+1,7.45,7.45,0.07
 
 -----------------------------------------------------------------
 
-Task was destroyed but it is pending!
-task: <Task pending name='Task-2' coro=<Kernel.poll_control_queue() running at /Users/arianna/Library/Caches/pypoetry/virtualenvs/tripp-G1KzPHnb-py3.9/lib/python3.9/site-packages/ipykernel/kernelbase.py:309> wait_for=<Future pending cb=[<TaskWakeupMethWrapper object at 0x16a5a5af0>()]> cb=[_chain_future.<locals>._call_set_state() at /opt/anaconda3/envs/TrIPPenvNew/lib/python3.9/asyncio/futures.py:391]>

@@ -49,8 +49,7 @@ poetry install
 Please test the installation by:
 ```
 poetry shell
-cd tests
-python test_installation.py
+python tests/test_installation/test_installation.py
 ```
 You will need to provide the path to the PyMOL executable when testing the Visualization class.
 
@@ -66,8 +65,27 @@ Once all three tests are passed, the installation is complete.
 
 Please start the poetry shell for TrIPP then follow [tripp_tutorial](tutorial/tripp_tutorial.ipynb) for a comprehensive workflow.
 
-Running the full tutorial on a Macbook Pro (M2 Pro) using 12 cores requires about 6 minutes (2 trajectories, 3087 frames, 1960 atoms).
+Run time for the following cells with Macbook Pro (M2 Pro) using 12 cores are as follow:
 
+Number of trajectories: 2
+
+Length of trajectories: 308.7 ns (3087 frames)
+
+Number of atoms: 1960
+
+Total: 6 minutes 12 seconds
+
+Cell 1.1: 1 minute 13 seconds (2 in total to process)
+
+Cell 2.1+2.2: 1 second
+
+Cell 3.1: 22 seconds
+
+Cell 4.1: 4 minutes 47 seconds (4 mutations each trajectory, 8 in total to process)
+
+Cell 5.1: 1 second
+
+Cell 5.2: 1 second
 ### Authors
 
 * **Christos Matsingos** - [chmatsingos](https://github.com/chmatsingos)

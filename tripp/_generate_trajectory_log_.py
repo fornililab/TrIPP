@@ -1,6 +1,8 @@
 import pandas as pd
 import logging
 
+logger = logging.getLogger(__name__)
+
 def log_header():
     header = """
 888888888888         88  88888888ba   88888888ba   
@@ -23,8 +25,9 @@ If you are using TrIPP, please cite:
     return header
 
 def pka_statistics_table(output_directory,
-                        output_prefix):
-    df = pd.read_csv(f'{output_directory}/{output_prefix}_pka.csv')
+                        output_prefix,
+                        chain):
+    df = pd.read_csv(f'{output_directory}/{output_prefix}_pka_chain{chain}.csv')
     pka_statistics = []
     for residue,pKaValues in df.items():
         if 'Time [ps]' == residue:
@@ -47,43 +50,43 @@ def pka_statistics_table(output_directory,
 def trajectory_log(output_directory,
                    output_prefix, 
                    extract_buriedness_data,
-                   chain, 
-                   mutation_arg, 
+                   chains, 
+                   mutation_selection, 
                    disulphide_cysteines_list,
                    optargs,
                    cores,
                    trajectory_slices,
                    start,
                    end):
-    logger = logging.getLogger(__name__)
+    chains = list(chains)
     if len(disulphide_cysteines_list) > 0:
         disulphide_bond_detection = True
     else:
         disulphide_bond_detection = False
-    logger.info(f"""
------------------------------------------------------------------                
+        
+    logger.info(f"""-----------------------------------------------------------------                
 
 Start time: {start}
 End time: {end}
 
-Parmeters selected:
-
+PARAMETERS:
 Output directory: {output_directory}
 Output prefix: {output_prefix}
 Number of cores: {cores}
 Trajectory slices:
 {trajectory_slices}
-Chain: {chain}
-Mutation: {mutation_arg}
+Chain: {chains}
+Mutation: {mutation_selection}
 Extract buriedness: {extract_buriedness_data}
 Remove cysteines from pKa or buriedness CSV: {disulphide_bond_detection}
-{disulphide_cysteines_list}
+List of cysteines removed: {disulphide_cysteines_list}
 PropKa optional arguments: {optargs}
 
 -----------------------------------------------------------------
-
-pKa Statistics:
-{pka_statistics_table(output_directory,output_prefix)}
+""")
+    for chain in chains:
+        logger.info(f"""pKa Statistics for chain {chain}:
+{pka_statistics_table(output_directory,output_prefix,chain)}
 
 -----------------------------------------------------------------
 """)

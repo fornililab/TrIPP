@@ -21,7 +21,18 @@
 """
 from tripp._generate_trajectory_log_ import log_header
 
-def generate_clustering_summary(trajectory_file, topology_file, pka_file, residues, include_distances, include_buriedness, clustering_method, automatic, silhouette_scores, n_components, cummulative_variance, buriedness_file=None):
+def generate_clustering_summary(trajectory_file, 
+                                topology_file, 
+                                pka_file, 
+                                selections, 
+                                include_distances, 
+                                include_buriedness, 
+                                clustering_method, 
+                                automatic, 
+                                silhouette_scores, 
+                                n_components, 
+                                cummulative_variance, 
+                                buriedness_file=None):
 
     #information on files 
     if type(trajectory_file) == str: 
@@ -50,11 +61,11 @@ Trajectories:
 """ 
     
     #information on what residues were used for the clustering 
-    residue_summary = f'Clustering was done using residues {", ".join(map(str, residues[:-1]))} and {residues[-1]}.' 
+    residue_summary = f'Clustering was done using {", ".join(selections[:-1])} and {selections[-1]}.' 
 
     #information on whether distances between charge centers were used for the clustering 
     if include_distances == True: 
-        n = len(residues) 
+        n = len(selections) 
         num_distances = int((n*(n-1))/2)
         if num_distances == 1: 
             include_distances_summary = f'In total {num_distances} distance between charge centers was included in the clustering.' 
@@ -66,7 +77,7 @@ Trajectories:
     
     #information on whether buriedness measures were used for the clustering 
     if include_buriedness== True: 
-        n = len(residues) 
+        n = len(selections) 
         if n == 1: 
             include_buriedness_summary = f'In total {n} buriedness measure was included in the clustering.' 
         else: 

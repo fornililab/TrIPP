@@ -27,14 +27,13 @@ from tripp._create_mda_universe_ import (
     create_propka_compatible_universe,
 )
 from tripp._pka_iterator_ import pka_iterator
-from tripp._sort_pka_df_ import sort_pka_df, sort_buriedness_df
+from tripp._sort_pka_df_ import output_df
 from tripp._detect_disulphide_bonds_ import detect_disulphide_bonds 
 from datetime import datetime
 from tripp._generate_trajectory_log_ import log_header, trajectory_log
-from tripp._edit_pdb_ import find_mutation
 import logging
 import glob
-
+from tqdm import tqdm
 
 class Trajectory:
     """
@@ -60,8 +59,20 @@ class Trajectory:
     cpu_core_number: int, default=-1
         The number of cpu cores used for the calculation.
         If cpu_core_number=-1, all available cores are used.
-    hetatm_resid: int or list of int
-    
+    hetatm_resname: str, list, default=None
+        Resname of the hetatm that need to be modified. See log for info
+        if encountered error.
+    custom_terminal_oxygens: list, default=None
+        PROPKA only recognizes O and OXT for the terminal oxygens. Either 
+        provide a list of length 2 containing the name of your terminal
+        oxygens, or None for correction according to our pre-defined
+        dictionary (See _correction_dictionary_.py for the pre-defined
+        name)
+    custom_resname_correction: dict, default=None
+        Our pre-defined dictionary might not contain all resname to be
+        corrected. (See _correction_dictionary_.py for the pre-defined
+        resname) Use this parameter to add a custom resname correction.
+        ie: {'ASPH':'ASP'}
     """
     def __init__(
         self,
@@ -70,7 +81,7 @@ class Trajectory:
         output_directory,
         output_prefix,
         cpu_core_number=-1,
-        hetatm_resid=None,
+        hetatm_resname=None,
         custom_terminal_oxygens=None,
         custom_resname_correction=None,
     ):  
@@ -114,7 +125,7 @@ class Trajectory:
 
         self.corrected_universe = create_propka_compatible_universe(
             self.universe,
-            hetatm_resid,
+            hetatm_resname,
             custom_terminal_oxygens,
             custom_resname_correction,
         )
@@ -127,8 +138,8 @@ class Trajectory:
         start_frame = 0
 
         for i in range(slices_nr):
-            if i == slices_nr - 1:
-                end_frame = start_frame + slice_length + remainder
+            if i < remainder:
+                end_frame = start_frame + slice_length + 1
             else:
                 end_frame = start_frame + slice_length
             slices.append([start_frame, end_frame])
@@ -140,7 +151,7 @@ class Trajectory:
         self,
         extract_buriedness_data=True,
         chain="A",
-        mutation=None,
+        mutation_selections=None,
         disulphide_bond_detection=True,
         optargs=[],
     ):
@@ -152,12 +163,18 @@ class Trajectory:
         extract_buriedness_data: bool, default=True
             If set to True both data on buriedness and pKa will be extracted.
             If set to False only pKa data will be extracted.
-        chain: str, default='A'
-            The chain ID to perform PROPKA prediction.
-        mutation: int or list of int, default=None
+        chain: str or list of str, default='A'
+            The chain ID to extract PROPKA prediction. By default, if your 
+            topology does not have chain information, TrIPP will add chain A to 
+            your topology temporarily. If your topology is a multichain system, 
+            make sure you have your chain labelled in your topology. The CSV files
+            for pKa value will be saved with indivdiual chain.
+        mutation_selections: str, default=None
             Peform pseudomutation of residues to alanine.
-            The residue number or list of residue numbers (MDAnalysis resid)
-            can be provided.
+            Selection is based on the MDAnalysis algebra. Note in multichain system,
+            please make sure you have selected the chainID as well. Double
+            mutations can also be performed.
+            ie: chainID A and resid 2 3
         disulphide_bond_detection: bool, default=True
             If set to True detects all disulphide bonds present in the
             topology file and does not provide pKa values for them.
@@ -168,7 +185,7 @@ class Trajectory:
             and setting pH 7.2 for ie: stability calculations, respectively.
         """
         start = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
-            
+        
         pool = mp.Pool(self.cpu_core_number)
         # Create jobs
         jobs = []
@@ -181,11 +198,9 @@ class Trajectory:
                     trajectory_slice,
                     self.corrected_universe,
                     self.output_directory,
-                    mutation,
+                    mutation_selections,
                     chain,
-                    extract_buriedness_data,
-                    optargs,
-                ),
+                    optargs),
             )
             jobs.append(job)
         # Submit jobs
@@ -193,8 +208,11 @@ class Trajectory:
         pool.close()
         pool.join()
         
-        pka_dfs, buriedness_dfs = zip(*results)
-
+        data, log_contents = zip(*results)
+        log_contents = list(filter(bool,log_contents))
+        if log_contents:
+            self.logger.info(log_contents[0])
+        
         # Detect disulphide bond and remove it from the pKa and buriedness CSV
         # if set to True.
         if disulphide_bond_detection:
@@ -203,34 +221,23 @@ class Trajectory:
             disulphide_cysteines_list = []
         
         # Combine the temporary pka csv and sort it according to Time [ps] column
-        sort_pka_df(
+        output_df(
             output_directory=self.output_directory,
             output_prefix=self.output_prefix,
-            pka_dfs=pka_dfs,
+            data=data,
             disulphide_cysteines_list=disulphide_cysteines_list,
+            extract_buriedness_data=extract_buriedness_data
         )
-        if extract_buriedness_data:
-            # Combine the temporary buriedness csv and sort it according to Time [ps] column
-            sort_buriedness_df(
-                output_directory=self.output_directory,
-                output_prefix=self.output_prefix,
-                buriedness_dfs=buriedness_dfs,
-                disulphide_cysteines_list=disulphide_cysteines_list,
-            )
 
         end = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
-        # Find the corresponding mutation and retreive it to print it in the log.
-        if mutation is not None:
-            mutation_arg = find_mutation(mutation, self.corrected_universe)
-        else:
-            mutation_arg = mutation
+
         # Log all parameter used for the run and also pKa statistic table.
         trajectory_log(
             self.output_directory,
             self.output_prefix,
             extract_buriedness_data,
             chain,
-            mutation_arg,
+            mutation_selections,
             disulphide_cysteines_list,
             optargs,
             self.cpu_core_number,

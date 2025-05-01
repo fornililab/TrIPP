@@ -28,7 +28,7 @@ from tripp._create_mda_universe_ import create_mda_universe
 
 
 def create_clustering_matrix(trajectory_file, topology_file, pka_df,
-                             residues, include_distances,
+                             selections, include_distances,
                              buriedness_df, include_buriedness=False):
     """
     Function that generates the clustering_matrix. The clustering_matrix
@@ -62,14 +62,20 @@ def create_clustering_matrix(trajectory_file, topology_file, pka_df,
             df_traj_buriedness = None
         if index == 0:
             clustering_matrix, times, frames, trajectory_names = (
-                extract_pka_distances_buriedness(key, trajectory_dict[key], df_traj_pka, df_traj_buriedness,residues, include_distances, include_buriedness)
+                extract_pka_distances_buriedness(key,
+                                                 trajectory_dict[key],
+                                                 df_traj_pka,
+                                                 df_traj_buriedness,
+                                                 selections, 
+                                                 include_distances,
+                                                 include_buriedness)
             )
 
         else:
             partial_clustering_matrix, partial_times, partial_frames, partial_trajectory_names = extract_pka_distances_buriedness(key, trajectory_dict[key],
                                                                                                                                     df_traj_pka,
                                                                                                                                     df_traj_buriedness,
-                                                                                                                                    residues,
+                                                                                                                                    selections,
                                                                                                                                     include_distances,
                                                                                                                                     include_buriedness)
             clustering_matrix = np.concatenate((clustering_matrix, partial_clustering_matrix), axis=0)
@@ -82,7 +88,7 @@ def create_clustering_matrix(trajectory_file, topology_file, pka_df,
 
 def extract_pka_distances_buriedness(trajectory_name, universe,
                                      df_traj_pka, df_traj_buriedness,
-                                     residues, include_distances,
+                                     selections, include_distances,
                                      include_buriedness):
 
         pka = []
@@ -99,9 +105,9 @@ def extract_pka_distances_buriedness(trajectory_name, universe,
             positions = []
             pkas = []
             buriedness = []
-            for resid in residues:
+            for selection in selections:
                 charge_center, residue_identifier = determine_charge_center(
-                                    universe, resid
+                                    universe, selection
                                 )
                 
                 pka_residue = df_traj_pka.loc[ts.time, residue_identifier]

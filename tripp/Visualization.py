@@ -66,7 +66,7 @@ class Visualization:
             self.correlation_file = pd.read_csv(correlation_file)
         self.u = create_mda_universe(topology_file=self.topology_file, trajectory_file=None) 
         
-        if pka_file != None:
+        if pka_file is not None:
             if type(pka_file) == list: 
                 pka_file_l = [] 
                 for file in pka_file: 
@@ -103,7 +103,7 @@ class Visualization:
         the pse_output_filename.
         
         chain: str, default = 'A'
-            The chain where the PyMOL labelling will be performed on. If you perfromed
+            The chain where the PyMOL labelling will be performed on. If you performed
         TrIPP on a specific chain, make sure you use the same chain in here.
         Otherwise, chain A by default will be labelled.
     
@@ -171,6 +171,8 @@ class Visualization:
                 del self.pka_values['Time [ps]']
                 values_df = self.pka_values.mean(axis=0).to_frame(name='pKa').reset_index(names='Residue')
                 tempfactors_output_topology_file = f"{output_directory}/{output_prefix}_time{coloring_method}.pdb"
+        else:
+            raise SyntaxError(f"{coloring_method} not allowed for coloring_method parameter, please choose from 'mean', 'difference_to_model_value', or 'correlation'.")
         
         # Unpacking the residues and values (pka or correlation) from values_df.
         # Looping through them to assign the value onto the tempfactor of ionisable
@@ -182,6 +184,7 @@ class Visualization:
                 resid = int(residue[2:])
             else:
                 resid = int(residue[3:])
+
             rounded_predicted_pka = round(value, 2)
             if 'N+' in residue:
                 #Only tempfactor of NtermCap_atom_name of the first residue will be written

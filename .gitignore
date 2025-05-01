@@ -8,3 +8,5 @@ tutorial/output/
 tests/test_output/*
 tmp
 tmp/*
+.ipynb_checkpoints
+.pytest_cache/

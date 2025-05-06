@@ -97,8 +97,6 @@ class Trajectory:
             os.remove(f'{output_directory}/{output_prefix}.log')
             
         self.logger = logging.getLogger()
-        for handler in self.logger.handlers[:]:
-            self.logger.removeHandler(handler)
         self.logger.setLevel(logging.INFO)
         handler = logging.FileHandler(f'{output_directory}/{output_prefix}.log',
                                       'a')
@@ -106,6 +104,9 @@ class Trajectory:
         formatter = logging.Formatter('%(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
+        propka_logger = logging.getLogger('propka') # Prevent loggers from PROPKA logging into our root logger.
+        propka_logger.propagate = False 
+        
         self.logger.info(log_header())
         self.logger.info('Trajectory class initialised:')
         
@@ -245,3 +246,6 @@ class Trajectory:
             start,
             end,
         )
+        for handler in self.logger.handlers[:]:
+            handler.close()
+            self.logger.removeHandler(handler)

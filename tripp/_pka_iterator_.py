@@ -24,7 +24,9 @@ def pka_iterator(trajectory_slice, universe,
         
     """
     # Redirect warning from propka.group to a file
-    logger = logging.getLogger('propka.group')
+    logger = logging.getLogger('propka')
+    logger.propagate = False 
+    logger.setLevel(logging.WARNING)
     log_capture_string = io.StringIO()
     handler = logging.StreamHandler(log_capture_string)
     logger.addHandler(handler)
@@ -49,10 +51,9 @@ def pka_iterator(trajectory_slice, universe,
         run.single(f'.temp_{pid}.pdb', optargs=optargs)
         
         if log_capture_string.getvalue():
-            log_contents = ("-----------------------------------------------------------------\n"+
-                            "\n"
-                            f"PROPKA warning occured on frame {ts.frame}:\n" + 
-                            log_capture_string.getvalue())
+            log_contents = (f"PROPKA warning occured on frame {ts.frame}:\n" + 
+                            log_capture_string.getvalue()+
+                            '\n')
         os.chdir(cwd)
 
         time = ts.time

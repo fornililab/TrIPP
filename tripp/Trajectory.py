@@ -212,7 +212,14 @@ class Trajectory:
         data, log_contents = zip(*results)
         log_contents = list(filter(bool,log_contents))
         if log_contents:
-            self.logger.info(log_contents[0])
+            propka_warning_logger = logging.getLogger('proka_warning')
+            propka_warning_logger.propagate = False
+            propka_warning_handler = logging.FileHandler(f'{self.output_directory}/{self.output_prefix}_propka_warnings.log','w')
+            propka_warning_handler.setLevel(logging.WARNING)
+            propka_warning_handler.setFormatter(logging.Formatter('%(message)s'))
+            propka_warning_logger.addHandler(propka_warning_handler)
+            propka_warning_logger.warning(log_contents[0])
+            propka_warning_handler.close()
         
         # Detect disulphide bond and remove it from the pKa and buriedness CSV
         # if set to True.

@@ -29,7 +29,8 @@ from sklearn.metrics import silhouette_score
 import numpy as np
 from tripp._calculate_rmsd_matrix_ import calculate_rmsd_matrix
 from tripp._clustering_gromos_ import gromos_clustering
-from tripp._clustering_dbscan_ import dbscan_clustering
+from tripp._clustering_hdbscan_ import dbscan_clustering
+from tripp._clustering_hdbscan_ import hdbscan_clustering
 from tripp._pca_ import pca
 from tripp._generate_clustering_summary_ import generate_clustering_summary
 from tripp._determine_cluster_population_ratio_ import (
@@ -654,6 +655,200 @@ class Clustering:
                 {
                     "Number of clusters": cluster_nums,
                     "Epsilon": params[:, 0],
+                    "Minimum samples": params[:, 1],
+                    "Average silhouette score": sil_scores,
+                }
+            )
+
+        summary = generate_clustering_summary(
+            trajectory_file=self.trajectory_file,
+            topology_file=self.topology_file,
+            pka_file=self.pka_file,
+            selections=self.selections,
+            include_distances=self.include_distances,
+            include_buriedness=self.include_buriedness,
+            clustering_method=clustering_method,
+            automatic=automatic,
+            silhouette_scores=silhouette_scores,
+            n_components=self.n_components,
+            cummulative_variance=self.cummulative_variance,
+            buriedness_file=self.buriedness_file,
+        )
+        return write_clustering_info(
+            summary=summary,
+            trajectory_dict=self.trajectory_dict,
+            pka_df=self.pka_df,
+            times=self.times,
+            frames=self.frames,
+            trajectory_names=self.trajectory_names,
+            labels=labels,
+            cluster_centers=cluster_centers,
+            cluster_indices=cluster_center_indices,
+            cluster_centers_trajectories=cluster_centers_trajectories,
+            output_directory=self.output_directory,
+            output_prefix=self.output_prefix,
+            clustering_method=clustering_method,
+        )
+        
+    def hdbscan(
+        self,
+        automatic=False,
+        min_cluster_size_range=(20, 80, 5),
+        min_samples_range=(20, 100, 5),
+        max_cluster_population=0.95,
+        max_clusters=20,
+        min_cluster_size=5,
+        min_samples=None,
+        **kwargs):
+        """
+        This function implements the HDBSCAN method to do the clustering.
+
+        automatic: bool, default=False, if True the clustering is run
+        using various combinations of eps and min_samples values. The
+        silhouette score is determined at each iteration and
+        the best combination of values is chosen based on the highest
+        silhouette score. Combinations that produce more than the
+        allowed max number of clusters (defined by max_clusters) or
+        that produce only one cluster are excluded.
+
+        min_cluster_size_range: tuple, default=(20, 80, 5), the range of
+        minimum cluster size screened in the automatic grid search. Value 
+        is generated with np.arange(start, stop, step).
+
+        min_samples_range: tuple, default=(20, 100, 5), the range of
+        min_samples value screend in the automatic grid search. Value
+        is generated with np.arange(start, stop, step).
+
+        max_clusters: int, default=20, maximum number of clusters allowed
+        when automatic=True.
+
+        cluster_selection_epsilon, min_cluster_size, min_samples, metric, 
+        metric_params, alpha, algorithm, leaf_size, n_jobs, cluster_selection_method,
+        allow_single_cluster, sas found in
+        sklearn.cluster.HDBSCAN 
+        (https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html).
+        """
+
+        clustering_method = "HDBSCAN"
+
+        if automatic == False:
+            (
+                labels,
+                cluster_centers,
+                cluster_center_indices,
+                cluster_centers_trajectories,
+            ) = hdbscan_clustering(
+                min_cluster_size=min_cluster_size,
+                min_samples=min_samples,
+                clustering_matrix=self.clustering_matrix,
+                frames=self.frames,
+                find_centroid=True,
+                trajectory_names=self.trajectory_names,
+                **kwargs
+            )
+            sil_score = round(silhouette_score(self.clustering_matrix, labels), 4)
+            print(
+                f"Clustering with parameters min_cluster_size={min_cluster_size} and min_samples={min_samples} produces {len(set(labels))} clusters with an average silhouette score of {sil_score}."
+            )
+            silhouette_scores = pd.DataFrame(
+                {
+                    "Number of clusters": [len(set(labels))],
+                    "Minimum cluster size": [min_cluster_size],
+                    "Minimum samples": [min_samples],
+                    "Average silhouette score": [sil_score],
+                }
+            )
+
+        elif automatic == True:
+            sil_scores = []
+            params = []
+            cluster_nums = []
+            for min_cluster_size in np.arange(min_cluster_size_range[0],
+                                              min_cluster_size_range[1],
+                                              min_cluster_size_range[2]):
+                for min_samples in np.arange(
+                    min_samples_range[0], 
+                    min_samples_range[1], 
+                    min_samples_range[2]
+                ):
+                    labels = hdbscan_clustering(
+                        min_cluster_size=min_cluster_size,
+                        min_samples=min_samples,
+                        clustering_matrix=self.clustering_matrix,
+                        frames=self.frames,
+                        find_centroid=False,
+                        trajectory_names=self.trajectory_names,
+                    )
+
+                    if len(set(labels)) == len(labels):
+                        print(
+                            f"Clustering with parameters min_cluster_size={min_cluster_size} and min_samples={min_samples} produces no clusters. Moving on to next set of parameters"
+                        )
+
+                    elif len(set(labels)) <= 2:
+                        print(
+                            f"Clustering with parameters min_cluster_size={min_cluster_size} and min_samples={min_samples} produces only one cluster. Moving on to next set of parameters"
+                        )
+
+                    elif len(set(labels)) > max_clusters:
+                        print(
+                            f"Clustering with parameters min_cluster_size={min_cluster_size} and min_samples={min_samples} produces more than {max_clusters} clusters. Moving on to next set of parameters"
+                        )
+
+                    elif (
+                        determine_cluster_population_ratio(
+                            labels=labels,
+                            max_cluster_population=max_cluster_population,
+                            clustering_method=clustering_method,
+                        )
+                        == True
+                    ):
+                        print(
+                            f"Clustering with parameters min_cluster_size={min_cluster_size} and min_samples={min_samples} results in the most populated cluster containing more than {max_cluster_population*100}% of frames. Moving on to next st of parameters."
+                        )
+
+                    else:
+                        try:
+                            sil_score = round(
+                                silhouette_score(self.clustering_matrix, labels), 4
+                            )
+                            sil_scores.append(sil_score)
+                            cluster_nums.append(len(set(labels)))
+                            params.append([min_cluster_size, min_samples])
+                            print(
+                                f"Clustering with parameters min_cluster_size={min_cluster_size} and min_samples={min_samples} produces {len(set(labels))} clusters with an average silhouette score of {sil_score}."
+                            )
+                        except Exception as e:
+                            print(f'Evaluating silhouette score with min_cluster_size={min_cluster_size} and min_samples={min_samples} encountered error so skipping this: {e}.')
+                            continue
+
+            sil_scores = np.array(sil_scores)
+            best_params_index = np.argmax(sil_scores)
+            best_min_cluster_size, best_min_samples = tuple(params[best_params_index])
+            sil_score = sil_scores[best_params_index]
+            print(
+                f"Best clustering parameters identified at min_cluster_size={min_cluster_size} and min_samples={best_min_samples} with an average silhouette score of {sil_score}."
+            )
+            (
+                labels,
+                cluster_centers,
+                cluster_center_indices,
+                cluster_centers_trajectories,
+            ) = hdbscan_clustering(
+                min_cluster_size=best_min_cluster_size,
+                min_samples=best_min_samples,
+                clustering_matrix=self.clustering_matrix,
+                frames=self.frames,
+                find_centroid=True,
+                trajectory_names=self.trajectory_names,
+                **kwargs
+            )
+            params = np.array(params)
+
+            silhouette_scores = pd.DataFrame(
+                {
+                    "Number of clusters": cluster_nums,
+                    "Minimum cluster size": params[:, 0],
                     "Minimum samples": params[:, 1],
                     "Average silhouette score": sil_scores,
                 }

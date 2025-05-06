@@ -7,7 +7,6 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 def create_mda_universe(topology_file, trajectory_file):
-    
     if trajectory_file is None:
         universe = mda.Universe(topology_file)
     
@@ -15,29 +14,25 @@ def create_mda_universe(topology_file, trajectory_file):
         universe = mda.Universe(topology_file, trajectory_file) 
     
     topology = universe._topology
-    unique, counts = np.unique(universe.residues.resids, return_counts=True)
+    _, counts = np.unique(universe.residues.resids, return_counts=True)
     # Check if chainID is empty or not, if so default chain A 
     # for the whole system.
     if '' in topology.chainIDs.values and (counts == 1).all():
         topology.chainIDs.values = np.full(len(topology.chainIDs.values),
                                            'A',
                                            dtype=str) 
-        logger.info('Your topology file contains no chain '
-                    'identity for at least one atom. '
-                    'Will add chain A for your whole system by default')
+        logger.info("""Your topology file contains no chain identity for at least one atom. 
+Will add chain A for your whole system by default""")
     elif '' in topology.chainIDs.values and (counts > 1).any():
-        raise KeyError('Your system contain duplicated resid, '
-                       'please assign chain to your system before running TrIPP.')
+        raise KeyError('Your system contain duplicated resid, please assign chain to your system before running TrIPP.')
     
     elif len(set(topology.chainIDs.values)) == 1 and (counts > 1).any():
-        raise KeyError('Your system contain duplicated resid, '
-                       'but all residues in your system has the same chain. '
-                       'Please re-assign the chain ID for your system')
+        raise KeyError('Your system contain duplicated resid, but all residues in your system has the same chain. Please re-assign the chain of your system')
         
     if hasattr(universe.atoms, 'formalcharges') is False:
         universe.add_TopologyAttr('formalcharges', np.full(len(topology.chainIDs.values), 0, dtype=float))
-        logger.info('Your topology file contains no formal charges. '
-                    'Will set formal charges to 0 for your whole system by default.')
+        logger.info("""Your topology file contains no formal charges. 
+Will set formal charges to 0 for your whole system by default.""")
     
     added_universe = universe.copy()
     return added_universe
@@ -66,12 +61,8 @@ def create_propka_compatible_universe(universe,
             resname = 'MET'
             atom_names = corrected_universe.select_atoms(f'resindex {residx}').atoms.names
             atom_types = corrected_universe.select_atoms(f'resindex {residx}').atoms.types
-            corrected_universe.select_atoms(f'resindex {residx}').atoms.names = (
-                np.char.replace(atom_names.astype(str), 'SE', 'SD')
-                )
-            corrected_universe.select_atoms(f'resindex {residx}').atoms.types = (
-                np.char.replace(atom_types.astype(str), 'SE', 'S')
-                )
+            corrected_universe.select_atoms(f'resindex {residx}').atoms.names = np.char.replace(atom_names.astype(str), 'SE', 'SD')
+            corrected_universe.select_atoms(f'resindex {residx}').atoms.types = np.char.replace(atom_types.astype(str), 'SE', 'S')
             
         corrected_resnames.append(resname)
         
@@ -95,7 +86,7 @@ def create_propka_compatible_universe(universe,
         logger.info(f"""The record type of the following residues has been modified to HETATM:
 {', '.join(corrected_hetatm)}""")
     
-    check_resname_HETATM(corrected_universe.select_atoms('all'))
+    check_resname_HETATM(corrected_universe.select_atoms('not protein'))
     
     # When custom_terminal_oxygens is not provided by user as list of string,
     # the terminal oxygens will be renamed according to the dictionary
@@ -114,8 +105,7 @@ def create_propka_compatible_universe(universe,
                 anames = np.setdiff1d(after_correction, before_correction)
                 resid = ag_to_correct.residues.resids[0]
                 resname = ag_to_correct.residues.resnames[0]
-                corrected_terminal_oxygens_trace.append(f"{resname}{resid}: {', '.join(
-                    [f'{pname} -> {aname.strip()}' for pname,aname in zip(pnames,anames)])}")
+                corrected_terminal_oxygens_trace.append(f"{resname}{resid}: {', '.join([f'{pname} -> {aname.strip()}' for pname,aname in zip(pnames,anames)])}")
         corrected_terminal_oxygens_trace = '\n'.join(corrected_terminal_oxygens_trace)
         logger.info(f"""Terminal oxygens will be modified with our predefined dictionary:
 {corrected_terminal_oxygens_trace}""")
@@ -124,8 +114,7 @@ def create_propka_compatible_universe(universe,
         raise TypeError(f'custom_terminal_oxygens argument must be a list, not {type(custom_terminal_oxygens)}')
     # Check if argument is a list of string
     elif not all(isinstance(element,str) for element in custom_terminal_oxygens):
-        raise TypeError('custom_terminal_oxygens argument must be a list of strings, '
-                        'at least one of your element is not a string')
+        raise TypeError(f'custom_terminal_oxygens argument must be a list of strings, at least one of your element is not a string')
     # Check if argument is a list of length 2
     elif len(custom_terminal_oxygens) != 2:
         raise ValueError(f'Length of custom_terminal_oxygens is not 2, but {len(custom_terminal_oxygens)}')
@@ -136,9 +125,7 @@ def create_propka_compatible_universe(universe,
         ag = corrected_universe.select_atoms('protein')
         correct_terminal_oxygens = ['O', 'OXT']
         to_be_corrected_dict = {i:j for i,j in zip(custom_terminal_oxygens, correct_terminal_oxygens)}
-        corrected_universe, corrected_terminal_oxygens_trace = modifiy_terminal_oxygens(ag, 
-                                                                                        corrected_universe, 
-                                                                                        to_be_corrected_dict)
+        corrected_universe, corrected_terminal_oxygens_trace = modifiy_terminal_oxygens(ag, corrected_universe, to_be_corrected_dict)
         
         logger.info(f"""custom_terminal_oxygens supplied and are modified:
 {corrected_terminal_oxygens_trace}""")
@@ -160,7 +147,6 @@ def modifiy_terminal_oxygens(ag, corrected_universe, to_be_corrected_dict):
             anames = np.setdiff1d(after_correction, before_correction)
             resid = ag_to_correct.residues.resids[0]
             resname = ag_to_correct.residues.resnames[0]
-            corrected_terminal_oxygens_trace.append(f"{resname}{resid}: {', '.join(
-                [f'{pname} -> {aname.strip()}' for pname,aname in zip(pnames,anames)])}")
+            corrected_terminal_oxygens_trace.append(f"{resname}{resid}: {', '.join([f'{pname} -> {aname.strip()}' for pname,aname in zip(pnames,anames)])}")
     corrected_terminal_oxygens_trace = '\n'.join(corrected_terminal_oxygens_trace)
     return corrected_universe, corrected_terminal_oxygens_trace

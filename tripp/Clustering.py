@@ -113,6 +113,8 @@ class Clustering:
         self.buriedness_file = buriedness_file
         self.include_buriedness = include_buriedness
         self.include_distances = include_distances
+        self._labels = None
+        self._cluster_center_indices = None
 
         def make_pka_or_buriedness_df(file):
             if isinstance(file, str):
@@ -274,7 +276,7 @@ class Clustering:
                     "Average silhouette score": sil_scores,
                 }
             )
-
+        
         summary = generate_clustering_summary(
             trajectory_file=self.trajectory_file,
             topology_file=self.topology_file,
@@ -289,7 +291,8 @@ class Clustering:
             cummulative_variance=self.cummulative_variance,
             buriedness_file=self.buriedness_file,
         )
-        return write_clustering_info(
+        self._labels, self._cluster_center_indices = (
+        write_clustering_info(
             summary=summary,
             trajectory_dict=self.trajectory_dict,
             pka_df=self.pka_df,
@@ -303,6 +306,7 @@ class Clustering:
             output_directory=self.output_directory,
             output_prefix=self.output_prefix,
             clustering_method=clustering_method,
+            )
         )
 
     def gromos(
@@ -448,7 +452,9 @@ class Clustering:
                     "Average silhouette score": sil_scores,
                 }
             )
-
+        self._labels = labels
+        self._cluster_center_indices = cluster_center_indices
+        
         summary = generate_clustering_summary(
             trajectory_file=self.trajectory_file,
             topology_file=self.topology_file,
@@ -463,7 +469,8 @@ class Clustering:
             cummulative_variance=self.cummulative_variance,
             buriedness_file=self.buriedness_file,
         )
-        return write_clustering_info(
+        self._labels, self._cluster_center_indices = (
+            write_clustering_info(
             summary=summary,
             trajectory_dict=self.trajectory_dict,
             pka_df=self.pka_df,
@@ -477,6 +484,7 @@ class Clustering:
             output_directory=self.output_directory,
             output_prefix=self.output_prefix,
             clustering_method=clustering_method,
+            )
         )
 
     def dbscan(
@@ -659,7 +667,9 @@ class Clustering:
                     "Average silhouette score": sil_scores,
                 }
             )
-
+        self._labels = labels
+        self._cluster_center_indices = cluster_center_indices
+        
         summary = generate_clustering_summary(
             trajectory_file=self.trajectory_file,
             topology_file=self.topology_file,
@@ -674,7 +684,8 @@ class Clustering:
             cummulative_variance=self.cummulative_variance,
             buriedness_file=self.buriedness_file,
         )
-        return write_clustering_info(
+        self._labels, self._cluster_center_indices = (
+            write_clustering_info(
             summary=summary,
             trajectory_dict=self.trajectory_dict,
             pka_df=self.pka_df,
@@ -688,6 +699,7 @@ class Clustering:
             output_directory=self.output_directory,
             output_prefix=self.output_prefix,
             clustering_method=clustering_method,
+            )
         )
         
     def hdbscan(
@@ -853,7 +865,7 @@ class Clustering:
                     "Average silhouette score": sil_scores,
                 }
             )
-
+        
         summary = generate_clustering_summary(
             trajectory_file=self.trajectory_file,
             topology_file=self.topology_file,
@@ -868,7 +880,8 @@ class Clustering:
             cummulative_variance=self.cummulative_variance,
             buriedness_file=self.buriedness_file,
         )
-        return write_clustering_info(
+        self._labels, self._cluster_center_indices = (
+            write_clustering_info(
             summary=summary,
             trajectory_dict=self.trajectory_dict,
             pka_df=self.pka_df,
@@ -882,4 +895,5 @@ class Clustering:
             output_directory=self.output_directory,
             output_prefix=self.output_prefix,
             clustering_method=clustering_method,
+            )
         )

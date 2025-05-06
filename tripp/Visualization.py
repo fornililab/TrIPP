@@ -75,7 +75,7 @@ class Visualization:
             self.correlation_file = pd.read_csv(correlation_file)
         self.u = create_mda_universe(topology_file=self.topology_file, trajectory_file=None) 
         
-        if pka_file is not None:
+        if pka_file:
             if type(pka_file) == list: 
                 pka_file_l = [] 
                 for file in pka_file: 
@@ -84,13 +84,13 @@ class Visualization:
             
             else: 
                 pka_values = pd.read_csv(pka_file)
-        # If user wants to use part of the trajectory to calculate mean/difference_to_model_value.
-        self.start = start
-        if end == -1:
-            self.end = pka_values['Time [ps]'].iloc[end]
-        else:
-            self.end = end
-        self.pka_values = pka_values[pka_values['Time [ps]'].isin(np.arange(self.start,self.end+1))]
+            # If user wants to use part of the trajectory to calculate mean/difference_to_model_value.
+            self.start = start
+            if end == -1:
+                self.end = pka_values['Time [ps]'].iloc[end]
+            else:
+                self.end = end
+            self.pka_values = pka_values[pka_values['Time [ps]'].isin(np.arange(self.start,self.end+1))]
 
     def gen_pse(self, 
                 pymol_path, 

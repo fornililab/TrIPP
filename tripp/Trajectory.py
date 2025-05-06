@@ -220,7 +220,8 @@ class Trajectory:
             propka_warning_logger.addHandler(propka_warning_handler)
             propka_warning_logger.warning(log_contents[0])
             propka_warning_handler.close()
-        
+            propka_warning_logger.removeHandler(propka_warning_handler)
+
         # Detect disulphide bond and remove it from the pKa and buriedness CSV
         # if set to True.
         if disulphide_bond_detection:

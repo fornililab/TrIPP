@@ -86,3 +86,4 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
         pka_df.to_csv(f'{output_directory}/{output_prefix}_{clustering_method}_cluster.csv') 
     
     write_new_dataframe() 
+    return labels, cluster_indices

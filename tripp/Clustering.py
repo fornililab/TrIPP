@@ -29,7 +29,7 @@ from sklearn.metrics import silhouette_score
 import numpy as np
 from tripp._calculate_rmsd_matrix_ import calculate_rmsd_matrix
 from tripp._clustering_gromos_ import gromos_clustering
-from tripp._clustering_hdbscan_ import dbscan_clustering
+from tripp._clustering_dbscan_ import dbscan_clustering
 from tripp._clustering_hdbscan_ import hdbscan_clustering
 from tripp._pca_ import pca
 from tripp._generate_clustering_summary_ import generate_clustering_summary

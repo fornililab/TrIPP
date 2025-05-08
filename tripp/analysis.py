@@ -65,7 +65,9 @@ def PCProjectionScreening(output_directory,
                           output_prefix,
                           pka_file,
                           projection_file,
-                          method='Pearson'):
+                          method='Pearson',
+                          start=0,
+                          end=-1):
     """Automatically screen the projection (provided by the user) 
     with the pKa of the ionisable residues.
     
@@ -86,9 +88,21 @@ def PCProjectionScreening(output_directory,
 
     method: str
         'Pearson' or 'Spearman' correlation can be computed.
+        
+    start: int
+        Start time in ps for the projection screening.
+        Default is 0, which means the start of the trajectory.
+    end: int
+        End time in ps for the projection screening.
+        Default is -1, which means the end of the trajectory.
 
     """
     pKaDF = pd.read_csv(pka_file)
+    if end == -1:
+        end = pKaDF['Time [ps]'].iloc[end]
+    else:
+        end = end
+    pKaDF = pKaDF[(pKaDF['Time [ps]'] >= start) & (pKaDF['Time [ps]'] <= end)]
     ProjDF = pd.read_csv(projection_file,
                          sep=',',
                          names=['Time', 'Projection'])

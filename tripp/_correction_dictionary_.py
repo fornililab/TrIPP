@@ -1,7 +1,6 @@
 # Contains residue names recognised by MDAnalysis and
 # associates them with residue names recognised by PROPKA
 corrected_amino_acids = {
-    "ALAD": "ALA",
     "ARGN": "ARG",
     "ASN1": "ASN",
     "ASPH": "ASP",
@@ -78,8 +77,6 @@ corrected_amino_acids = {
     "HSD": "HIS",
     "HSE": "HIS",
     "HSP": "HIS",
-    "LYN": "LYS",
-    "LSN": "LYS",
 }
 # Dictionary for correcting C-terminal oxygen to O and OXT
 # for typical GROMOS, AMBER, and CHARMM forcefield.

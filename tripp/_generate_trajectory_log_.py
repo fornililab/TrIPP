@@ -24,12 +24,9 @@ If you are using TrIPP, please cite:
 """
     return header
 
-def pka_statistics_table(output_directory,
-                        output_prefix,
-                        chain):
-    df = pd.read_csv(f'{output_directory}/{output_prefix}_pka_chain{chain}.csv')
+def pka_statistics_table(df):
     pka_statistics = []
-    for residue,pKaValues in df.items():
+    for residue, pKaValues in df.items():
         if 'Time [ps]' == residue:
             continue
         pka_statistics.append([residue,
@@ -50,7 +47,6 @@ def pka_statistics_table(output_directory,
 def trajectory_log(output_directory,
                    output_prefix, 
                    extract_buriedness_data,
-                   chains, 
                    mutation_selection, 
                    disulphide_cysteines_list,
                    optargs,
@@ -58,7 +54,6 @@ def trajectory_log(output_directory,
                    trajectory_slices,
                    start,
                    end):
-    chains = list(chains)
     if len(disulphide_cysteines_list) > 0:
         disulphide_bond_detection = True
     else:
@@ -75,7 +70,6 @@ Output prefix: {output_prefix}
 Number of cores: {cores}
 Trajectory slices:
 {trajectory_slices}
-Chain: {chains}
 Mutation: {mutation_selection}
 Extract buriedness: {extract_buriedness_data}
 Remove cysteines from pKa or buriedness CSV: {disulphide_bond_detection}
@@ -84,9 +78,12 @@ PropKa optional arguments: {optargs}
 
 -----------------------------------------------------------------
 """)
+    df = pd.read_csv(f'{output_directory}/{output_prefix}_pka.csv')
+    df.drop(columns=['Time [ps]'],inplace=True)
+    chains = set([x.split(':')[-1] for x in df.columns])
     for chain in chains:
         logger.info(f"""pKa Statistics for chain {chain}:
-{pka_statistics_table(output_directory,output_prefix,chain)}
+{pka_statistics_table(df)}
 
 -----------------------------------------------------------------
 """)

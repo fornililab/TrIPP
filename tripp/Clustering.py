@@ -165,7 +165,7 @@ class Clustering:
     def kmedoids(
         self,
         automatic=False,
-        n_clusters=8,
+        n_clusters=None,
         metric="euclidean",
         method="alternate",
         init="k-medoids++",
@@ -195,6 +195,8 @@ class Clustering:
         clustering_method = "KMedoids"
 
         if automatic == False:
+            if not n_clusters:
+                raise Exception("n_clusters must be specified when automatic=False.") 
             labels, cluster_centers, medoid_indices, cluster_centers_trajectories = (
                 kmedoids_clustering(
                     n_clusters=n_clusters,
@@ -341,13 +343,12 @@ class Clustering:
         """
         clustering_method = "greedy"
 
-        # Warning message for default values when automatic=False
-        if not automatic and max_cluster_population == 0.95 and cutoff == 0.1:
-            print("Warning: 'automatic' is set to False and the default values for 'max_cluster_population' (0.95) and 'cutoff' (0.1) are being used. Consider setting these parameters explicitly for better results.") 
-
         rmsd_matrix = calculate_rmsd_matrix(self.clustering_matrix, self.frames)
 
         if automatic == False:
+            # Warning message for default values when automatic=False
+            if cutoff == 0.1:
+                print("Warning: 'automatic' is set to False and the default values for 'cutoff' (0.1) are being used. Consider setting these parameters explicitly for better results.") 
             (
                 labels,
                 cluster_centers,
@@ -537,6 +538,8 @@ class Clustering:
         clustering_method = "DBSCAN"
 
         if automatic == False:
+            if eps == 0.5 and min_samples == 5:
+                print("Warning: 'automatic' is set to False and the default values for 'eps' (0.5) and 'min_samples' (5) are being used. Consider setting these parameters explicitly for better results.") 
             (
                 labels,
                 cluster_centers,
@@ -748,6 +751,8 @@ class Clustering:
         clustering_method = "HDBSCAN"
 
         if automatic == False:
+            if max_cluster_population == 0.95 and eps == 0.5 and min_samples == 5:
+                print("Warning: 'automatic' is set to False and the default values for 'max_cluster_population' (0.95), 'max_clusters' (20), and 'min_cluster_size' (5) are being used. Consider setting these parameters explicitly for better results.") 
             (
                 labels,
                 cluster_centers,

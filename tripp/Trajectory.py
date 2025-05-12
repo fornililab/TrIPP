@@ -121,7 +121,7 @@ class Trajectory:
 
         self.universe = create_mda_universe(
             topology_file=self.topology_file,
-            trajectory_file=self.trajectory_file
+            trajectory_file=self.trajectory_file,
         )
 
         self.corrected_universe = create_propka_compatible_universe(
@@ -151,7 +151,6 @@ class Trajectory:
     def run(
         self,
         extract_buriedness_data=True,
-        chain="A",
         mutation_selections=None,
         disulphide_bond_detection=True,
         optargs=[],
@@ -200,7 +199,6 @@ class Trajectory:
                     self.corrected_universe,
                     self.output_directory,
                     mutation_selections,
-                    chain,
                     optargs),
             )
             jobs.append(job)
@@ -210,6 +208,7 @@ class Trajectory:
         pool.join()
         
         data, log_contents = zip(*results)
+        self.data = data
         log_contents = list(filter(bool,log_contents))
         if log_contents:
             propka_warning_logger = logging.getLogger('proka_warning')
@@ -225,7 +224,7 @@ class Trajectory:
         # Detect disulphide bond and remove it from the pKa and buriedness CSV
         # if set to True.
         if disulphide_bond_detection:
-            disulphide_cysteines_list = detect_disulphide_bonds(self.topology_file)
+            disulphide_cysteines_list = detect_disulphide_bonds(self.corrected_universe)
         else:
             disulphide_cysteines_list = []
         
@@ -245,7 +244,6 @@ class Trajectory:
             self.output_directory,
             self.output_prefix,
             extract_buriedness_data,
-            chain,
             mutation_selections,
             disulphide_cysteines_list,
             optargs,

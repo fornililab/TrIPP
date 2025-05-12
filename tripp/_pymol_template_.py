@@ -24,7 +24,6 @@
 import subprocess
 import os
 def gen_pymol_template(tempfactors_topology_file,
-                       chain,
                        pymol_path, 
                        pse_output_filename, 
                        values_df, 
@@ -40,11 +39,6 @@ def gen_pymol_template(tempfactors_topology_file,
     Parameters:
     tempfactors_topology_file: str
     The input of the topology_file pdb file which has tempfactors assigned.
-    
-    chain: str
-    The chain where the PyMOL labelling will be performed on. If you perfromed
-    TrIPP on a specific chain, make sure you use the same chain in here.
-    Otherwise, chain A by default will be labelled.
     
     pymol_path: str
     The path to the PyMOL software needs to be specified. The script will
@@ -79,8 +73,10 @@ def gen_pymol_template(tempfactors_topology_file,
 cmd.show("cartoon", 'protein_str')
 cmd.color("white", "protein_str")\n""")
     names = []
-    residues, values = (columns for _,columns in values_df.items()) 
-    for residue,value in zip(residues,values):
+    residue_identifiers, values = (columns for _,columns in values_df.items()) 
+    for residue_identifier, value in zip(residue_identifiers,values):
+        residue = residue_identifier.split(':')[0]
+        chain = residue_identifier.split(':')[-1]
         rounded_value = round(value,2)
         if 'N+' in residue:
             name = 'NTR'

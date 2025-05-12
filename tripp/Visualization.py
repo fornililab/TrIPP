@@ -96,7 +96,6 @@ class Visualization:
                 pymol_path, 
                 output_directory,
                 output_prefix,
-                chain = 'A',
                 coloring_method='mean', 
                 lower_limit=0, 
                 upper_limit=14,
@@ -116,11 +115,6 @@ class Visualization:
             The output prefix for the PyMOL .pse file. The prefix will be combined 
         with the coloring_method ('mean' or 'difference_to_model_value') to give
         the pse_output_filename.
-        
-        chain: str, default = 'A'
-            The chain where the PyMOL labelling will be performed on. If you performed
-        TrIPP on a specific chain, make sure you use the same chain in here.
-        Otherwise, chain A by default will be labelled.
     
         coloring_method: str, int, or float, default 'mean'
             To determine how the color of each residue is produced. Can be 'mean', 
@@ -193,8 +187,10 @@ class Visualization:
         # Looping through them to assign the value onto the tempfactor of ionisable
         # residues. The topology_file with the tempfactor is written as pdb and a PyMOL
         # session is generated as .pse.
-        residues, values = (columns for _, columns in values_df.items())
-        for residue, value in zip(residues, values):
+        residue_identifiers, values = (columns for _, columns in values_df.items())
+        for residue_identifier, value in zip(residue_identifiers, values):
+            residue = residue_identifier.split(':')[0]
+            chain = residue_identifier.split(':')[-1]
             if 'N+' in residue or 'C-' in residue:
                 resid = int(residue[2:])
             else:
@@ -215,7 +211,6 @@ class Visualization:
         ag.write(tempfactors_output_topology_file)
         pse_output_filename = tempfactors_output_topology_file.replace('.pdb', '.pse')
         gen_pymol_template(tempfactors_output_topology_file,
-                           chain,
                            pymol_path, 
                            pse_output_filename, 
                            values_df, 

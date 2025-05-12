@@ -6,7 +6,7 @@ import logging
 import pandas as pd
 
 logger = logging.getLogger(__name__)
-def create_mda_universe(topology_file, trajectory_file):
+def create_mda_universe(topology_file, trajectory_file, chain='A'):
     if trajectory_file is None:
         universe = mda.Universe(topology_file)
     
@@ -15,19 +15,19 @@ def create_mda_universe(topology_file, trajectory_file):
     
     topology = universe._topology
     _, counts = np.unique(universe.residues.resids, return_counts=True)
-    # Check if chainID is empty or not, if so default chain A 
-    # for the whole system.
+    # Check if chainID of any residue is empty or not, 
+    # if so default chain A for the whole system.
     if '' in topology.chainIDs.values and (counts == 1).all():
         topology.chainIDs.values = np.full(len(topology.chainIDs.values),
-                                           'A',
+                                           chain,
                                            dtype=str) 
-        logger.info("""Your topology file contains no chain identity for at least one atom. 
-Will add chain A for your whole system by default""")
+        logger.info(f"""Your topology file contains no chain identity for at least one atom. 
+Will add chain {chain} for your whole system by default""")
     elif '' in topology.chainIDs.values and (counts > 1).any():
-        raise KeyError('Your system contain duplicated resid, please assign chain to your system before running TrIPP.')
+        raise Exception('Your system contain duplicated resid and at least one atom does not have chain identity, please assign chain identity to your system before running TrIPP.')
     
     elif len(set(topology.chainIDs.values)) == 1 and (counts > 1).any():
-        raise KeyError('Your system contain duplicated resid, but all residues in your system has the same chain. Please re-assign the chain of your system')
+        raise Exception('Your system contain duplicated resid, but all residues in your system has the same chain. Please re-assign the chain identity of your system')
         
     if hasattr(universe.atoms, 'formalcharges') is False:
         universe.add_TopologyAttr('formalcharges', np.full(len(topology.chainIDs.values), 0, dtype=float))

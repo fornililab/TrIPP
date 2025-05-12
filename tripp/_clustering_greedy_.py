@@ -21,7 +21,7 @@
 """
 
 import numpy as np
-
+from tqdm import tqdm
 
 def greedy_clustering(cutoff, rmsd_matrix, frames, trajectory_names):
     """
@@ -41,7 +41,7 @@ def greedy_clustering(cutoff, rmsd_matrix, frames, trajectory_names):
     cluster_center_indices = []
     cluster_centers_trajectories = []
 
-    for i in range(n_structures):
+    for i in tqdm(range(n_structures)):
         # A boolean array neighbor_mask is generated to determine what RMSDs
         # are under the cutoff.
         neighbor_mask = current_matrix <= cutoff

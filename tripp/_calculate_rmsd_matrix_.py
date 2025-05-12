@@ -21,7 +21,7 @@
 """
 
 import numpy as np
-
+from tqdm import tqdm
 
 def calculate_rmsd_matrix(clustering_matrix, frames):
     """
@@ -36,8 +36,8 @@ def calculate_rmsd_matrix(clustering_matrix, frames):
         return rmsd
 
     rmsd_array = np.zeros((len(frames), len(frames)))
-
-    for i in range(len(frames)):
+    print('Building RMSD matrix...')
+    for i in tqdm(range(len(frames))):
         point1 = clustering_matrix[i]
         for j in range(len(frames)):
             point2 = clustering_matrix[j]

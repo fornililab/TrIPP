@@ -8,7 +8,7 @@ import logging
 import io
 
 def pka_iterator(trajectory_slice, universe,
-                 output_directory, mutation_selections, chain,
+                 output_directory, mutation_selections,
                  optargs=[]):
     """
     Function to run propka.run.single on the distributed trajectory slice.
@@ -21,7 +21,15 @@ def pka_iterator(trajectory_slice, universe,
     universe: MDAnalysis Universe object
         Inherited from the Trajectory class initialisation, which is the
         corrected universe
-        
+    output_directory: str
+        Directory to write the propka output files to.
+    mutation_selections: list of str
+        List of selection strings for the atoms to mutate.
+    optargs: list of str, default=[]
+        PROPKA prediction can be run with optional arguments as indicated
+        in their documentation. Each flag is string separated by a comma.
+        For example, `["-k","--pH=7.2"]` keeps the proton in your topology
+        and setting pH 7.2 for ie: stability calculations, respectively.
     """
     # Redirect warning from propka.group to a file
     logger = logging.getLogger('propka')
@@ -58,7 +66,7 @@ def pka_iterator(trajectory_slice, universe,
 
         time = ts.time
         # Write pKa csv
-        data_dictionary = extract_pka_buriedness_data(f'{temp_name}.pka', chains=chain, time=time)
+        data_dictionary = extract_pka_buriedness_data(f'{temp_name}.pka', time=time)
         data.append(data_dictionary)
 
         os.remove(f'{temp_name}.pdb') 

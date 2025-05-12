@@ -28,7 +28,7 @@ from tripp._write_clustering_info_ import write_clustering_info
 from sklearn.metrics import silhouette_score
 import numpy as np
 from tripp._calculate_rmsd_matrix_ import calculate_rmsd_matrix
-from tripp._clustering_gromos_ import gromos_clustering
+from tripp._clustering_greedy_ import greedy_clustering
 from tripp._clustering_dbscan_ import dbscan_clustering
 from tripp._clustering_hdbscan_ import hdbscan_clustering
 from tripp._pca_ import pca
@@ -41,7 +41,7 @@ import logging
 class Clustering:
     """
     This class provides a way to extract representative structures from a trajectory
-    using the clustering methods: kmedoids, gromos, or dbscan methods. Clustering
+    using the clustering methods: kmedoids, greedy, or dbscan methods. Clustering
     is done using the pKa values and (if required) the relative position of
     selected residues as features.
 
@@ -309,7 +309,7 @@ class Clustering:
             )
         )
 
-    def gromos(
+    def greedy(
         self,
         automatic=False,
         max_cluster_population=0.95,
@@ -318,7 +318,7 @@ class Clustering:
         max_cutoffs=20,
     ):
         """
-        This function implements the gromos method to do the clustering
+        This function implements the greedy method to do the clustering
         as described by Micheletti et al.
         (DOI: 10.1002/1097-0134(20000901)40:4<662::aid-prot90>3.0.co;2-f).
 
@@ -339,7 +339,11 @@ class Clustering:
         max_cutoffs: int, default=20, max number of cutoffs used to find
         the most suitable one for clustering.
         """
-        clustering_method = "GROMOS"
+        clustering_method = "greedy"
+
+        # Warning message for default values when automatic=False
+        if not automatic and max_cluster_population == 0.95 and cutoff == 0.1:
+            print("Warning: 'automatic' is set to False and the default values for 'max_cluster_population' (0.95) and 'cutoff' (0.1) are being used. Consider setting these parameters explicitly for better results.") 
 
         rmsd_matrix = calculate_rmsd_matrix(self.clustering_matrix, self.frames)
 
@@ -349,7 +353,7 @@ class Clustering:
                 cluster_centers,
                 cluster_center_indices,
                 cluster_centers_trajectories,
-            ) = gromos_clustering(
+            ) = greedy_clustering(
                 cutoff=cutoff,
                 rmsd_matrix=rmsd_matrix,
                 frames=self.frames,
@@ -380,7 +384,7 @@ class Clustering:
                     cluster_centers,
                     cluster_center_indices,
                     cluster_centers_trajectories,
-                ) = gromos_clustering(
+                ) = greedy_clustering(
                     cutoff=cutoff_i,
                     rmsd_matrix=rmsd_matrix,
                     frames=self.frames,
@@ -438,7 +442,7 @@ class Clustering:
                 cluster_centers,
                 cluster_center_indices,
                 cluster_centers_trajectories,
-            ) = gromos_clustering(
+            ) = greedy_clustering(
                 cutoff=cutoff,
                 rmsd_matrix=rmsd_matrix,
                 frames=self.frames,

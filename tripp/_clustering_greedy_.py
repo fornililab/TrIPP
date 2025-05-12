@@ -23,9 +23,9 @@
 import numpy as np
 
 
-def gromos_clustering(cutoff, rmsd_matrix, frames, trajectory_names):
+def greedy_clustering(cutoff, rmsd_matrix, frames, trajectory_names):
     """
-    Function to run GROMOS clustering.
+    Function to run greedy clustering.
     """
 
     # A copy of the RMSD matrix is made to not modify the original array

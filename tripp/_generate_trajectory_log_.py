@@ -82,8 +82,9 @@ PropKa optional arguments: {optargs}
     df.drop(columns=['Time [ps]'],inplace=True)
     chains = set([x.split(':')[-1] for x in df.columns])
     for chain in chains:
+        df_chain = df[df.columns[df.columns.str.split(':').str[-1] == chain]]
         logger.info(f"""pKa Statistics for chain {chain}:
-{pka_statistics_table(df)}
+{pka_statistics_table(df_chain)}
 
 -----------------------------------------------------------------
 """)

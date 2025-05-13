@@ -751,8 +751,8 @@ class Clustering:
         clustering_method = "HDBSCAN"
 
         if automatic == False:
-            if max_cluster_population == 0.95 and eps == 0.5 and min_samples == 5:
-                print("Warning: 'automatic' is set to False and the default values for 'max_cluster_population' (0.95), 'max_clusters' (20), and 'min_cluster_size' (5) are being used. Consider setting these parameters explicitly for better results.") 
+            if max_cluster_population == 0.95 and min_cluster_size == 5 and not min_samples:
+                print("Warning: 'automatic' is set to False and the default values for 'max_cluster_population' (0.95), 'min_cluster_size' (5), and 'min_samples' (None) are being used. Consider setting these parameters explicitly for better results.") 
             (
                 labels,
                 cluster_centers,

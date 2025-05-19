@@ -48,7 +48,7 @@ def greedy_clustering(cutoff, rmsd_matrix, frames, trajectory_names):
 
         # The current_matrix array is checked to determine if all elements are
         # set to infinity. If the condition is true the clustering is complete.
-        if np.all(np.isinf(current_matrix)) is True:
+        if np.all(np.isinf(current_matrix)):
             break
 
         else:

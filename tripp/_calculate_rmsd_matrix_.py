@@ -25,7 +25,18 @@ from tqdm import tqdm
 
 def calculate_rmsd_matrix(clustering_matrix, frames):
     """
-    Function that calculates the RMSD matrix.
+    Function that calculates the RMSD matrix for greedy clustering algorithm.
+    
+    Parameters
+    ----------
+    clustering_matrix : np.ndarray
+        The clustering matrix created by the create_clustering_matrix function.
+    frames : list
+        A list of frames corresponding to the clustering points.
+    Returns
+    -------
+    rmsd_array : np.ndarray
+        A 2D numpy array containing the RMSD values between each pair of clustering points.
     """
 
     def calculate_rmsd(point1, point2):

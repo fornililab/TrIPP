@@ -32,8 +32,42 @@ def generate_clustering_summary(trajectory_file,
                                 silhouette_scores, 
                                 n_components, 
                                 cummulative_variance, 
-                                buriedness_file=None):
-
+                                buriedness_file):
+    """
+    Generate a summary of the clustering process.
+    Parameters
+    ----------
+    trajectory_file: str or dict
+        The path to the trajectory file or a dictionary with trajectory names as keys and file paths as values.
+    topology_file: str
+        The path to the topology file.
+    pka_file: str or list
+        The path to the pKa file or a list of paths if multiple pKa files are used.
+    selections: list
+        A list of residue selections used for clustering.
+    include_distances: bool
+        Whether distances between charge centers were included in the clustering.
+    include_buriedness: bool
+        Whether buriedness measures were included in the clustering.
+    clustering_method: str
+        The clustering method used, e.g., 'DBSCAN'.
+    automatic: bool
+        Whether automatic clustering was performed.
+    silhouette_scores: pd.DataFrame
+        A DataFrame containing silhouette scores for different clustering parameters.
+    n_components: int or None
+        The number of principal components used for dimensionality reduction, or None if no reduction was done.
+    cummulative_variance: float
+        The cumulative variance explained by the principal components used.
+    buriedness_file: str or list
+        The path to the buriedness file or a list of paths if multiple buriedness files are used.
+    Returns
+    -------
+    summary: str
+        A formatted string summarizing the clustering process, including file information, residue selections, 
+        whether distances and buriedness were included, clustering method, dimensionality reduction details, 
+        automatic clustering parameters, and the best silhouette score parameters.
+    """
     #information on files 
     if type(trajectory_file) == str: 
         trajectory_name = 'Unnnamed Trajectory' 

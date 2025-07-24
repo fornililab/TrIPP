@@ -1,6 +1,24 @@
 import numpy as np 
 
 def extract_pka_buriedness_data(file, time):
+    """
+    Extracts pKa and buriedness data from a PROPKA output file.
+    Parameters
+    ----------
+    file: str
+        The path to the PROPKA temporary output file.
+    time: str
+        The time point for which the data is extracted, used as a key in the returned dictionary.
+    Returns
+    -------
+    data: dict
+        A dictionary containing the following keys:
+        - 'residue_identifier_list': A list of residue identifiers in the format 'RESID:CHAIN'.
+        - 'pka_list': A list of pKa values corresponding to the residues.
+        - 'buriedness_list': A list of buriedness values corresponding to the residues.
+        The three lists are the same order so that later can be used to match the pKa and
+        buriedness values to the residue identifiers.
+    """
     compatible_resnames = ['ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 
                            'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 
                            'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL', 'N+', 'C-'] # N+ and C- added for terminal in propka file

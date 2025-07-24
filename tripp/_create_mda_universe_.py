@@ -6,7 +6,31 @@ import logging
 import pandas as pd
 
 logger = logging.getLogger(__name__)
-def create_mda_universe(topology_file, trajectory_file, chain='A'):
+def create_mda_universe(topology_file, trajectory_file):
+    """
+    Create an MDAnalysis Universe object from a topology file and an 
+    optional trajectory file. Checks for chain identity and formal 
+    charges, and adds default values if necessary. Note that the 
+    check for chain identity is not exhaustive.
+    
+    Parameters
+    ----------
+    topology_file : str
+        Path to the topology file.
+    trajectory_file : str or None
+        Path to the trajectory file. If None, only the topology is loaded.
+    Return
+    -------
+    universe : MDAnalysis.universe
+        MDAnalysis Universe object containing the topology and trajectory 
+        data.
+    Raises
+    ------
+    Exception
+        If the topology file contains residues with residue IDs but the
+        chain IDs are empty, or if the duplicated residue IDs have the
+        same chain ID.
+    """
     if trajectory_file is None:
         universe = mda.Universe(topology_file)
     
@@ -19,15 +43,15 @@ def create_mda_universe(topology_file, trajectory_file, chain='A'):
     # if so default chain A for the whole system.
     if '' in topology.chainIDs.values and (counts == 1).all():
         topology.chainIDs.values = np.full(len(topology.chainIDs.values),
-                                           chain,
+                                           'A',
                                            dtype=str) 
         logger.info(f"""Your topology file contains no chain identity for at least one atom. 
-Will add chain {chain} for your whole system by default""")
+Will add chain A for your whole system by default""")
     elif '' in topology.chainIDs.values and (counts > 1).any():
-        raise Exception('Your system contain duplicated resid and at least one atom does not have chain identity, please assign chain identity to your system before running TrIPP.')
+        raise Exception('Your system contain duplicated resid and at least one atom does not have a chain ID, please assign chain IDs before running TrIPP.')
     
     elif len(set(topology.chainIDs.values)) == 1 and (counts > 1).any():
-        raise Exception('Your system contain duplicated resid, but all residues in your system has the same chain. Please re-assign the chain identity of your system')
+        raise Exception('Your system contain duplicated resid, but all atoms in your system have the same chain ID, please re-assign the chain IDs before running TrIPP')
         
     if hasattr(universe.atoms, 'formalcharges') is False:
         universe.add_TopologyAttr('formalcharges', np.full(len(topology.chainIDs.values), 0, dtype=float))
@@ -41,6 +65,39 @@ def create_propka_compatible_universe(universe,
                                       hetatm_resname,
                                       custom_terminal_oxygens,
                                       custom_resname_correction):
+    """
+    Converting the loaded universe from create_mda_universe function 
+    to PROPKA compatible format, including the resname of standard amino 
+    acids and atom names of terminal oxygens. The record type of a resname 
+    can also be modified with user's input in the case of a ligand. Checking 
+    will be performed for resname, record type and terminal oxygens. See 
+    _propka_input_check_ for more information.
+    
+    Parameters
+    ----------
+    universe: MDAnalysis.universe
+        MDAnalysis universe that has been processed through create_mda_universe.
+    hetatm_resname: str, list, default=None
+        Resname of the hetatm that need to be modified. See log for info
+        if encountered error.
+    custom_terminal_oxygens: list, default=None
+        PROPKA only recognizes O and OXT for the terminal oxygens. Either 
+        provide a list of length 2 containing the atom name of your terminal
+        oxygens, or None for correction according to our pre-defined
+        dictionary (See _correction_dictionary_.py for the pre-defined
+        name)
+    custom_resname_correction: dict, default=None
+        Our pre-defined dictionary might not contain all resname to be
+        corrected. (See _correction_dictionary_.py for the pre-defined
+        resname) Use this parameter to add a custom resname correction.
+        ie: {'ASPH':'ASP'}
+    Returns
+    -------
+    corrected_universe: MDAnalysis.universe
+        MDAnalysis universe that is compatible with PROPKA, including
+        20 standard amino acid resnames, O and OXT for C-terminal(s), 
+        HETATM for non-protein atoms (when hetatm_resname is used).
+    """
     corrected_universe = universe.copy()
     # When user provided custom_resname_correction, append them to the dictionary temporarily.
     if custom_resname_correction is not None:
@@ -92,40 +149,28 @@ def create_propka_compatible_universe(universe,
     # the terminal oxygens will be renamed according to the dictionary
     # in _correction_dictionary_.corrected_atom_names.
     if custom_terminal_oxygens is None:
-        ag = corrected_universe.select_atoms('protein')
-        corrected_terminal_oxygens_trace = []
-        for index, name in zip(ag.residues.resindices, ag.residues.names):
-            if np.isin([i.strip() for i in list(corrected_atom_names.keys())], name).any():
-                corrected_name = pd.Series(name).replace(corrected_atom_names).to_numpy()
-                ag_to_correct = corrected_universe.select_atoms(f'resindex {index}')
-                before_correction = ag_to_correct.atoms.names.copy()
-                ag_to_correct.atoms.names = corrected_name
-                after_correction = ag_to_correct.atoms.names.copy()
-                pnames = np.setdiff1d(before_correction, after_correction)
-                anames = np.setdiff1d(after_correction, before_correction)
-                resid = ag_to_correct.residues.resids[0]
-                resname = ag_to_correct.residues.resnames[0]
-                corrected_terminal_oxygens_trace.append(f"{resname}{resid}: {', '.join([f'{pname} -> {aname.strip()}' for pname,aname in zip(pnames,anames)])}")
-        corrected_terminal_oxygens_trace = '\n'.join(corrected_terminal_oxygens_trace)
+        corrected_universe, corrected_terminal_oxygens_trace = modifiy_terminal_oxygens(corrected_universe, corrected_atom_names)
         logger.info(f"""Terminal oxygens will be modified with our predefined dictionary:
 {corrected_terminal_oxygens_trace}""")
+        
     # Check if argument is a list
     elif not isinstance(custom_terminal_oxygens,list):
         raise TypeError(f'custom_terminal_oxygens argument must be a list, not {type(custom_terminal_oxygens)}')
+    
     # Check if argument is a list of string
     elif not all(isinstance(element,str) for element in custom_terminal_oxygens):
         raise TypeError(f'custom_terminal_oxygens argument must be a list of strings, at least one of your element is not a string')
+    
     # Check if argument is a list of length 2
     elif len(custom_terminal_oxygens) != 2:
         raise ValueError(f'Length of custom_terminal_oxygens is not 2, but {len(custom_terminal_oxygens)}')
 
-    # When custom_terminal_oxygens is provided by user as list of string,
+    # When custom_terminal_oxygens is provided by user as a list of string,
     # the terminal oxygens names will be renamed to O and OXT.
     elif isinstance(custom_terminal_oxygens, list) and len(custom_terminal_oxygens) == 2:
-        ag = corrected_universe.select_atoms('protein')
         correct_terminal_oxygens = ['O', 'OXT']
         to_be_corrected_dict = {i:j for i,j in zip(custom_terminal_oxygens, correct_terminal_oxygens)}
-        corrected_universe, corrected_terminal_oxygens_trace = modifiy_terminal_oxygens(ag, corrected_universe, to_be_corrected_dict)
+        corrected_universe, corrected_terminal_oxygens_trace = modifiy_terminal_oxygens(corrected_universe, to_be_corrected_dict)
         
         logger.info(f"""custom_terminal_oxygens supplied and are modified:
 {corrected_terminal_oxygens_trace}""")
@@ -134,7 +179,27 @@ def create_propka_compatible_universe(universe,
         
     return corrected_universe
 
-def modifiy_terminal_oxygens(ag, corrected_universe, to_be_corrected_dict):
+def modifiy_terminal_oxygens(corrected_universe, to_be_corrected_dict):
+    """
+    Function to modify the terminal oxygens in the corrected_universe 
+    based on to_be_corrected_dict.
+    
+    Parameters
+    ----------
+    corrected_universe: MDAnalysis.universe
+        Universe that is to be corrected.
+    to_be_corrected_dict: dict
+        Dictionary for which the keys are the atom names of the terminal oxygens
+        in your topology, and the value is the atom name of O or OXT.
+        Provided through custom_terminal_oxygens/corrected_atom_names.
+    Return
+    ----------
+    corrected_universe: MDAnalysis.universe
+        Universe that the atom names of terminal oxygens have been corrected.
+    corrected_terminal_oxygens_trace: str
+        Information of the processed terminal oxygens.
+    """
+    ag = corrected_universe.select_atoms('protein')
     corrected_terminal_oxygens_trace = []
     for index, name in zip(ag.residues.resindices, ag.residues.names):
         if np.isin([i.strip() for i in list(to_be_corrected_dict.keys())], name).any():
@@ -150,3 +215,4 @@ def modifiy_terminal_oxygens(ag, corrected_universe, to_be_corrected_dict):
             corrected_terminal_oxygens_trace.append(f"{resname}{resid}: {', '.join([f'{pname} -> {aname.strip()}' for pname,aname in zip(pnames,anames)])}")
     corrected_terminal_oxygens_trace = '\n'.join(corrected_terminal_oxygens_trace)
     return corrected_universe, corrected_terminal_oxygens_trace
+

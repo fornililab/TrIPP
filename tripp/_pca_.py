@@ -23,7 +23,21 @@
 from sklearn.decomposition import PCA
 
 def pca(clustering_matrix): 
-
+    """
+    Perform PCA on the clustering matrix to reduce dimensionality. 
+    Parameters
+    ----------
+    clustering_matrix: np.ndarray
+        The clustering matrix to be transformed.
+    Returns
+    -------
+    n_components: int
+        The number of principal components used for dimensionality reduction.
+    cummulative_variance: float
+        The cumulative variance explained by the selected principal components, expressed as a percentage.
+    clustering_matrix_transformed: np.ndarray
+        The transformed clustering matrix after PCA.
+    """
     pca_class = PCA() 
     pca_class.fit(clustering_matrix) 
     var_ratio = pca_class.explained_variance_ratio_ 

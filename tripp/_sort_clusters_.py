@@ -22,34 +22,46 @@
 
 import numpy as np 
 
-def sort_clusters(labels, cluster_indices, cluster_centers, cluster_centers_trajectories): 
+def sort_clusters(labels, cluster_centers, cluster_center_indices, cluster_centers_trajectories): 
+    """
+    Sort clusters based on their population and reassign labels.
+    Parameters
+    ----------
+    labels : np.ndarray
+        An array of cluster labels for each point in the clustering matrix.
+    cluster_centers : list
+        A list of cluster centers.
+    cluster_center_indices: list
+        A list of indices of the cluster centers mapped onto the clustering matrix.
+    cluster_centers_trajectories : list
+        A list of indices of the cluster centers mapped onto the trajectory.
+    """
+    clusters = np.unique(labels) 
+    clusters = clusters[clusters != -1] 
+    labels_without_outliers = labels[labels != -1]
+    
+    frequency = np.bincount(labels_without_outliers, minlength=len(clusters))  
+    
+    new_labels = np.zeros_like(labels, dtype=int) 
+    new_labels[labels == -1] = -1 
+    
+    for i in range(len(clusters)): 
+        index_biggest = np.argmax(frequency) 
+        biggest_cluster = clusters[index_biggest] 
+        labels_mask = labels == biggest_cluster 
+        new_labels[labels_mask] = i 
+        frequency[index_biggest] = 0 
+        
+    
+    new_cluster_centers = np.zeros_like(clusters, dtype=int) 
+    new_cluster_center_indices = np.zeros_like(clusters, dtype=int) 
+    new_cluster_centers_trajectories = np.zeros_like(clusters, dtype=object) 
 
-        clusters = np.unique(labels) 
-        clusters = clusters[clusters != -1] 
-        labels_without_outliers = labels[labels != -1]
-        
-        frequency = np.bincount(labels_without_outliers, minlength=len(clusters))  
-        
-        new_labels = np.zeros_like(labels, dtype=int) 
-        new_labels[labels == -1] = -1 
-        
-        for i in range(len(clusters)): 
-            index_biggest = np.argmax(frequency) 
-            biggest_cluster = clusters[index_biggest] 
-            labels_mask = labels == biggest_cluster 
-            new_labels[labels_mask] = i 
-            frequency[index_biggest] = 0 
-            
-        
-        new_cluster_centers = np.zeros_like(clusters, dtype=int) 
-        new_cluster_indices = np.zeros_like(clusters, dtype=int) 
-        new_cluster_centers_trajectories = np.zeros_like(clusters, dtype=object) 
-
-        for i in range(len(clusters)): 
-            cluster_index = cluster_indices[i] 
-            new_label = new_labels[cluster_index] 
-            new_cluster_indices[new_label] = cluster_indices[i] 
-            new_cluster_centers[new_label] = cluster_centers[i] 
-            new_cluster_centers_trajectories[new_label] = cluster_centers_trajectories[i] 
-        
-        return new_labels, new_cluster_centers, new_cluster_indices, new_cluster_centers_trajectories 
+    for i in range(len(clusters)): 
+        cluster_index = cluster_center_indices[i] 
+        new_label = new_labels[cluster_index] 
+        new_cluster_center_indices[new_label] = cluster_center_indices[i] 
+        new_cluster_centers[new_label] = cluster_centers[i] 
+        new_cluster_centers_trajectories[new_label] = cluster_centers_trajectories[i] 
+    
+    return new_labels, new_cluster_centers, new_cluster_center_indices, new_cluster_centers_trajectories 

@@ -29,13 +29,54 @@ from tripp._create_mda_universe_ import create_mda_universe
 
 def create_clustering_matrix(trajectory_file, topology_file, pka_df,
                              selections, include_distances,
-                             buriedness_df, include_buriedness=False):
+                             buriedness_df, include_buriedness):
     """
     Function that generates the clustering_matrix. The clustering_matrix
     is a 2D numpy array, where columns correspond to normalized pKa
     values, extracted from pka_df, and normalized interresidue
     distances, calculated using the calculate_charge_center_distances
     function. Normalization is done using the z-score.
+    
+    Parameters
+    ----------
+    trajectory_file: str or dict
+        When str, it is the path of the file containing the trajectory. The same
+        formats permited by MDAnalysis can be used. When dict, the clustering is done using
+        multiple trajectories specified in a dictionary, where the name of each trajectory
+        is used as a key and the path as an object: {'MD1' : 'file1', 'MD2' : 'file2', ...}.
+        The same topology file is used for all trajectories.
+    topology_file: str
+        Path to the topology file. The same formats allowed by MDAnalysis can be used.
+    pka_df: pd.DataFrame
+        A DataFrame containing pKa values indexed by time, residue identifier, and
+        trajectory name. This DataFrame is processed by make_pka_or_buriendess_df function
+        in Clustering class.
+    selections: list of str
+        List of selections (MDAnalysis selection algebra) for which the clustering will be done.
+        The residues have a pKa value assigned to them by PROPKA. Note if your system is
+        multichain, your topology and selection must include chain identity.
+    include_distances: bool
+        If True, the relative positions (as distances between the charge centers) are used as
+        additional features for the clustering alongside the pKa values.
+    buriedness_df: pd.DataFrame
+        A DataFrame containing buried ratio (buriedness) values indexed by time, residue identifier,
+        and trajectory name. This DataFrame is processed by make_pka_or_buriendess_df function
+        in Clustering class.
+    include_buriedness: bool
+        If True, buriedness values will be included in the clustering matrix.
+        Default is False.
+    Returns
+    -------
+    clustering_matrix: np.ndarray
+        A 2D numpy array containing the normalized pKa values and distances.
+    times: np.ndarray
+        A 1D numpy array containing the times corresponding to the clustering data.
+    frames: np.ndarray
+        A 1D numpy array containing the frames corresponding to the clustering data.
+    trajectory_names: np.ndarray
+        A 1D numpy array containing the names of the trajectories corresponding to the clustering data.
+    trajectory_dict: dict
+        A dictionary where keys are trajectory names and values are MDAnalysis Universe objects.
     """
 
     if isinstance(trajectory_file, str):
@@ -72,12 +113,14 @@ def create_clustering_matrix(trajectory_file, topology_file, pka_df,
             )
 
         else:
-            partial_clustering_matrix, partial_times, partial_frames, partial_trajectory_names = extract_pka_distances_buriedness(key, trajectory_dict[key],
-                                                                                                                                    df_traj_pka,
-                                                                                                                                    df_traj_buriedness,
-                                                                                                                                    selections,
-                                                                                                                                    include_distances,
-                                                                                                                                    include_buriedness)
+            partial_clustering_matrix, partial_times, partial_frames, partial_trajectory_names = (
+                extract_pka_distances_buriedness(key, 
+                                                 trajectory_dict[key],
+                                                 df_traj_pka,
+                                                 df_traj_buriedness,
+                                                 selections,
+                                                 include_distances,
+                                                 include_buriedness))
             clustering_matrix = np.concatenate((clustering_matrix, partial_clustering_matrix), axis=0)
             times = np.concatenate((times, partial_times), axis=0)
             frames = np.concatenate((frames, partial_frames), axis=0)

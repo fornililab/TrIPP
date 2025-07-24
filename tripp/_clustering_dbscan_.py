@@ -39,7 +39,33 @@ def dbscan_clustering(
     trajectory_names,
 ):
     """
-    Function to run DBSCAN clustering.
+    Function to run DBSCAN clustering from scikit-learn.
+    Standard DBSCAN parameters can be found in scikit-learn documentation:
+    https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html
+    
+    Parameters
+    ----------
+    clustering_matrix : np.ndarray
+        The clustering matrix created by the create_clustering_matrix function.
+    frames : list
+        A list of frames corresponding to the clustering points.
+        Generated from the create_clustering_matrix function.
+    find_centroid : bool
+        If True, the function will return the cluster centroids.
+        If False, it will only return the labels.
+    trajectory_names : np.ndarray
+        An array of trajectory names corresponding to the clustering points.
+        Generated from the create_clustering_matrix function.
+    Returns
+    -------
+    labels : np.ndarray
+        An array of cluster labels for each point in the clustering matrix.
+    cluster_centers : list
+        A list of cluster centers if find_centroid is True.
+    cluster_center_indices: list
+        A list of indices of the cluster centers mapped onto the clustering matrix if find_centroid is True.
+    cluster_centers_trajectories : list
+        A list of indices of the cluster centers mapped onto the trajectory if find_centroid is True.
     """
 
     dbscan_clustering = DBSCAN(
@@ -96,12 +122,12 @@ def dbscan_clustering(
         return cluster_centers, cluster_center_indices, cluster_centers_trajectories
 
     if find_centroid is True:
-        cluster_centroids, cluster_centroid_indices, cluster_centroid_trajectories = find_dbscan_centroid()
+        cluster_centers, cluster_center_indices, cluster_centers_trajectories = find_dbscan_centroid()
         return (
             labels,
-            cluster_centroids,
-            cluster_centroid_indices,
-            cluster_centroid_trajectories,
+            cluster_centers,
+            cluster_center_indices,
+            cluster_centers_trajectories,
         )
 
     elif find_centroid is False:

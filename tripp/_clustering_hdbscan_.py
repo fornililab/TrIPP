@@ -34,16 +34,49 @@ def hdbscan_clustering(
     **kwargs
 ):
     """
-    Function to run HDBSCAN clustering.
+    Function to run HDBSCAN clustering from scikit-learn.
+    Standard HDBSCAN parameters can be found in scikit-learn documentation:
+    https://scikit-learn.org/stable/modules/generated/sklearn.cluster.HDBSCAN.html
+    
+    Parameters
+    ----------
+    min_cluster_size: int
+        The minimum number of samples in a group for that group to be considered a cluster; 
+        groupings smaller than this size will be left as noise. (from scikit-learn)
+    min_samples: int
+        The parameter k used to calculate the distance between a point x_p and its k-th nearest neighbor. 
+        When None, defaults to min_cluster_size. (from scikit-learn)
+    clustering_matrix: np.ndarray
+        The clustering matrix created by the create_clustering_matrix function.
+    frames: list
+        A list of frames corresponding to the clustering points.
+    find_centroid: bool
+        If True, the function will return the cluster centroids.
+        If False, it will only return the labels.
+    trajectory_names: np.ndarray
+        An array of trajectory names corresponding to the clustering points.
+        Generated from the create_clustering_matrix function.
+    kwargs:
+        Additional keyword arguments for HDBSCAN, such as 'metric', 'cluster_selection_method', etc.
+    Returns
+    -------
+    labels: np.ndarray
+        An array of cluster labels for each point in the clustering matrix.
+    cluster_centers: list
+        A list of cluster centers if find_centroid is True.
+    cluster_center_indices: list
+        A list of indices of the cluster centers mapped onto the clustering matrix if find_centroid is True.
+    cluster_centers_trajectories: list
+        A list of indices of the cluster centers mapped onto the trajectory if find_centroid is True.
     """
 
-    hdbscan_clustering = HDBSCAN(
+    hdbscan = HDBSCAN(
         min_cluster_size=min_cluster_size,
         min_samples=min_samples,
         **kwargs
     )
-    hdbscan_clustering.fit(clustering_matrix)
-    labels = hdbscan_clustering.labels_
+    hdbscan.fit(clustering_matrix)
+    labels = hdbscan.labels_
 
     def find_hdbscan_centroid():
         # A list of clusters is made to iterate over.
@@ -86,12 +119,12 @@ def hdbscan_clustering(
         return cluster_centers, cluster_center_indices, cluster_centers_trajectories
 
     if find_centroid is True:
-        cluster_centroids, cluster_centroid_indices, cluster_centroid_trajectories = find_hdbscan_centroid()
+        cluster_centers, cluster_center_indices, cluster_centers_trajectories = find_hdbscan_centroid()
         return (
             labels,
-            cluster_centroids,
-            cluster_centroid_indices,
-            cluster_centroid_trajectories,
+            cluster_centers,
+            cluster_center_indices,
+            cluster_centers_trajectories,
         )
 
     elif find_centroid is False:

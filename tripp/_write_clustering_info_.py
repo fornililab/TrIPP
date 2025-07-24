@@ -24,19 +24,56 @@ from tripp._sort_clusters_ import sort_clusters
 import pandas as pd 
 import MDAnalysis as mda 
 
-def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, trajectory_names, labels, cluster_centers, cluster_indices, cluster_centers_trajectories, output_directory, output_prefix, clustering_method): 
-    
-    labels, cluster_centers, cluster_indices, cluster_centers_trajectories = sort_clusters(labels=labels, cluster_indices=cluster_indices, cluster_centers=cluster_centers, cluster_centers_trajectories=cluster_centers_trajectories) 
-    
-    def write_clustering_log(): 
+def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, trajectory_names, labels, cluster_centers, cluster_center_indices, cluster_centers_trajectories, output_directory, output_prefix, clustering_method): 
+    """
+    Write clustering information to a log file and save cluster centers as PDB files.
+    Parameters
+    ----------
+    summary : str
+        A summary string for the clustering parameters coming from generate_clustering_summary
+        function.
+    trajectory_dict : dict
+        A dictionary where keys are trajectory names and values are MDAnalysis Universe objects.
+    pka_df : pd.DataFrame
+        A DataFrame containing pKa values with rows indexed by time and columns by residue identifier.
+    times : np.ndarray
+        An array of times corresponding to the clustering points.
+    frames : np.ndarray
+        An array of frames corresponding to the clustering points.
+    trajectory_names : np.ndarray
+        A 1D numpy array containing the names of the trajectories corresponding to the clustering data.
+    labels : np.ndarray
+        An array of cluster labels for each point in the clustering matrix.
+    cluster_centers : list
+        A list of cluster centers.
+    cluster_center_indices: list
+        A list of indices of the cluster centers mapped onto the clustering matrix. 
+    cluster_centers_trajectories : list
+        A list of indices of the cluster centers mapped onto the trajectory.
+    output_directory : str
+        The path to the directory where output files will be saved.
+    output_prefix : str
+        A prefix for the clustering output files.
+    clustering_method : str
+        The clustering method used (e.g., 'DBSCAN', 'KMedoids').
+    Returns
+    -------
+    labels : np.ndarray
+        An array of cluster labels for each point in the clustering matrix sorted by cluster population.
+    cluster_center_indices: list
+        A list of indices of the cluster centers mapped onto the clustering matrix sorted by cluster population.
+    """
+    labels, cluster_centers, cluster_center_indices, cluster_centers_trajectories = sort_clusters(labels=labels, cluster_centers=cluster_centers, cluster_center_indices=cluster_center_indices, cluster_centers_trajectories=cluster_centers_trajectories)
+
+    def write_clustering_log():
         df = pd.DataFrame({'Times' : times.flatten(), 'Frames' : frames.flatten(), 'Labels' : labels.flatten(), 'Trajectories' : trajectory_names.flatten()}) 
         cluster_data = {} 
         for i in range(len(cluster_centers)): 
             df_i = df[df['Labels']==i]
             cluster_data[f'Cluster {i}'] = {'Population' : f'{round((len(df_i)/len(df))*100,2)}%', 
                                             'Centroid frame' : str(cluster_centers[i]), 
-                                            'Centroid time' : str(times.flatten()[cluster_indices[i]]), 
-                                            'Centroid trajectory' : str(trajectory_names.flatten()[cluster_indices[i]])} 
+                                            'Centroid time' : str(times.flatten()[cluster_center_indices[i]]), 
+                                            'Centroid trajectory' : str(trajectory_names.flatten()[cluster_center_indices[i]])} 
             for traj in trajectory_dict.keys(): 
                 cluster_data[f'Cluster {i}'][traj] = {'Times' : ', '.join(map(str, df_i[df_i['Trajectories']==traj]['Times'])), 
                                                       'Frames' : ', '.join(map(str, df_i[df_i['Trajectories']==traj]['Frames']))} 
@@ -86,4 +123,4 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
         pka_df.to_csv(f'{output_directory}/{output_prefix}_{clustering_method}_cluster.csv') 
     
     write_new_dataframe() 
-    return labels, cluster_indices
+    return labels, cluster_center_indices

@@ -21,15 +21,30 @@
 """
 
 def mutate(universe, mutation_selections, temp_name): 
-
-
     """ 
-    Function that deletes all atoms of a residue except for a methyl group. The 
-    residue is then renamed to alanine. Note GLY cannot be mutated because of the
-    CB not present.
+    Function that deletes all atoms of a residue except for a methyl group. 
+    The residue is then renamed to alanine. 
+    Parameters
+    ----------
+    universe: MDAnalysis.universe
+        The MDAnalysis universe with the trajectory and topology loaded. 
+        This universe should be corrected by create_propka_compatible_universe 
+        function.
+    mutation_selections: str
+        A selection string in MDAnalysis selection algebra to select the 
+        residue for which the mutation is to be performed.
+    temp_name: str
+        The name of the temporary PDB file to be created with the mutated residue.
+    Exceptions
+    ----------
+    Exception
+        If the residue type is GLY, an exception is raised because GLY cannot be mutated
+        due to the absence of the CB atom.
     """ 
     replace_name = ' '.join(['N','HN','H','CA','HA','CB','O','C'])
     mutation_ag = universe.select_atoms(mutation_selections)
+    if mutation_ag.residues.resnames == 'GLY':
+        raise Exception('GLY cannot be mutated because of the CB not present.')
     mutation_ag.residues.resnames = 'ALA'
     # Selecting all but not the mutation_selection, and also the mutation_selection but only those of replace_name.
     mutation_ag = universe.select_atoms(f"(all and not ({mutation_selections})) or ({mutation_selections} and name {replace_name})")

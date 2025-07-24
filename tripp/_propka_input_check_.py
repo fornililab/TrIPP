@@ -26,6 +26,19 @@ import numpy as np
 logger = logging.getLogger(__name__)
     
 def check_resname_HETATM(non_protein_ag):
+    """
+    Check if the resnames in the non-protein atoms universe are compatible with PROPKA.
+    Parameters
+    ----------
+    non_protein_ag : MDAnalysis.AtomGroup
+        The AtomGroup containing non-protein atoms, such as ligands or water.
+        Note that non-protein selection was defined by MDAnalysis selection algebra.
+    Raises
+    ------
+    NameError
+        If there are resnames that are not recognized by PROPKA, and their record type
+        is not 'HETATM', an exception will be raised.
+    """
     compatible_resnames = ['ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 
                            'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 
                            'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL']
@@ -42,6 +55,18 @@ If it is a ligand, please use hetatm_resname argument to convert the record type
         logger.info('Resname and record type check passed.\n')
         
 def check_terminal_oxygens(universe):
+    """
+    Check if the terminal oxygens in the universe are named 'O' and 'OXT
+    Parameters
+    ----------
+    universe : MDAnalysis.Universe
+        The MDAnalysis universe containing the system to be checked.
+    Raises
+    ------
+    NameError
+        If no terminal oxygens are found with the names 'O' and 'OXT',
+        an exception will be raised.
+    """
     terminals = []
     for index, name in zip(universe.residues.resindices, universe.residues.names):
         if np.isin('O', name).any() and np.isin('OXT', name).any():

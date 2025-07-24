@@ -36,7 +36,38 @@ def kmedoids_clustering(
     trajectory_names,
 ):
     """
-    Function to run KMedoids clustering.
+    Function to run KMedoids clustering from sklearn_extra.
+    
+    Parameters
+    ----------
+    n_clusters: int
+        The number of clusters to form.
+    metric: str
+        The metric to use for distance computation.
+    method: str
+        The method to use for clustering.
+    init: str
+        The initialization method for the medoids.
+    max_iter: int
+        The maximum number of iterations for the clustering algorithm.
+    random_state: int
+        Random seed for reproducibility.
+    clustering_matrix: np.ndarray
+        The input data for clustering.
+    frames: np.ndarray
+        The frames corresponding to the clustering data.
+    trajectory_names: np.ndarray
+        The names of the trajectories corresponding to the clustering data.
+    Returns
+    -------
+    labels: np.ndarray
+        An array of cluster labels for each point in the clustering matrix.
+    cluster_centers: np.ndarray
+        The coordinates of the cluster centers (medoids).
+    medoid_indices: np.ndarray
+        The indices of the medoids in the clustering matrix.
+    cluster_centers_trajectories: np.ndarray
+        A list of indices of the cluster centroids mapped onto the trajectory.
     """
 
     kmedoids_clustering = KMedoids(

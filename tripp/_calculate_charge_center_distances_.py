@@ -29,6 +29,15 @@ def calculate_charge_center_distances(positions):
     of n residues. The function takes as input the n x 3 matrix
     positions, which includes the coordinates of the charge centers
     and calculates n(n-1)/2 distances.
+    
+    Parameters
+    ----------
+    positions : np.ndarray
+        An n x 3 numpy array containing the coordinates of the charge centers.
+    Returns
+    -------
+    distance_array : np.ndarray
+        A 1D numpy array containing the distances between each pair of charge centers
     """
 
     distances = []

@@ -79,28 +79,28 @@ cmd.color("white", "protein_str")\n""")
         chain = residue_identifier.split(':')[-1]
         rounded_value = round(value,2)
         if 'N+' in residue:
-            name = 'NTR'
             resid = residue[2:]
-            selection = f'(bb. and not elem O and not elem C and byres (first (protein_str and chain {chain}))) extend 1 and not elem C'
+            name = f'NTR{resid}_{chain}'
+            selection = f'(bb. and not elem O and not elem C and byres protein_str and chain {chain} and resi {resid}) extend 1 and not elem C'
             label_sel = f'{name} and bb. and elem N'
         elif 'C-' in residue:
-            name = 'CTR'
             resid = residue[2:]
-            selection = f'((bb. and byres (last (protein_str and chain {chain}))) and elem C and not name CA) extend 1 and not name CA'
+            name = f'CTR{resid}_{chain}'
+            selection = f'((bb. and byres protein_str and chain {chain} and resi {resid}) and elem C and not name CA) extend 1 and not name CA'
             label_sel = f'{name} and bb. and elem C and not name CA'
         else:
-            name = residue
-            names.append(name)
+            name = f'{residue}_{chain}'
             resid = residue[3:]
-            selection = f'((byres protein_str and chain {chain} and resi {resid})&(sc.|(n. CA|n. N&r. PRO))) and not name H1+H2+H3'
+            selection = f'((byres protein_str and chain {chain} and resi {resid})&(sc.|(n. CA|n. N&r. PRO))) and not name H1+H2+H3 and not (protein_str and chain {chain} and resi {resid} & name C extend 1 &! name CA)'
             label_sel = f'{name} and name CB'
+        names.append(name)
         with open('.pymol_template.py', 'a') as output:
             output.write(f"""cmd.create('{name}', '{selection}') 
 cmd.show('licorice', '{name}') 
 cmd.spectrum('b','{color_palette}','{name}',{lower_limit},{upper_limit})
 cmd.label('{label_sel}','{rounded_value}')\n""")
     
-    sorted_residues = ' '.join(['NTR']+sorted(names, key=lambda x: int(x[3:]))+['CTR'])
+    sorted_residues = ' '.join(sorted(names, key=lambda x: (x[-1], int(x[3:-2]))))
     with open('.pymol_template.py', 'a') as output:
         output.write(f"""cmd.order('{sorted_residues}')
 cmd.ramp_new('colorbar', 'none', [{lower_limit}, ({lower_limit} + {upper_limit})/2, {upper_limit}], {color_palette.split('_')})

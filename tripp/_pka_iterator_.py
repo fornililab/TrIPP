@@ -3,7 +3,7 @@ from tripp._edit_pdb_ import mutate
 from propka import run 
 from tripp._extract_pka_file_data_ import extract_pka_buriedness_data 
 import os
-import pandas as pd
+import glob
 import logging
 import io
 
@@ -18,7 +18,7 @@ def pka_iterator(trajectory_slice, universe,
     trajectory_slices: list of int
         Inherited from the Trajectory class initialisation, where trajectory
         slicing is performed.
-    universe: MDAnalysis Universe object
+    universe: MDAnalysis.universe object
         Inherited from the Trajectory class initialisation, which is the
         corrected universe
     output_directory: str
@@ -65,12 +65,14 @@ def pka_iterator(trajectory_slice, universe,
         os.chdir(cwd)
 
         time = ts.time
-        # Write pKa csv
-        data_dictionary = extract_pka_buriedness_data(f'{temp_name}.pka', time=time)
+        # Extract pKa and buriedness data from the generated .pka file
+        # and append it to the data list.
+        temp_pka_file = glob.glob(f'{temp_name}*.pka')[0] # .pka could have different suffixes ie: _alt_state.pka
+        data_dictionary = extract_pka_buriedness_data(temp_pka_file, time=time)
         data.append(data_dictionary)
 
         os.remove(f'{temp_name}.pdb') 
-        os.remove(f'{temp_name}.pka')
+        os.remove(temp_pka_file)
     
     logger.removeHandler(handler)
     log_capture_string.close()

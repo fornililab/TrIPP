@@ -4,7 +4,28 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-def output_df(output_directory, output_prefix, data, disulphide_cysteines_list, extract_buriedness_data):
+def output_df(output_directory, output_prefix, data, save_disulphide_pka, extract_buriedness_data):
+    """
+    Process the data from all workers and save the pKa and buriedness data to CSV files.
+    Parameters
+    ----------
+    output_directory : str
+        The path to the directory where output files will be saved.
+    output_prefix : str
+        A prefix for the output files.
+    data : list
+        A list of data from all workers, where each worker's data is a dictionary with time
+        as keys and a dictionary of pKa and buriedness dictionary as values.
+    save_disulphide_pka : bool
+        Whether to save pKa values for disulphide-coupled cysteines.
+    extract_buriedness_data : bool
+        Whether to extract and save buriedness data.
+    Returns
+    -------
+    disulphide_cys_col : list or None
+        A list of residue identifiers for disulphide bonded cysteine if save_disulphide_pka is True, 
+        otherwise None.
+    """
     pka_full_data = []
     buriedness_full_data = []
     time_list = []
@@ -18,7 +39,7 @@ def output_df(output_directory, output_prefix, data, disulphide_cysteines_list, 
     pka_df.insert(0,'Time [ps]',time_list)
     
     try:
-        pka_df.astype(float).sort_values('Time [ps]', inplace=True)
+        pka_df = pka_df.astype(float).sort_values('Time [ps]')
     except ValueError:
         contains_star = pka_df.applymap(lambda x: '*' in x if isinstance(x, str) else False)
         coupled_residues = ", ".join(list(pka_df.loc[:, contains_star.any()].columns))
@@ -27,7 +48,7 @@ def output_df(output_directory, output_prefix, data, disulphide_cysteines_list, 
 run -d in the optargs to consider alternative state.
 """)
         pka_df = pka_df.applymap(lambda x: x.replace('*','') if isinstance(x, str) else x)
-        pka_df.astype(float).sort_values('Time [ps]', inplace=True)
+        pka_df = pka_df.astype(float).sort_values('Time [ps]')
         
     if extract_buriedness_data:
         buriedness_df = pd.DataFrame(buriedness_full_data, columns=pka_buriedness_resname_dict['residue_identifier_list'])
@@ -35,12 +56,17 @@ run -d in the optargs to consider alternative state.
         buriedness_df['Time [ps]'] = buriedness_df['Time [ps]'].astype(float)
         buriedness_df.sort_values('Time [ps]', inplace=True)
 
-    if len(disulphide_cysteines_list) > 0:
-        pka_df.drop(disulphide_cysteines_list, axis=1, inplace=True)
+    if not save_disulphide_pka:
+        disulphide_cys_col = pka_df.columns[(pka_df == 99.99).any()].to_list()
+        pka_df.drop(disulphide_cys_col, axis=1, inplace=True)
         if extract_buriedness_data:
-            buriedness_df.drop(disulphide_cysteines_list, axis=1, inplace=True)
+            buriedness_df.drop(disulphide_cys_col, axis=1, inplace=True)
+    else:
+        disulphide_cys_col = None
     
     pka_df.to_csv(f'{output_directory}/{output_prefix}_pka.csv', index=False)
     
     if extract_buriedness_data:
         buriedness_df.to_csv(f'{output_directory}/{output_prefix}_buriedness.csv', index=False)
+        
+    return disulphide_cys_col

@@ -25,6 +25,18 @@ If you are using TrIPP, please cite:
     return header
 
 def pka_statistics_table(df):
+    """
+    Generate a formatted string representation of pKa statistics from a DataFrame.
+    Parameters
+    ----------
+    df: pd.DataFrame
+        A DataFrame containing pKa values for different residues, with columns as residue identifiers
+        and rows as pKa values at different time points.
+    Returns
+    -------
+    pka_statistics_table_in_str: str
+        A string representation of the pKa statistics table.
+    """
     pka_statistics = []
     for residue, pKaValues in df.items():
         if 'Time [ps]' == residue:
@@ -48,16 +60,41 @@ def trajectory_log(output_directory,
                    output_prefix, 
                    extract_buriedness_data,
                    mutation_selection, 
-                   disulphide_cysteines_list,
+                   disulphide_cys_col,
                    optargs,
                    cores,
                    trajectory_slices,
                    start,
                    end):
-    if len(disulphide_cysteines_list) > 0:
-        disulphide_bond_detection = True
+    """
+    Log the parameters and results of the pKa calculation.
+    Parameters
+    ----------
+    output_directory : str
+        The directory where the output files will be saved.
+    output_prefix : str
+        The prefix for the output files.
+    extract_buriedness_data : bool
+        Whether to extract buriedness data. 
+    mutation_selection : str
+        The selection string for the mutation.
+    disulphide_cys_col : list | None
+        The list of disulphide bonded cysteines.
+    optargs : dict
+        Optional arguments for the PROPKA calculation.
+    cores : int
+        The number of cores to use for the calculation.
+    trajectory_slices : list
+        A list of trajectory slices used for the parallel calculation.
+    start : str
+        The start time of the calculation.
+    end : str
+        The end time of the calculation.
+    """
+    if disulphide_cys_col:
+        save_disulphide_pka = False
     else:
-        disulphide_bond_detection = False
+        save_disulphide_pka = True
         
     logger.info(f"""-----------------------------------------------------------------                
 
@@ -72,8 +109,8 @@ Trajectory slices:
 {trajectory_slices}
 Mutation: {mutation_selection}
 Extract buriedness: {extract_buriedness_data}
-Remove cysteines from pKa or buriedness CSV: {disulphide_bond_detection}
-List of cysteines removed: {disulphide_cysteines_list}
+Save disulphide bonded cysteines in csv: {save_disulphide_pka}
+List of cysteines removed: {disulphide_cys_col}
 PropKa optional arguments: {optargs}
 
 -----------------------------------------------------------------

@@ -28,12 +28,10 @@ from tripp._create_mda_universe_ import (
 )
 from tripp._pka_iterator_ import pka_iterator
 from tripp._sort_pka_df_ import output_df
-from tripp._detect_disulphide_bonds_ import detect_disulphide_bonds 
 from datetime import datetime
 from tripp._generate_trajectory_log_ import log_header, trajectory_log
 import logging
 import glob
-from tqdm import tqdm
 
 class Trajectory:
     """
@@ -152,10 +150,10 @@ class Trajectory:
         self,
         extract_buriedness_data=True,
         mutation_selections=None,
-        disulphide_bond_detection=True,
+        save_disulphide_pka=False,
         optargs=[],
     ):
-        r"""
+        """
         Function to perform PROPKA after initialising the Trajectory class
 
         Parameters
@@ -163,21 +161,16 @@ class Trajectory:
         extract_buriedness_data: bool, default=True
             If set to True both data on buriedness and pKa will be extracted.
             If set to False only pKa data will be extracted.
-        chain: str or list of str, default='A'
-            The chain ID to extract PROPKA prediction. By default, if your 
-            topology does not have chain information, TrIPP will add chain A to 
-            your topology temporarily. If your topology is a multichain system, 
-            make sure you have your chain labelled in your topology. The CSV files
-            for pKa value will be saved with indivdiual chain.
         mutation_selections: str, default=None
             Peform pseudomutation of residues to alanine.
             Selection is based on the MDAnalysis algebra. Note in multichain system,
             please make sure you have selected the chainID as well. Double
             mutations can also be performed.
             ie: chainID A and resid 2 3
-        disulphide_bond_detection: bool, default=True
-            If set to True detects all disulphide bonds present in the
-            topology file and does not provide pKa values for them.
+        save_disulphide_pka: bool, default=False
+            Cysteine in disulphide bond is 99.99 from PROPKA. If set to False,
+            the pKa of the cysteine involved with disulphide bond will not be
+            saved in the csv.
         optargs: list of str, default=[]
             PROPKA prediction can be run with optional arguments as indicated
             in their documentation. Each flag is string separated by a comma.
@@ -221,19 +214,13 @@ class Trajectory:
             propka_warning_handler.close()
             propka_warning_logger.removeHandler(propka_warning_handler)
 
-        # Detect disulphide bond and remove it from the pKa and buriedness CSV
-        # if set to True.
-        if disulphide_bond_detection:
-            disulphide_cysteines_list = detect_disulphide_bonds(self.corrected_universe)
-        else:
-            disulphide_cysteines_list = []
         
         # Combine the temporary pka csv and sort it according to Time [ps] column
-        output_df(
+        disulphide_cys_col = output_df(
             output_directory=self.output_directory,
             output_prefix=self.output_prefix,
             data=data,
-            disulphide_cysteines_list=disulphide_cysteines_list,
+            save_disulphide_pka=save_disulphide_pka,
             extract_buriedness_data=extract_buriedness_data
         )
 
@@ -245,7 +232,7 @@ class Trajectory:
             self.output_prefix,
             extract_buriedness_data,
             mutation_selections,
-            disulphide_cysteines_list,
+            disulphide_cys_col,
             optargs,
             self.cpu_core_number,
             self.trajectory_slices,

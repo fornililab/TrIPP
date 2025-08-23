@@ -22,8 +22,8 @@
 
 
 """ 
-Dictionary that contains model pka values of amino acids in solution as given by 
-PROPKA. https://github.com/jensengroup/propka/blob/27e0ad2f8d653404f57c78f1cae2ec32cb5adb68/propka/propka.cfg#L5-L13
+Dictionary that contains the model pKa values of amino acids in solution used in 
+PROPKA (https://github.com/jensengroup/propka/blob/27e0ad2f8d653404f57c78f1cae2ec32cb5adb68/propka/propka.cfg#L5-L13)
 """ 
 
 

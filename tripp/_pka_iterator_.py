@@ -16,20 +16,18 @@ def pka_iterator(trajectory_slice, universe,
     Parameters
     ----------
     trajectory_slices: list of int
-        Inherited from the Trajectory class initialisation, where trajectory
-        slicing is performed.
+        Trajectory slices from the Trajectory class initialisation.
     universe: MDAnalysis.universe object
-        Inherited from the Trajectory class initialisation, which is the
-        corrected universe
+        Modified MDAnalysis universe from the Trajectory class initialisation.
     output_directory: str
-        Directory to write the propka output files to.
+        Directory to write the PROPKA output files to.
     mutation_selections: list of str
         List of selection strings for the atoms to mutate.
     optargs: list of str, default=[]
-        PROPKA prediction can be run with optional arguments as indicated
-        in their documentation. Each flag is string separated by a comma.
-        For example, `["-k","--pH=7.2"]` keeps the proton in your topology
-        and setting pH 7.2 for ie: stability calculations, respectively.
+        PROPKA predictions can be run with optional arguments
+        (see https://propka.readthedocs.io/en/latest/command.html).
+        For example, if optargs is set to `["-k"]`, propka will run with the -k flag
+        (protons from the input file are kept).
     """
     # Redirect warning from propka.group to a file
     logger = logging.getLogger('propka')
@@ -59,7 +57,7 @@ def pka_iterator(trajectory_slice, universe,
         run.single(f'.temp_{pid}.pdb', optargs=optargs)
         
         if log_capture_string.getvalue():
-            log_contents = (f"PROPKA warning occured on frame {ts.frame}:\n" + 
+            log_contents = (f"PROPKA warning raised for frame {ts.frame}:\n" + 
                             log_capture_string.getvalue()+
                             '\n')
         os.chdir(cwd)

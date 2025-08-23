@@ -78,8 +78,8 @@ corrected_amino_acids = {
     "HSE": "HIS",
     "HSP": "HIS",
 }
-# Dictionary for correcting C-terminal oxygen to O and OXT
-# for typical GROMOS, AMBER, and CHARMM forcefield.
+# Dictionary for correcting C-terminal oxygen atoms to O and OXT
+# for GROMOS, AMBER, and CHARMM force fields.
 corrected_atom_names = {
     "O1": "O",  # COO- (GROMOS)
     "O2": "OXT",  # COO- (GROMOS)

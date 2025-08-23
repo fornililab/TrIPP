@@ -24,11 +24,11 @@ import numpy as np
 
 def sort_clusters(labels, cluster_centers, cluster_center_indices, cluster_centers_trajectories): 
     """
-    Sort clusters based on their population and reassign labels.
+    Sorts clusters based on their population and reassigns labels.
     Parameters
     ----------
     labels : np.ndarray
-        An array of cluster labels for each point in the clustering matrix.
+        An array of cluster labels for each point in the clustering matrix                 (feature matrix).
     cluster_centers : list
         A list of cluster centers.
     cluster_center_indices: list

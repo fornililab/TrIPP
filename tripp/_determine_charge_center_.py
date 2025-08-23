@@ -25,21 +25,21 @@ import numpy as np
 
 def determine_charge_center(universe, selection):
     """
-    Determine the charge center of a residue in a molecular dynamics universe.
+    Determines the charge center of a residue in a MDAnalysis universe.
     Parameters
     ----------
     universe: MDAnalysis.universe
-        The MDAnalysis universe with the trajectory and topology loaded.
+    
     selection: str
-        A selection string in MDAnalysis selection algebra to select the residue for which the charge center
-        is to be determined.
+        A string (MDAnalysis selection syntax) to select the residue for
+        charge center calculation.
     Returns
     -------
     charge_center: np.ndarray
-        The coordinates of the charge center of the selected residue.
+        The charge center coordinates for the selected residue.
     residue_identifier: str
-        A string identifier for the residue, formatted as 'RESID:CHAIN', where RESID
-        is the residue ID and CHAIN is the chain ID. The following residue types are recognized:
+        A string identifier for the residue, formatted as 'RESID:CHAINID'.
+        The following residue types are recognized:
         - ARG, ASP, CYS, GLU, HIS, LYS, TYR
     Raises
     ------
@@ -89,6 +89,6 @@ def determine_charge_center(universe, selection):
         residue_identifier = f'TYR{resid}:{chain}'
 
     else:
-        raise Exception(f'Residue {residue_type}{resid}:{chain} is not recognized by TrIPP to be able to determine charge centre')
+        raise Exception(f'Residue {residue_type}{resid}:{chain} is not recognized by TrIPP: unable to determine charge centre')
 
     return charge_center, residue_identifier

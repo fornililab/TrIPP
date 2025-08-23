@@ -20,6 +20,6 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .Trajectory import Trajectory #Addtion of code so that it is not necessary to write from tripp.Trajectory import Trajectory but rather from tripp import Trajectory 
+from .Trajectory import Trajectory #Addition of code so that it is not necessary to write from tripp.Trajectory import Trajectory but rather from tripp import Trajectory 
 from .Visualization import Visualization 
 from .Clustering import Clustering 

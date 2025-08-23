@@ -32,41 +32,37 @@ def gen_pymol_template(tempfactors_topology_file,
                        color_palette): 
 
     """
-    Function that can visualize the values of residues using PyMOL.
-    No parameters need to be adjusted as they are determined from the gen_pse()
-    in Visualization class.
+    Function to colour-map residue properties on a reference structure using PyMOL.
+    The values of the parameters are determined by gen_pse()
+    from Visualization class.
 
     Parameters:
     tempfactors_topology_file: str
-    The input of the topology_file pdb file which has tempfactors assigned.
+    PDB file with the input topology and tempfactors assigned.
     
     pymol_path: str
-    The path to the PyMOL software needs to be specified. The script will
-    spawn a subprocess shell to run a python script in PyMOL. Preventing
-    packaging issue.
+    Path to PyMOL. The script will spawn a subprocess shell to run a 
+    python script in PyMOL preventing packaging issues.
 
     pse_output_filename: str
-    The output name for pse session, automatically combined with the
-    pse_output_prefix and the coloring_method in gen_pse().
+    Name of the PyMOL session file (pse) produced as output. The name is 
+    a combination of pse_output_prefix and the colouring method.
 
-    values_df: Pandas dataframe
-    Pandas dartaframe containing one column of the name of residue with resid,
-    and another column of the value (pKa or correlation).
+    values_df: Pandas DataFrame
+    DataFrame with two columns, one for the residue identifier and one for
+    the value to be mapped (pKa, pKa difference or correlation)
 
-    lower limit: int or float
-    Determines lower limit used to colour the reisdues in the PyMOL session.
-    Any value below the limit is coloured using the lowest end of the color
-    gradient used.
+    lower_limit: int or float
+    Lower bound of the color scale in the PyMOL session. Residues with values
+    below this threshold are assigned the gradient’s minimum color.
 
-    upper limit: int or float
-    Determines upper limit used to colour the reisdues in the PyMOL session.
-    Any value above the limit is coloured using the highest end of the color
-    gradient used.
+    upper_limit: int or float
+    Upper bound of the color scale in the PyMOL session. Residues with values
+    above this threshold are assigned the gradient’s maximum color.
 
     color_palette: str
-    color palettes used to color the residues in the PyMOL session according
-    to the pKa value. The default is set to 'red_white_blue'. See PyMOL spectrum
-    for allowed color palettes. Three colors palette is suggested.
+    Colour palette. The default is set to 'red_white_blue'. See PyMOL spectrum
+    for allowed colour palettes (a three-colour palette is recommended).
     """
     with open('.pymol_template.py','a') as output:
         output.write(f"""cmd.load('{tempfactors_topology_file}', 'protein_str')

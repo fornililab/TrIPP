@@ -25,18 +25,18 @@ from tqdm import tqdm
 
 def calculate_rmsd_matrix(clustering_matrix, frames):
     """
-    Function that calculates the RMSD matrix for greedy clustering algorithm.
+    Function that calculates the pairwise Euclidean distance matrix for the greedy clustering algorithm.
     
     Parameters
     ----------
     clustering_matrix : np.ndarray
-        The clustering matrix created by the create_clustering_matrix function.
+        The clustering matrix (feature matrix) created by the create_clustering_matrix function.
     frames : list
-        A list of frames corresponding to the clustering points.
+        A list of frames corresponding to the points to be clustered.
     Returns
     -------
     rmsd_array : np.ndarray
-        A 2D numpy array containing the RMSD values between each pair of clustering points.
+        A 2D numpy array containing the Euclidean distance values between each pair of points.
     """
 
     def calculate_rmsd(point1, point2):
@@ -47,7 +47,7 @@ def calculate_rmsd_matrix(clustering_matrix, frames):
         return rmsd
 
     rmsd_array = np.zeros((len(frames), len(frames)))
-    print('Building RMSD matrix...')
+    print('Building distance matrix...')
     for i in tqdm(range(len(frames))):
         point1 = clustering_matrix[i]
         for j in range(len(frames)):

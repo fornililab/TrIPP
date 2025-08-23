@@ -36,11 +36,8 @@ import glob
 class Trajectory:
     """
     Main class of TrIPP. Calling this class creates an iterable object of
-    sliced trajectories which are then used with the run method to run the
-    analysis. The arguments taken are a trajectory file (formats supported
-    by MDAnalysis), a topology file (usually a PDB file but can be all
-    formats supported by MDAnalaysis) and the number of CPU cores to be
-    used to run the analysis.
+    sliced trajectories that are then used with the run method to perform the
+    analyses.
 
     Parameters
     ----------
@@ -51,26 +48,28 @@ class Trajectory:
         The path of the file containing the topology. The same formats
         allowed by MDAnalysis can be used.
     output_directory: str
-        The directory you want to save the output files.
+        The directory where output files will be saved.
     output_prefix: str
-        The output prefix for output files.
+        The output file prefix.
     cpu_core_number: int, default=-1
         The number of cpu cores used for the calculation.
         If cpu_core_number=-1, all available cores are used.
     hetatm_resname: str, list, default=None
-        Resname of the hetatm that need to be modified. See log for info
-        if encountered error.
+        PDB residue name(s) for non-protein molecules that we want to 
+        be taken into account in the pKa calculation. Their record type
+        will be set to 'HETATM'. See log for info if an error is raised.
     custom_terminal_oxygens: list, default=None
-        PROPKA only recognizes O and OXT for the terminal oxygens. Either 
-        provide a list of length 2 containing the name of your terminal
-        oxygens, or None for correction according to our pre-defined
-        dictionary (See _correction_dictionary_.py for the pre-defined
-        name)
+        PROPKA only recognizes C-terminal oxygen atoms named O and OXT. 
+        If different, either provide a list of length 2 containing the 
+        names of your C-terminal oxygen atoms, or set to None for correction 
+        according to our pre-defined dictionary 
+        (see _correction_dictionary_.py for the pre-defined names).
     custom_resname_correction: dict, default=None
-        Our pre-defined dictionary might not contain all resname to be
-        corrected. (See _correction_dictionary_.py for the pre-defined
-        resname) Use this parameter to add a custom resname correction.
-        ie: {'ASPH':'ASP'}
+        dictionary of custom protein residue names not included in
+        the hard-coded TrIPP dictionary (tripp._correction_dictionary_.py). 
+        Can be given as e.g. {'XXX':'ASP'}, where 'XXX' is the residue
+        name in the PDB file and 'ASP' is the corresponding PROPKA name.
+
     """
     def __init__(
         self,
@@ -154,28 +153,28 @@ class Trajectory:
         optargs=[],
     ):
         """
-        Function to perform PROPKA after initialising the Trajectory class
+        Function to run PROPKA after initialising the Trajectory class
 
         Parameters
         ----------
         extract_buriedness_data: bool, default=True
-            If set to True both data on buriedness and pKa will be extracted.
-            If set to False only pKa data will be extracted.
+            If set to True, both buried ratios and pKa values will be extracted.
+            If set to False, only pKa values will be extracted.
         mutation_selections: str, default=None
             Peform pseudomutation of residues to alanine.
-            Selection is based on the MDAnalysis algebra. Note in multichain system,
-            please make sure you have selected the chainID as well. Double
+            Selection is based on MDAnalysis syntax. For multi-chain systems,
+            please make sure you include the chainID in the selection. Double
             mutations can also be performed.
-            ie: chainID A and resid 2 3
+            e.g.: chainID A and resid 2 3
         save_disulphide_pka: bool, default=False
-            Cysteine in disulphide bond is 99.99 from PROPKA. If set to False,
-            the pKa of the cysteine involved with disulphide bond will not be
-            saved in the csv.
+            If set to False, pKa and buried ratio values for cysteines 
+            forming a disulphide bond (pKa set by PROPKA to 99.99) will 
+            not be saved in the CSV files. 
         optargs: list of str, default=[]
-            PROPKA prediction can be run with optional arguments as indicated
-            in their documentation. Each flag is string separated by a comma.
-            For example, `["-k","--pH=7.2"]` keeps the proton in your topology
-            and setting pH 7.2 for ie: stability calculations, respectively.
+            PROPKA predictions can be run with optional arguments
+            (see https://propka.readthedocs.io/en/latest/command.html). 
+            For example, if optargs is set to `["-k"]`, propka will run with the -k flag 
+            (protons from the input file are kept).
         """
         start = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
         

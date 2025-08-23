@@ -27,12 +27,12 @@ logger = logging.getLogger(__name__)
     
 def check_resname_HETATM(non_protein_ag):
     """
-    Check if the resnames in the non-protein atoms universe are compatible with PROPKA.
+    Checks if the resnames in the non-protein atoms universe are compatible with PROPKA.
     Parameters
     ----------
     non_protein_ag : MDAnalysis.AtomGroup
         The AtomGroup containing non-protein atoms, such as ligands or water.
-        Note that non-protein selection was defined by MDAnalysis selection algebra.
+        Note that the non-protein selection was defined by MDAnalysis selection syntax.
     Raises
     ------
     NameError
@@ -48,15 +48,15 @@ def check_resname_HETATM(non_protein_ag):
         if resname not in compatible_resnames and np.all(record_types != 'HETATM'):
             incorrect_resnames.append(f'{resname}')
     if len(incorrect_resnames) > 0:
-        raise NameError(f"""Your system still contains resname that are not recognisable by PROPKA: {', '.join(incorrect_resnames)}
-If it is an amino acid, please use custom_resname_correction argument to add the corrections for the resname(s) identified above.
-If it is a ligand, please use hetatm_resname argument to convert the record type of the ligand to HETATM.""")
+        raise NameError(f"""Your system still contains resname(s) not recognised by PROPKA: {', '.join(incorrect_resnames)}
+For amino acids, please use the custom_resname_correction argument to indicate valid PROPKA resnames for the residues indicated above.
+For ligands, please use the hetatm_resname argument to convert the record type of the ligand to HETATM.""")
     else:
         logger.info('Resname and record type check passed.\n')
         
 def check_terminal_oxygens(universe):
     """
-    Check if the terminal oxygens in the universe are named 'O' and 'OXT
+    Checks if the C-terminal oxygen atoms in the universe are named 'O' and 'OXT
     Parameters
     ----------
     universe : MDAnalysis.Universe
@@ -64,7 +64,7 @@ def check_terminal_oxygens(universe):
     Raises
     ------
     NameError
-        If no terminal oxygens are found with the names 'O' and 'OXT',
+        If no C-terminal oxygen atoms are found with the names 'O' and 'OXT',
         an exception will be raised.
     """
     terminals = []
@@ -76,4 +76,4 @@ def check_terminal_oxygens(universe):
         logger.info(f"""Terminal oxygen check passed, involving: 
 {', '.join(terminals)}\n""")
     else:
-        raise NameError('No terminal oxygen named O and OXT, please either modify from your topology_file or via custom_terminal_oxygens argument')
+        raise NameError('No terminal oxygen atom named O and OXT was found, please either modify your topology_file or use the custom_terminal_oxygens argument')

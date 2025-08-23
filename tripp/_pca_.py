@@ -24,15 +24,17 @@ from sklearn.decomposition import PCA
 
 def pca(clustering_matrix): 
     """
-    Perform PCA on the clustering matrix to reduce dimensionality. 
+    Performs PCA on the feature matrix to reduce dimensionality. 
     Parameters
     ----------
     clustering_matrix: np.ndarray
-        The clustering matrix to be transformed.
+        The clustering (feature) matrix to be transformed.
     Returns
     -------
     n_components: int
-        The number of principal components used for dimensionality reduction.
+        The number of principal components (PCs) used for dimensionality reduction. 
+        It is determined as the minimum number of principal components that explain
+        at least 90% of the total variance. 
     cummulative_variance: float
         The cumulative variance explained by the selected principal components, expressed as a percentage.
     clustering_matrix_transformed: np.ndarray

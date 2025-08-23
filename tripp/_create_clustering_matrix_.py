@@ -31,39 +31,38 @@ def create_clustering_matrix(trajectory_file, topology_file, pka_df,
                              selections, include_distances,
                              buriedness_df, include_buriedness):
     """
-    Function that generates the clustering_matrix. The clustering_matrix
-    is a 2D numpy array, where columns correspond to normalized pKa
-    values, extracted from pka_df, and normalized interresidue
-    distances, calculated using the calculate_charge_center_distances
-    function. Normalization is done using the z-score.
+    Function that generates clustering_matrix (feature matrix), where features
+    include Z-score standardised pKa values (from pka_df) of selected 
+    residues, together with (optionally) Z-score standardised buried ratios 
+    (from buriedness_df) and inter-residue distances (calculated using the  
+    calculate_charge_center_distances function). 
     
     Parameters
     ----------
     trajectory_file: str or dict
         When str, it is the path of the file containing the trajectory. The same
-        formats permited by MDAnalysis can be used. When dict, the clustering is done using
-        multiple trajectories specified in a dictionary, where the name of each trajectory
-        is used as a key and the path as an object: {'MD1' : 'file1', 'MD2' : 'file2', ...}.
+        formats allowed by MDAnalysis can be used. When dict, the clustering is performed using
+        multiple trajectories specified in a dictionary, where trajectory names are
+        used as key and file paths as values, e.g.: {'MD1' : 'file1 path', 'MD2' : 'file2 path', ...}.
         The same topology file is used for all trajectories.
     topology_file: str
         Path to the topology file. The same formats allowed by MDAnalysis can be used.
     pka_df: pd.DataFrame
-        A DataFrame containing pKa values indexed by time, residue identifier, and
-        trajectory name. This DataFrame is processed by make_pka_or_buriendess_df function
-        in Clustering class.
+        A DataFrame containing pKa values labelled by time, residue identifier, and
+        trajectory name. This DataFrame is processed by the make_pka_or_buriendess_df function
+        in the Clustering class.
     selections: list of str
-        List of selections (MDAnalysis selection algebra) for which the clustering will be done.
-        The residues have a pKa value assigned to them by PROPKA. Note if your system is
-        multichain, your topology and selection must include chain identity.
+        List of residues used for the clustering (selected with MDAnalysis selection syntax)
+        For multi-chain systems, your topology and selection must include chain IDs.
     include_distances: bool
-        If True, the relative positions (as distances between the charge centers) are used as
+        If True, inter-residue distances (calculated between the charge centers) are used as
         additional features for the clustering alongside the pKa values.
     buriedness_df: pd.DataFrame
-        A DataFrame containing buried ratio (buriedness) values indexed by time, residue identifier,
-        and trajectory name. This DataFrame is processed by make_pka_or_buriendess_df function
-        in Clustering class.
+        A DataFrame containing buried ratio (buriedness) values labelled by time, residue identifier,
+        and trajectory name. This DataFrame is processed by the make_pka_or_buriendess_df function
+        in the Clustering class.
     include_buriedness: bool
-        If True, buriedness values will be included in the clustering matrix.
+        If True, buried ratio values will be included in the feature matrix.
         Default is False.
     Returns
     -------

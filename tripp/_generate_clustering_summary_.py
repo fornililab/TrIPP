@@ -34,7 +34,7 @@ def generate_clustering_summary(trajectory_file,
                                 cummulative_variance, 
                                 buriedness_file):
     """
-    Generate a summary of the clustering process.
+    Generates a summary of the clustering process.
     Parameters
     ----------
     trajectory_file: str or dict
@@ -48,11 +48,11 @@ def generate_clustering_summary(trajectory_file,
     include_distances: bool
         Whether distances between charge centers were included in the clustering.
     include_buriedness: bool
-        Whether buriedness measures were included in the clustering.
+        Whether buriedness (buried ratio) values were included in the clustering.
     clustering_method: str
         The clustering method used, e.g., 'DBSCAN'.
     automatic: bool
-        Whether automatic clustering was performed.
+        Whether automatic clustering (automatic scanning of clustering parameters) was performed.
     silhouette_scores: pd.DataFrame
         A DataFrame containing silhouette scores for different clustering parameters.
     n_components: int or None
@@ -95,7 +95,7 @@ Trajectories:
 """ 
     
     #information on what residues were used for the clustering 
-    residue_summary = f'Clustering was done using {", ".join(selections[:-1])} and {selections[-1]}.' 
+    residue_summary = f'Clustering was performed using {", ".join(selections[:-1])} and {selections[-1]}.' 
 
     #information on whether distances between charge centers were used for the clustering 
     if include_distances == True: 
@@ -125,10 +125,10 @@ Trajectories:
 
     #information on dimensionality reduction 
     if n_components == None: 
-        dimensionality_reduction_summary = 'No dimensionality reduction was done.' 
+        dimensionality_reduction_summary = 'No dimensionality reduction was performed.' 
     
     else: 
-        dimensionality_reduction_summary = f'Dimensionality reduction was done using PCA.\nIn total {n_components} principal components were used with a cummulative variance of {cummulative_variance}%.' 
+        dimensionality_reduction_summary = f'Dimensionality reduction was performed using PCA.\nIn total {n_components} principal components were used with a cummulative variance of {cummulative_variance}%.' 
     
     #information on the silhouette score 
     best_index = silhouette_scores['Average silhouette score'].idxmax() 
@@ -136,14 +136,14 @@ Trajectories:
     for params in silhouette_scores.columns: 
         best_params+=f'{params}: {silhouette_scores[params].iloc[best_index]}\n' 
     
-    best_params_summary = f'Clustering was done using the following parameters: \n{best_params} '
+    best_params_summary = f'Clustering was performed using the following parameters: \n{best_params} '
     
     #information on all parameters tested 
     if automatic == True: 
         automatic_clustering_summary = f'Automatic clustering was selected. \nThe following parameters were tested: \n\n{silhouette_scores.to_markdown(index=False)}' 
     
     elif automatic == False: 
-        automatic_clustering_summary = 'No automatic clustering was done' 
+        automatic_clustering_summary = 'No automatic clustering was performed' 
     
     summary = f"""{log_header()} 
 

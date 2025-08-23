@@ -2,19 +2,20 @@ import numpy as np
 
 def determine_cluster_population_ratio(labels, max_cluster_population, clustering_method): 
     """
-    Determine the population ratio of clusters in a clustering result.
+    Calculates the relative population (fraction of frames) for each cluster and 
+    compares the maximum value to a given threshold
     Parameters
     ----------
     labels: np.ndarray
-        An array of cluster labels for each data point.
+        Array where each element is the cluster ID assigned to a data point
     max_cluster_population: float
-        The maximum population ratio of a cluster to be considered significant.
+        The maximum relative population.
     clustering_method: str
         The clustering method used, e.g., 'DBSCAN'.
     Returns
     -------
     bool:
-        True if the maximum cluster population of any label is greater than 
+        True if the maximum relative population of any cluster is greater than 
         or equal to `max_cluster_population` (default 95%) , False otherwise.
     """
     unique_labels = list(set(labels)) 

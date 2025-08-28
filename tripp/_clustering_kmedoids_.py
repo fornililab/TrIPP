@@ -63,13 +63,13 @@ def kmedoids_clustering(
     Returns
     -------
     labels: np.ndarray
-        An array of cluster labels for each point in the clustering matrix.
-    cluster_centers: np.ndarray
-        The coordinates of the cluster centers (medoids).
-    medoid_indices: np.ndarray
-        The indices of the medoids in the clustering matrix.
-    cluster_centers_trajectories: np.ndarray
-        A list of indices of the cluster centroids mapped onto the trajectory.
+        An array of cluster labels for each point in the feature matrix.
+    cluster_centers: list
+        The indices of the cluster centers (medoids) within their respective individual trajectories.
+    medoid_indices: list
+        The indices of the cluster centers (medoids) in the full feature matrix (i.e., global indices)
+    cluster_centers_trajectories: list
+        A list of trajectory names of the cluster centers.
     """
 
     kmedoids_clustering = KMedoids(
@@ -82,8 +82,8 @@ def kmedoids_clustering(
     ).fit(clustering_matrix)
 
     labels = kmedoids_clustering.labels_
-    medoid_indices = kmedoids_clustering.medoid_indices_
-    cluster_centers = np.ravel(frames[medoid_indices])
-    cluster_centers_trajectories = np.ravel(trajectory_names[medoid_indices])
+    medoid_indices = list(kmedoids_clustering.medoid_indices_)
+    cluster_centers = list(np.ravel(frames[medoid_indices]))
+    cluster_centers_trajectories = list(np.ravel(trajectory_names[medoid_indices]))
 
     return labels, cluster_centers, medoid_indices, cluster_centers_trajectories

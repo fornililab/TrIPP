@@ -57,10 +57,14 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
         The clustering method used (e.g., 'DBSCAN', 'KMedoids').
     Returns
     -------
-    labels : np.ndarray
-        An array of cluster labels for each input frame sorted by cluster population.
+    labels: np.ndarray
+        An array of cluster labels for each point in the feature matrix.
+    cluster_centers: list
+        The indices of the cluster centers within their respective individual trajectories, sorted by the population.
     cluster_center_indices: list
-        A list of indices of the cluster centers mapped onto the clustering matrix sorted by cluster population.
+        The indices of the cluster centers in the full feature matrix (i.e., global indices), sorted by the population.
+    cluster_centers_trajectories: list
+        A list of trajectory names of the cluster centers, sorted by the population.
     """
     labels, cluster_centers, cluster_center_indices, cluster_centers_trajectories = sort_clusters(labels=labels, cluster_centers=cluster_centers, cluster_center_indices=cluster_center_indices, cluster_centers_trajectories=cluster_centers_trajectories)
 
@@ -122,4 +126,4 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
         pka_df.to_csv(f'{output_directory}/{output_prefix}_{clustering_method}_cluster.csv') 
     
     write_new_dataframe() 
-    return labels, cluster_center_indices
+    return labels, cluster_centers, cluster_center_indices, cluster_centers_trajectories

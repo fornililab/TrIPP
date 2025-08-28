@@ -61,13 +61,13 @@ def hdbscan_clustering(
     Returns
     -------
     labels: np.ndarray
-        An array of cluster labels for each point in the clustering matrix.
+        An array of cluster labels for each point in the feature matrix.
     cluster_centers: list
-        A list of cluster centers if find_centroid is True.
+        The indices of the cluster centers within their respective individual trajectories if find_centroid is True.
     cluster_center_indices: list
-        A list of indices of the cluster centers mapped onto the clustering matrix if find_centroid is True.
+        The indices of the cluster centers in the full feature matrix (i.e., global indices) if find_centroid is True.
     cluster_centers_trajectories: list
-        A list of indices of the cluster centers mapped onto the trajectory if find_centroid is True.
+         A list of trajectory names of the cluster centers if find_centroid is True.
     """
 
     hdbscan = HDBSCAN(

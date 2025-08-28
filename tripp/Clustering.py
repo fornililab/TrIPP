@@ -297,7 +297,7 @@ class Clustering:
             cummulative_variance=self.cummulative_variance,
             buriedness_file=self.buriedness_file,
         )
-        self._labels, self._cluster_center_indices = (
+        self._labels, self._cluster_centers, self._cluster_center_indices, self._cluster_centers_trajectories  = (
         write_clustering_info(
             summary=summary,
             trajectory_dict=self.trajectory_dict,
@@ -467,8 +467,6 @@ class Clustering:
                     "Average silhouette score": sil_scores,
                 }
             )
-        self._labels = labels
-        self._cluster_center_indices = cluster_center_indices
         
         summary = generate_clustering_summary(
             trajectory_file=self.trajectory_file,
@@ -484,7 +482,7 @@ class Clustering:
             cummulative_variance=self.cummulative_variance,
             buriedness_file=self.buriedness_file,
         )
-        self._labels, self._cluster_center_indices = (
+        self._labels, self._cluster_centers, self._cluster_center_indices, self._cluster_centers_trajectories  = (
             write_clustering_info(
             summary=summary,
             trajectory_dict=self.trajectory_dict,
@@ -704,7 +702,7 @@ class Clustering:
             cummulative_variance=self.cummulative_variance,
             buriedness_file=self.buriedness_file,
         )
-        self._labels, self._cluster_center_indices = (
+        self._labels, self._cluster_centers, self._cluster_center_indices, self._cluster_centers_trajectories  = (
             write_clustering_info(
             summary=summary,
             trajectory_dict=self.trajectory_dict,
@@ -903,7 +901,7 @@ class Clustering:
             cummulative_variance=self.cummulative_variance,
             buriedness_file=self.buriedness_file,
         )
-        self._labels, self._cluster_center_indices = (
+        self._labels, self._cluster_centers, self._cluster_center_indices, self._cluster_centers_trajectories  = (
             write_clustering_info(
             summary=summary,
             trajectory_dict=self.trajectory_dict,

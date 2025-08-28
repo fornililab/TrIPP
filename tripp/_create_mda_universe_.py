@@ -99,19 +99,20 @@ def create_propka_compatible_universe(universe,
         HETATM for non-protein atoms (when hetatm_resname is used).
     """
     corrected_universe = universe.copy()
-    # When user provided custom_resname_correction, append them to the dictionary temporarily.
+    # Make a local copy of corrected_amino_acids for temporary changes
+    local_corrected_amino_acids = corrected_amino_acids.copy()
     if custom_resname_correction is not None:
         for current_resname, correct_resname in custom_resname_correction.items():
-            corrected_amino_acids[current_resname] = correct_resname
-            
+            local_corrected_amino_acids[current_resname] = correct_resname
+
     # Correct resname to propka compatible with predefined list.
     corrected_resnames = []
     corrected_resnames_trace = []
     for resname, residx in zip(corrected_universe.residues.resnames,
                               corrected_universe.residues.resindices):
-        if resname in corrected_amino_acids:
-            corrected_resnames_trace.append(f'{resname}->{corrected_amino_acids[resname]}')
-            resname = corrected_amino_acids[resname]
+        if resname in local_corrected_amino_acids:
+            corrected_resnames_trace.append(f'{resname}->{local_corrected_amino_acids[resname]}')
+            resname = local_corrected_amino_acids[resname]
         # Special care taken for MSE -> MET, where the SE atomname needs to be modified as well.
         elif resname == 'MSE':
             corrected_resnames_trace.append(f'{resname}->MET (SE->SD)')
@@ -120,9 +121,9 @@ def create_propka_compatible_universe(universe,
             atom_types = corrected_universe.select_atoms(f'resindex {residx}').atoms.types
             corrected_universe.select_atoms(f'resindex {residx}').atoms.names = np.char.replace(atom_names.astype(str), 'SE', 'SD')
             corrected_universe.select_atoms(f'resindex {residx}').atoms.types = np.char.replace(atom_types.astype(str), 'SE', 'S')
-            
+
         corrected_resnames.append(resname)
-        
+
     corrected_universe.residues.resnames = corrected_resnames
     
     if len(corrected_resnames_trace) > 0:

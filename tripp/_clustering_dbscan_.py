@@ -22,8 +22,6 @@
 
 from sklearn.cluster import DBSCAN
 from tripp._density_clustering_utilities_ import find_density_clustering_centroids
-import numpy as np
-
 
 def dbscan_clustering(
     eps,

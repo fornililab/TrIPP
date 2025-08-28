@@ -22,8 +22,6 @@
 
 from sklearn.cluster import HDBSCAN
 from tripp._density_clustering_utilities_ import find_density_clustering_centroids
-import numpy as np
-
 
 def hdbscan_clustering(
     min_cluster_size,

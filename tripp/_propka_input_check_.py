@@ -21,7 +21,7 @@
 """
 import logging
 import numpy as np
-
+from tripp._correction_dictionary_ import corrected_amino_acids
 
 logger = logging.getLogger(__name__)
     
@@ -39,9 +39,7 @@ def check_resname_HETATM(non_protein_ag):
         If there are resnames that are not recognized by PROPKA, and their record type
         is not 'HETATM', an exception will be raised.
     """
-    compatible_resnames = ['ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 
-                           'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 
-                           'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL']
+    compatible_resnames = np.unique(list(corrected_amino_acids.values()))
     incorrect_resnames=[]
     for resname, record_types in zip(non_protein_ag.residues.resnames,
                                      non_protein_ag.residues.record_types):

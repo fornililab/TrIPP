@@ -110,7 +110,7 @@ class Visualization:
         ----------
         pymol_path: str
             Path to PyMOL. The script will spawn a subprocess shell to run a 
-            python script in PyMOL preventing packaging issues.
+            python script in PyMOL.
         output: str
             Prefix of the output PyMOL file (.pse). The prefix will be combined 
             with the coloring_method ('mean', 'difference_to_model_value' or 'correlation') 

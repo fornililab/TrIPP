@@ -42,7 +42,7 @@ def gen_pymol_template(tempfactors_topology_file,
     
     pymol_path: str
     Path to PyMOL. The script will spawn a subprocess shell to run a 
-    python script in PyMOL preventing packaging issues.
+    python script in PyMOL.
 
     pse_output_filename: str
     Name of the PyMOL session file (pse) produced as output. The name is 

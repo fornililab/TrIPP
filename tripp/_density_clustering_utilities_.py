@@ -23,7 +23,28 @@
 import numpy as np 
 
 def find_smallest_distance(cluster, frames, labels, trajectory_names, clustering_matrix):
-    
+    """Find the point in the cluster that is closest to the centroid of the cluster.
+    Parameters
+    ----------
+    cluster : list
+        A list of unique cluster labels.
+    frames : list
+        A list of frames corresponding to feature matrix points.
+    labels : np.ndarray
+        An array of cluster labels for each point in the feature matrix.
+    trajectory_names : np.ndarray
+        A 1D array containing the name of each frame in the feature matrix.
+    clustering_matrix : np.ndarray
+        The clustering matrix (feature matrix) created by the create_clustering_matrix function.
+    Returns
+    -------
+    center : int
+        The index of the centroid frame in its individual trajectory.
+    center_index : int
+        The index of the centroid frame in the full feature matrix (i.e., global index).
+    center_trajectory : str
+        The name of the trajectory to which the centroid frame belongs.
+    """
     # The centroid is defined as the point which has the smallest
     # distance from the mean of all points in the cluster.
     cluster_frames = frames[labels == cluster]
@@ -43,6 +64,27 @@ def find_smallest_distance(cluster, frames, labels, trajectory_names, clustering
     return center, center_index, center_trajectory
 
 def find_density_clustering_centroids(labels, frames, trajectory_names, clustering_matrix):
+    """Find the centroids of the density clusters.
+    Parameters
+    ----------
+    labels : np.ndarray
+        An array of cluster labels for each point in the feature matrix.
+    frames : list
+        A list of frames corresponding to feature matrix points.
+    trajectory_names : np.ndarray
+        A 1D array containing the name of each frame in the feature matrix.
+    clustering_matrix : np.ndarray
+        The clustering matrix (feature matrix) created by the create_clustering_matrix function.
+    Returns
+    -------
+    cluster_centers: list
+        The indices of the cluster centers within their respective individual trajectories.
+    cluster_center_indices: list
+        The indices of the cluster centers in the full feature matrix (i.e., global indices).
+    cluster_centers_trajectories: list
+         A list of trajectory names of the cluster centers.
+    """
+    
     # A list of clusters is made to iterate over.
     clusters = list(set(labels))
 

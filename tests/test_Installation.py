@@ -5,6 +5,14 @@ from tripp.analysis import PCProjectionScreening
 import numpy as np
 import pytest
 import os
+import shutil
+
+# Clean up test_output directory if it exists
+test_output_dir = 'test_output'
+if os.path.isdir(test_output_dir):
+    # Remove all contents and the directory itself
+    shutil.rmtree(test_output_dir)
+
 def get_data_path(filename):
     return os.path.join(os.path.dirname(__file__), "data", filename)
     
@@ -12,9 +20,9 @@ topology_file = get_data_path('lyso.pdb')
 trajectory_file = get_data_path('lyso_test.xtc')
 pka_file = 'test_output/lyso_test_default/lyso_test_default_pka.csv'
 
-PyMOL_path = None
-while PyMOL_path is None:
-    PyMOL_path = input('Please provide path to PyMOL executable to test Visualization class:')
+PyMOL_path = False
+while not PyMOL_path:
+    PyMOL_path = input('Please provide path to PyMOL executable to test Visualization class or type "skip":')
 
 class TestInstallation:
     def compare_output(file1, file2):
@@ -89,7 +97,8 @@ class TestInstallation:
         TrIPP_Clust.kmedoids(n_clusters=2, random_state=1)
         
         assert TestInstallation.compare_output('test_output/lyso_test_KMedoids_cluster.csv','reference_output/lyso_test_KMedoids_cluster.csv')
-        
+    
+    @pytest.mark.skipif(PyMOL_path.lower() == 'skip', reason='Skipping Visualization test')
     def test_Visualization_lyso(self):
         output_directory = 'test_output'
         
@@ -104,6 +113,7 @@ class TestInstallation:
                           color_palette='red_white_blue')
         
         assert TestInstallation.compare_output('test_output/lyso_test_mean.pdb','reference_output/lyso_test_mean.pdb')
+        assert os.path.isfile('test_output/lyso_test_mean.pse'), 'PyMOL session file was not created, please check your PyMOL path.'
 
     def test_PCProjectionScreening(self):
         output_directory = 'test_output'
@@ -113,6 +123,10 @@ class TestInstallation:
                               projection_file='data/lyso_test_pc1.csv',
                               method='Pearson')
         assert TestInstallation.compare_output('test_output/lyso_test_PearsonCorrelation.csv','reference_output/lyso_test_PearsonCorrelation.csv')
+    
+    @pytest.mark.skipif(PyMOL_path.lower() == 'skip', reason='Skipping Visualization test')
+    def test_PCProjectionScreening_Visualization(self):
+        output_directory = 'test_output'
         Corr_Vis = Visualization(topology_file=topology_file,
                              correlation_file='test_output/lyso_test_PearsonCorrelation.csv')
 
@@ -126,3 +140,4 @@ class TestInstallation:
                         color_palette='red_white_blue')
         
         assert TestInstallation.compare_output('test_output/lyso_test_PearsonCorrelation_correlation.pdb','reference_output/lyso_test_PearsonCorrelation_correlation.pdb')
+        assert os.path.isfile('test_output/lyso_test_PearsonCorrelation_correlation.pse'), 'PyMOL session file was not created, please check your PyMOL path.'

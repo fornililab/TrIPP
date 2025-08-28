@@ -103,8 +103,7 @@ def create_propka_compatible_universe(universe,
     local_corrected_amino_acids = corrected_amino_acids.copy()
     if custom_resname_correction is not None:
         for current_resname, correct_resname in custom_resname_correction.items():
-            local_corrected_amino_acids[current_resname] = correct_resname
-
+            local_corrected_amino_acids[current_resname] = correct_resname        
     # Correct resname to propka compatible with predefined list.
     corrected_resnames = []
     corrected_resnames_trace = []
@@ -123,7 +122,7 @@ def create_propka_compatible_universe(universe,
             corrected_universe.select_atoms(f'resindex {residx}').atoms.types = np.char.replace(atom_types.astype(str), 'SE', 'S')
 
         corrected_resnames.append(resname)
-
+    
     corrected_universe.residues.resnames = corrected_resnames
     
     if len(corrected_resnames_trace) > 0:
@@ -144,7 +143,8 @@ def create_propka_compatible_universe(universe,
         logger.info(f"""The record type of the following residues has been modified to HETATM:
 {', '.join(corrected_hetatm)}""")
     
-    check_resname_HETATM(corrected_universe.select_atoms('not protein'))
+    propka_compatible_amino_acids = ' '.join(np.unique(list(local_corrected_amino_acids.values())))
+    check_resname_HETATM(corrected_universe.select_atoms(f"not resname {propka_compatible_amino_acids} {hetatm_resname}"))
     
     # When custom_terminal_oxygens is not provided by user as list of string,
     # the terminal oxygens will be renamed according to the dictionary

@@ -10,3 +10,4 @@ tmp
 tmp/*
 .ipynb_checkpoints
 .pytest_cache/
+.coverage*

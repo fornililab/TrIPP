@@ -116,8 +116,9 @@ class Clustering:
         self.include_buriedness = include_buriedness
         self.include_distances = include_distances
         self._labels = None
+        self._cluster_centers = None,
         self._cluster_center_indices = None
-
+        self._cluster_centers_trajectories = None
         def make_pka_or_buriedness_df(file):
             if isinstance(file, str):
                 df = pd.read_csv(file, index_col="Time [ps]")
@@ -297,7 +298,7 @@ class Clustering:
             cummulative_variance=self.cummulative_variance,
             buriedness_file=self.buriedness_file,
         )
-        self._labels, self._cluster_center_indices = (
+        self._labels, self._cluster_centers, self._cluster_center_indices, self._cluster_centers_trajectories = (
         write_clustering_info(
             summary=summary,
             trajectory_dict=self.trajectory_dict,
@@ -467,8 +468,6 @@ class Clustering:
                     "Average silhouette score": sil_scores,
                 }
             )
-        self._labels = labels
-        self._cluster_center_indices = cluster_center_indices
         
         summary = generate_clustering_summary(
             trajectory_file=self.trajectory_file,
@@ -484,7 +483,7 @@ class Clustering:
             cummulative_variance=self.cummulative_variance,
             buriedness_file=self.buriedness_file,
         )
-        self._labels, self._cluster_center_indices = (
+        self._labels, self._cluster_centers, self._cluster_center_indices, self._cluster_centers_trajectories = (
             write_clustering_info(
             summary=summary,
             trajectory_dict=self.trajectory_dict,
@@ -678,7 +677,6 @@ class Clustering:
                 trajectory_names=self.trajectory_names,
             )
             params = np.array(params)
-
             silhouette_scores = pd.DataFrame(
                 {
                     "Number of clusters": cluster_nums,
@@ -687,8 +685,6 @@ class Clustering:
                     "Average silhouette score": sil_scores,
                 }
             )
-        self._labels = labels
-        self._cluster_center_indices = cluster_center_indices
         
         summary = generate_clustering_summary(
             trajectory_file=self.trajectory_file,
@@ -704,7 +700,7 @@ class Clustering:
             cummulative_variance=self.cummulative_variance,
             buriedness_file=self.buriedness_file,
         )
-        self._labels, self._cluster_center_indices = (
+        self._labels, self._cluster_centers, self._cluster_center_indices, self._cluster_centers_trajectories = (
             write_clustering_info(
             summary=summary,
             trajectory_dict=self.trajectory_dict,
@@ -903,7 +899,7 @@ class Clustering:
             cummulative_variance=self.cummulative_variance,
             buriedness_file=self.buriedness_file,
         )
-        self._labels, self._cluster_center_indices = (
+        self._labels, self._cluster_centers, self._cluster_center_indices, self._cluster_centers_trajectories = (
             write_clustering_info(
             summary=summary,
             trajectory_dict=self.trajectory_dict,

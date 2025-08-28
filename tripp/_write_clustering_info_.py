@@ -57,14 +57,10 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
         The clustering method used (e.g., 'DBSCAN', 'KMedoids').
     Returns
     -------
-    labels: np.ndarray
-        An array of cluster labels for each point in the feature matrix.
-    cluster_centers: list
-        The indices of the cluster centers within their respective individual trajectories.
+    labels : np.ndarray
+        An array of cluster labels for each input frame sorted by cluster population.
     cluster_center_indices: list
-        The indices of the cluster centers in the full feature matrix (i.e., global indices).
-    cluster_centers_trajectories: list
-        A list of trajectory names of the cluster centers.
+        A list of indices of the cluster centers mapped onto the clustering matrix sorted by cluster population.
     """
     labels, cluster_centers, cluster_center_indices, cluster_centers_trajectories = sort_clusters(labels=labels, cluster_centers=cluster_centers, cluster_center_indices=cluster_center_indices, cluster_centers_trajectories=cluster_centers_trajectories)
 
@@ -81,7 +77,7 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
                 cluster_data[f'Cluster {i}'][traj] = {'Times' : ', '.join(map(str, df_i[df_i['Trajectories']==traj]['Times'])), 
                                                       'Frames' : ', '.join(map(str, df_i[df_i['Trajectories']==traj]['Frames']))} 
         
-        if clustering_method == 'DBSCAN' or clustering_method == 'HDBSCAN': 
+        if clustering_method == 'DBSCAN': 
             df_i = df[df['Labels']==-1]
             cluster_data['Cluster -1 (Outliers)'] = {'Population' : f'{round((len(df_i)/len(df))*100,2)}%'} 
             for traj in trajectory_dict.keys(): 
@@ -99,7 +95,7 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
                     else: 
                         l.write(f'{key}\t\t'+cluster_data[f'Cluster {i}'][key]+'\n\n') 
             
-            if clustering_method == 'DBSCAN' or clustering_method == 'HDBSCAN': 
+            if clustering_method == 'DBSCAN': 
                 l.write('\nCluster -1 (Outliers)\n\n') 
                 for key in cluster_data[f'Cluster -1 (Outliers)'].keys(): 
                     if type(cluster_data['Cluster -1 (Outliers)'][key]) == dict: 
@@ -126,4 +122,4 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
         pka_df.to_csv(f'{output_directory}/{output_prefix}_{clustering_method}_cluster.csv') 
     
     write_new_dataframe() 
-    return labels, cluster_centers, cluster_center_indices, cluster_centers_trajectories
+    return labels, cluster_center_indices

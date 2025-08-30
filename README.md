@@ -82,4 +82,4 @@ If you publish results produced with TrIPP or develop methods based on TrIPP, pl
 
 ### License
 
-The library is licensed under **GPL-3.0**
+TrIPP is licensed under **GPL-3.0**

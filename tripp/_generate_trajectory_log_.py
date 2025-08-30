@@ -88,9 +88,9 @@ def trajectory_log(output_directory,
     trajectory_slices : list
         A list of the trajectory slices that are processed in parallel.
     start : str
-        The start time of the calculations.
+        Wall-clock start time.
     end : str
-        The end time of the calculations.
+        Wall-clock end time.
     """
     if disulphide_cys_col:
         save_disulphide_pka = False

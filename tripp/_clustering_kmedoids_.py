@@ -65,11 +65,12 @@ def kmedoids_clustering(
     labels: np.ndarray
         An array of cluster labels for each point in the feature matrix.
     cluster_centers: list
-        The indices of the cluster centers (medoids) within their respective individual trajectories.
-    medoid_indices: list
-        The indices of the cluster centers (medoids) in the full feature matrix (i.e., global indices)
+        Indices of the cluster centers (medoids) within their individual trajectories (local indices). 
+        Indices start from 0 for each trajectory.
+    cluster_center_indices: list
+        Indices of the cluster centers (medoids) within the full feature matrix (global indices).
     cluster_centers_trajectories: list
-        A list of trajectory names of the cluster centers.
+        Trajectory names of the cluster centers (medoids).
     """
 
     kmedoids_clustering = KMedoids(

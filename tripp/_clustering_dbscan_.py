@@ -59,12 +59,16 @@ def dbscan_clustering(
     -------
     labels: np.ndarray
         An array of cluster labels for each point in the feature matrix.
+    
+    If `find_centroid=True`:
+    
     cluster_centers: list
-        The indices of the cluster centers within their respective individual trajectories if find_centroid is True.
+        Indices of the cluster centers within their individual trajectories (local indices). 
+        Indices start from 0 for each trajectory.
     cluster_center_indices: list
-        The indices of the cluster centers in the full feature matrix (i.e., global indices) if find_centroid is True.
+        Indices of the cluster centers within the full feature matrix (global indices).
     cluster_centers_trajectories: list
-         A list of trajectory names of the cluster centers if find_centroid is True.
+        Trajectory names of the cluster centers.
     """
 
     dbscan_clustering = DBSCAN(

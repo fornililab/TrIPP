@@ -31,8 +31,8 @@ def check_resname_HETATM(non_protein_ag):
     Parameters
     ----------
     non_protein_ag : MDAnalysis.AtomGroup
-        The AtomGroup containing non-protein atoms, such as ligands or water.
-        Note that the non-protein selection was defined by MDAnalysis selection syntax.
+        The AtomGroup (MDAnalysis selection syntax) for residues with resnames not found in either the built-in or user-defined conversion dictionaries.
+        
     Raises
     ------
     NameError

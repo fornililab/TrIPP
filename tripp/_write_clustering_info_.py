@@ -43,12 +43,13 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
         An array of trajectories names for the input frames.
     labels : np.ndarray
         An array of cluster labels for each frame.
-    cluster_centers : list
-        A list of cluster centers.
+    cluster_centers: list
+        Indices of the cluster centers within their individual trajectories (local indices). 
+        Indices start from 0 for each trajectory.
     cluster_center_indices: list
-        A list of indices of the cluster centers mapped onto the clustering matrix. 
-    cluster_centers_trajectories : list
-        A list of indices of the cluster centers mapped onto the trajectory.
+        Indices of the cluster centers within the full feature matrix (global indices).
+    cluster_centers_trajectories: list
+        Trajectory names of the cluster centers.
     output_directory : str
         The path to the directory where output files will be saved.
     output_prefix : str
@@ -60,11 +61,14 @@ def write_clustering_info(summary, trajectory_dict, pka_df, times, frames, traje
     labels: np.ndarray
         An array of cluster labels for each point in the feature matrix.
     cluster_centers: list
-        The indices of the cluster centers within their respective individual trajectories, sorted by the population.
+        Indices of the cluster centers within their individual trajectories (local indices), 
+        sorted by cluster population 
+        Indices start from 0 for each trajectory.
     cluster_center_indices: list
-        The indices of the cluster centers in the full feature matrix (i.e., global indices), sorted by the population.
+        Indices of the cluster centers within the full feature matrix (global indices),
+        sorted by cluster population
     cluster_centers_trajectories: list
-        A list of trajectory names of the cluster centers, sorted by the population.
+        Trajectory names of the cluster centers, sorted by cluster population
     """
     labels, cluster_centers, cluster_center_indices, cluster_centers_trajectories = sort_clusters(labels=labels, cluster_centers=cluster_centers, cluster_center_indices=cluster_center_indices, cluster_centers_trajectories=cluster_centers_trajectories)
 

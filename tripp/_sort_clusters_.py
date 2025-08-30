@@ -29,12 +29,13 @@ def sort_clusters(labels, cluster_centers, cluster_center_indices, cluster_cente
     ----------
     labels : np.ndarray
         An array of cluster labels for each point in the clustering matrix                 (feature matrix).
-    cluster_centers : list
-        A list of cluster centers.
+    cluster_centers: list
+        Indices of the cluster centers within their individual trajectories (local indices). 
+        Indices start from 0 for each trajectory.
     cluster_center_indices: list
-        A list of indices of the cluster centers mapped onto the clustering matrix.
-    cluster_centers_trajectories : list
-        A list of indices of the cluster centers mapped onto the trajectory.
+        Indices of the cluster centers within the full feature matrix (global indices).
+    cluster_centers_trajectories: list
+        Trajectory names of the cluster centers.
     """
     clusters = np.unique(labels) 
     clusters = clusters[clusters != -1] 

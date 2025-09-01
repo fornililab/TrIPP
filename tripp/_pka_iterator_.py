@@ -21,8 +21,8 @@ def pka_iterator(trajectory_slice, universe,
         Modified MDAnalysis universe from the Trajectory class initialisation.
     output_directory: str
         Directory to write the PROPKA output files to.
-    mutation_selections: list of str
-        List of selection strings for the atoms to mutate.
+    mutation_selections: str
+        Selection string in MDAnalysis format (only for pseudo-mutations) 
     optargs: list of str, default=[]
         PROPKA predictions can be run with optional arguments
         (see https://propka.readthedocs.io/en/latest/command.html).

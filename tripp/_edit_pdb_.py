@@ -31,7 +31,7 @@ def mutate(universe, mutation_selections, temp_name):
         modifications should be used here.
     mutation_selections: str
         A string (MDAnalysis selection syntax) to select the 
-        residue to be pseudo-mutated.
+        residues to be pseudo-mutated.
     temp_name: str
         The name of the temporary PDB file to be created with the mutated residue.
     Exceptions

@@ -1,13 +1,12 @@
 [tool.poetry]
 name = "tripp"
-version = "0.1.10"
+version = "1.0.0"
 description = "Trajectory Iterative pKa Predictor"
-authors = ["Christos Matsingos <c.matsingos@qmul.ac.uk>, Ka Fu Man <k.man@qmul.ac.uk>"]
+authors = ["Christos Matsingos <c.matsingos@qmul.ac.uk>, Ka Fu Man <k.man@qmul.ac.uk>, Arianna Fornili <a.fornili@qmul.ac.uk>"]
 readme = "README.md"
-include = ["tests/data/*"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.9,<3.10"
 mdanalysis = "2.5.0"
 pandas = "2.0.3"
 numpy = "1.25.0"

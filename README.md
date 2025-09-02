@@ -66,7 +66,7 @@ Running the full tutorial on a Macbook Pro (M2 Pro) using 12 cores requires abou
 ### Development
 
 Tests for each function are a work in progress.
-Users who modifiy the code should pass all tests inside the [tests](test/) directory.
+Users who modifiy the code should pass all tests inside the [tests](tests/) directory.
 
 ### Authors
 

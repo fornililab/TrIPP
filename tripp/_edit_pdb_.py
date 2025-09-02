@@ -41,7 +41,7 @@ def mutate(universe, mutation_selections, temp_name):
     """ 
     replace_name = ' '.join(['N','HN','H','CA','HA','CB','O','C'])
     mutation_ag = universe.select_atoms(mutation_selections)
-    if mutation_ag.residues.resnames == 'GLY':
+    if (mutation_ag.residues.resnames).any() == 'GLY':
         raise Exception('GLY cannot be mutated to Ala in the current implementation.')
     mutation_ag.residues.resnames = 'ALA'
     # Selecting all but not the mutation_selection, and also the mutation_selection but only those of replace_name.

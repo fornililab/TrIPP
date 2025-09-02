@@ -91,4 +91,7 @@ def determine_charge_center(universe, selection):
     else:
         raise Exception(f'Residue {residue_type}{resid}:{chain} is not recognized by TrIPP: unable to determine charge centre')
 
+    if np.any(np.isnan(charge_center)):
+        raise Exception(f'Unable to determine charge center for {residue_type}{resid}:{chain} due to missing atoms in the residue.')
+
     return charge_center, residue_identifier

@@ -12,3 +12,4 @@ tmp/*
 .pytest_cache/
 .coverage*
 dist/*
+poetry_README.txt

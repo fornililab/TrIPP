@@ -33,7 +33,7 @@ The Visualization class in TrIPP requires a working installation of PyMOL (https
 The recommended way to install TrIPP is via PyPI.
 You may want to create a virtual environment before installing the package.
 ```sh
-conda create -n tripp python=3.9
+conda create -n tripp python=3.9 setuptools=75 ipykernel
 conda activate tripp
 pip install tripp
 ```
@@ -47,7 +47,7 @@ pytest -s test_Installation.py
 Note that you will be prompted for the path of the PyMOL executable when testing the Visualization class.
 You may type `skip` to bypass the Visualization class test.
 
-Mac: /Applications/PyMOL.app/Contents/MacOS/MacPyMOL
+Mac: /Applications/PyMOL.app/Contents/MacOS/MacPyMOL or `which pymol` (depending on how PyMOL has been installed)
 
 Linux: which pymol
 

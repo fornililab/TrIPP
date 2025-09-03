@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tripp"
-version = "1.0.0"
+version = "1.0.2"
 description = "Trajectory Iterative pKa Predictor"
 authors = ["Christos Matsingos <c.matsingos@qmul.ac.uk>, Ka Fu Man <k.man@qmul.ac.uk>, Arianna Fornili <a.fornili@qmul.ac.uk>"]
 readme = "README.md"
@@ -18,11 +18,12 @@ scipy = "1.13.0"
 seaborn = "0.13.2"
 tqdm = "^4.67.1"
 pytest = "^8.4.1"
+ipywidgets = "^8.1.7"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.25.1"
 jupyter = "^1.1.1"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core","setuptools<81"]
 build-backend = "poetry.core.masonry.api"

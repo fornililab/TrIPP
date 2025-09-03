@@ -122,8 +122,15 @@ class TestInstallation:
                               pka_file=pka_file,
                               projection_file='data/lyso_test_pc1.csv',
                               method='Pearson')
-        assert TestInstallation.compare_output('test_output/lyso_test_PearsonCorrelation.csv','reference_output/lyso_test_PearsonCorrelation.csv')
-    
+        ref = 'reference_output/lyso_test_PearsonCorrelation.csv'
+        ref_arr = np.loadtxt(ref, delimiter=',', skiprows=1, usecols = [1,2])
+        ref_residues = np.loadtxt(ref, delimiter=',', skiprows=1, usecols = [0], dtype=str)
+        test = 'test_output/lyso_test_PearsonCorrelation.csv'
+        test_arr = np.loadtxt(test, delimiter=',', skiprows=1, usecols =[1,2])
+        test_residues = np.loadtxt(test, delimiter=',', skiprows=1, usecols=[0], dtype=str)
+        assert np.allclose(ref_arr, test_arr, atol=1e-6)
+        assert np.array_equal(ref_residues, test_residues)
+
     @pytest.mark.skipif(PyMOL_path.lower() == 'skip', reason='Skipping Visualization test')
     def test_PCProjectionScreening_Visualization(self):
         output_directory = 'test_output'

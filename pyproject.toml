@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tripp"
-version = "1.0.2"
+version = "1.0.3"
 description = "Trajectory Iterative pKa Predictor"
 authors = ["Christos Matsingos <c.matsingos@qmul.ac.uk>, Ka Fu Man <k.man@qmul.ac.uk>, Arianna Fornili <a.fornili@qmul.ac.uk>"]
 readme = "README.md"

@@ -78,8 +78,10 @@ Users who modifiy the code should pass all tests inside the [tests](tests/) dire
 
 If you publish results produced with TrIPP or develop methods based on TrIPP, please cite the following paper:
 
-* C. Matsingos, K. Man and A. Fornili: *TrIPP: a Trajectory Iterative pKa Predictor*, ...
+Matsingos, C.; Man, K. F.; Fornili, A. TrIPP: A Trajectory Iterative pKa Predictor. bioRxiv 2025, 2025.09.02.673559. https://doi.org/10.1101/2025.09.02.673559.
+
 
 ### License
 
+Copyright (C) 2024
 TrIPP is licensed under **GPL-3.0**

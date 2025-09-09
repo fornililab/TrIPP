@@ -1,3 +1,21 @@
+"""
+    This file is part of the TrIPP software
+    (https://github.com/fornililab/TrIPP).
+    Copyright (c) Christos Matsingos, Ka Fu Man and Arianna Fornili.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, version 3.
+
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import pandas as pd
 import logging
 
@@ -19,6 +37,8 @@ The Trajectory Iterative pKa Predictor (TrIPP)
 Written by: Christos Matsingos, Ka Fu Man, and Arianna Fornili 
 
 If you are using TrIPP, please cite: 
+Matsingos, C.; Man, K. F.; Fornili, A. TrIPP: A Trajectory Iterative pKa Predictor. 
+bioRxiv 2025, 2025.09.02.673559. https://doi.org/10.1101/2025.09.02.673559.
 
 -----------------------------------------------------------------
 """

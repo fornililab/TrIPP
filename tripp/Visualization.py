@@ -1,11 +1,7 @@
 """
-    @release_date  : $release_date
-    @version       : $release_version
-    @author        : Christos Matsingos, Ka Fu Man 
-    
     This file is part of the TrIPP software
     (https://github.com/fornililab/TrIPP).
-    Copyright (c) 2024 Christos Matsingos, Ka Fu Man and Arianna Fornili.
+    Copyright (c) Christos Matsingos, Ka Fu Man and Arianna Fornili.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
-
 
 import MDAnalysis as mda
 import numpy as np

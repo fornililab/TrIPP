@@ -83,5 +83,5 @@ Matsingos, C.; Man, K. F.; Fornili, A. TrIPP: A Trajectory Iterative pKa Predict
 
 ### License
 
-Copyright (C) 2024
+Copyright (C) 2024 Christos Matsingos, Ka Fu Man and Arianna Fornili  
 TrIPP is licensed under **GPL-3.0**

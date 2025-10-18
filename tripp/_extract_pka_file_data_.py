@@ -18,41 +18,58 @@
 
 import numpy as np 
 
-def extract_pka_buriedness_data(file, time):
+def propka_pka_buriedness_data_parser(molecule, time):
     """
-    Extracts pKa and buriedness (buried ratio) values from a PROPKA output file.
+    Parses the pKa and buriedness data from the PROPKA output files.
     Parameters
     ----------
-    file: str
-        The path to the PROPKA temporary output file.
-    time: str
-        The time of the frame processed by PROPKA, used as a key in the returned dictionary.
+    molecule: propka.molecule.Molecule object
+        The PROPKA molecule object containing the pKa calculation results.
+    time: int
+        The time corresponding to the pKa calculation.
     Returns
     -------
     data: dict
-        A nested dictionary where each time point is mapped to a dictionary containing the following keys:
-        - 'residue_identifier_list': an array of residue identifiers in the format 'RESID:CHAIN'.
-        - 'pka_list': an array of pKa values corresponding to the residues.
-        - 'buriedness_list': an array of buriedness values corresponding to the residues.
-        Elements in the three arrays are in the same order (element i from each array refers to the same residue)
+        A dictionary containing residue identifiers, pKa values and buriedness
+        values for the titratable groups in the molecule.
     """
-    compatible_resnames = ['ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 
-                           'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 
-                           'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL', 'N+', 'C-'] # N+ and C- added for N- and C-termini in the PROPKA file
-    pkafile = open(file, 'r')
-    residue_identifier_list = []
-    pka_list = [] 
-    buriedness_list = []
-    for line in pkafile: 
-        line_processed = line.rstrip() 
-        line_list = line_processed.strip().split()
-        # identify the line containing the pka, only considering lines with amino acids (compatible_resnames).
-        if len(line_list) > 15 and line_list[0] in compatible_resnames:
-            residue_identifier_list.append(line_list[0]+line_list[1]+':'+line_list[2])
-            pka_list.append(line_list[3])
-            buriedness_list.append(line_list[4])
+    groups = molecule.conformations[molecule.conformation_names[0]].get_titratable_groups()
 
+    residue_identifier_list = []
+    pka_list = []
+    buriedness_list = []
+    for group in groups:
+        if group.atom.name == 'N':
+            residue_name = 'N+'
+        elif group.atom.name == 'OXT':
+            residue_name = 'C-'
+        else:
+            residue_name = group.atom.res_name
+        residue_id = str(group.atom.res_num)
+        residue_identifier_list.append(residue_name + residue_id + ':' + group.atom.chain_id)
+        pka_list.append(round(group.pka_value,2))
+        buriedness_list.append(round(group.buried*100))
     data = {time: {'residue_identifier_list':np.array(residue_identifier_list),
                   'pka_list':np.array(pka_list),
                   'buriedness_list':np.array(buriedness_list)}}
+    return data
+
+def pypka_pka_data_parser(tit_result, time):
+    processed_line = []
+    for line in str(tit_result).split('\n'):
+        tmp = []
+        if 'Not In Range' in line or 'Predicted Isoelectric Point' in line:
+            continue
+        for element in line.split(' '):
+            if element != '':
+                tmp.append(element)
+        if tmp:
+            processed_line.append(tmp)
+    result_arr = np.array(processed_line[1:]) # col0:chain, col1:resid, col2:resname, col3:pka
+    result_arr[:,2] = list(map(lambda x: x.replace('NTR','N+').replace('CTR','C-'), result_arr[:,2])) #Convert NTR and CTR to N+ and C-
+    residue_identifier_list = np.char.array(result_arr[:,2]) + np.char.array(result_arr[:,1]) + ':' + np.char.array(result_arr[:,0]) 
+    pka_arr = result_arr[:,3]
+    data = {time: {'residue_identifier_list':np.array(residue_identifier_list),
+                  'pka_list':pka_arr,
+                  'buriedness_list':None}}
     return data

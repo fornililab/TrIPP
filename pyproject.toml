@@ -19,6 +19,7 @@ seaborn = "0.13.2"
 tqdm = "^4.67.1"
 pytest = "^8.4.1"
 ipywidgets = "^8.1.7"
+pypka = "^2.10.0"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.25.1"

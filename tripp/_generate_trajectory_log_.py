@@ -82,6 +82,7 @@ def trajectory_log(output_directory,
                    extract_buriedness_data,
                    mutation_selection, 
                    disulphide_cys_col,
+                   predictor,
                    optargs,
                    cores,
                    trajectory_slices,
@@ -131,11 +132,12 @@ Pseudo-mutations: {mutation_selection}
 Extract buriedness: {extract_buriedness_data}
 Save disulphide bond cysteines in csv: {save_disulphide_pka}
 List of cysteines removed: {disulphide_cys_col}
-PROPKA optional arguments: {optargs}
+Predictor: {predictor}
+Predictor optional arguments: {optargs}
 
 -----------------------------------------------------------------
 """)
-    df = pd.read_csv(f'{output_directory}/{output_prefix}_pka.csv')
+    df = pd.read_csv(f'{output_directory}/{output_prefix}_{predictor}_pka.csv')
     df.drop(columns=['Time [ps]'],inplace=True)
     chains = set([x.split(':')[-1] for x in df.columns])
     for chain in chains:

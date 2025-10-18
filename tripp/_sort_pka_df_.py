@@ -19,10 +19,15 @@
 import pandas as pd 
 import logging
 import numpy as np
+import re
 
 logger = logging.getLogger(__name__)
 
-def output_df(output_directory, output_prefix, data, save_disulphide_pka, extract_buriedness_data):
+def sort_columns(c):
+    m = re.match(r"([A-Za-z\+\-]+)(\d*)", c)
+    return (m.group(1), int(m.group(2)) if m and m.group(2) else -1)
+    
+def output_df(output_directory, output_prefix, data, save_disulphide_pka, extract_buriedness_data, predictor):
     """
     Combines the results from all worker processes and saves the pKa and buriedness (buried ratio) values to CSV files.
     Parameters
@@ -68,23 +73,26 @@ run -d in the optargs to consider alternative state.
         pka_df = pka_df.applymap(lambda x: x.replace('*','') if isinstance(x, str) else x)
         pka_df = pka_df.astype(float).sort_values('Time [ps]')
         
-    if extract_buriedness_data:
+    if extract_buriedness_data and predictor == 'propka':
         buriedness_df = pd.DataFrame(buriedness_full_data, columns=pka_buriedness_resname_dict['residue_identifier_list'])
         buriedness_df.insert(0,'Time [ps]',time_list)
         buriedness_df['Time [ps]'] = buriedness_df['Time [ps]'].astype(float)
         buriedness_df.sort_values('Time [ps]', inplace=True)
 
-    if not save_disulphide_pka:
+    if not save_disulphide_pka and predictor == 'propka':
         disulphide_cys_col = pka_df.columns[(pka_df == 99.99).any()].to_list()
         pka_df.drop(disulphide_cys_col, axis=1, inplace=True)
         if extract_buriedness_data:
             buriedness_df.drop(disulphide_cys_col, axis=1, inplace=True)
     else:
         disulphide_cys_col = None
+    cols = [pka_df.columns[0]] + sorted(pka_df.columns[1:], key=sort_columns)
+    pka_df = pka_df[cols]    
+    pka_df.to_csv(f'{output_directory}/{output_prefix}_{predictor}_pka.csv', index=False)
     
-    pka_df.to_csv(f'{output_directory}/{output_prefix}_pka.csv', index=False)
-    
-    if extract_buriedness_data:
-        buriedness_df.to_csv(f'{output_directory}/{output_prefix}_buriedness.csv', index=False)
-        
+    if extract_buriedness_data and predictor == 'propka':
+        cols = [buriedness_df.columns[0]] + sorted(buriedness_df.columns[1:], key=sort_columns)
+        buriedness_df = buriedness_df[cols]
+        buriedness_df.to_csv(f'{output_directory}/{output_prefix}_{predictor}_buriedness.csv', index=False)
+
     return disulphide_cys_col

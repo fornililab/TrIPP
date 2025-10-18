@@ -85,7 +85,7 @@ class Trajectory:
             os.makedirs(output_directory) 
         else:
             # Remove files named .temp* in the directory before proceeding.
-            [os.remove(file) for file in glob.glob(f'{output_directory}/.temp*')]
+            [os.remove(file) for file in glob.glob(f'{output_directory}/.temp*.pdb')]
         if os.path.isfile(f'{output_directory}/{output_prefix}.log'):
             os.remove(f'{output_directory}/{output_prefix}.log')
             
@@ -146,6 +146,7 @@ class Trajectory:
         extract_buriedness_data=True,
         mutation_selections=None,
         save_disulphide_pka=False,
+        predictor='propka',
         optargs=[],
     ):
         """
@@ -172,8 +173,11 @@ class Trajectory:
             For example, if optargs is set to `["-k"]`, propka will run with the -k flag 
             (protons from the input file are kept).
         """
+        extract_buriedness_data = False if predictor == 'pypka' else extract_buriedness_data # pypKa does not provide buriedness data.
+        # save_disulphide_pka =False if predictor == 'pypka' # pypKa does not set disulphide-bonded cysteine pKa to 99.99.
         start = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
-        
+        # if predictor == 'propka':        
+        mp.set_start_method("spawn", force=True)
         pool = mp.Pool(self.cpu_core_number)
         # Create jobs
         jobs = []
@@ -187,6 +191,7 @@ class Trajectory:
                     self.corrected_universe,
                     self.output_directory,
                     mutation_selections,
+                    predictor,
                     optargs),
             )
             jobs.append(job)
@@ -194,20 +199,30 @@ class Trajectory:
         results = [job.get() for job in jobs]
         pool.close()
         pool.join()
+        # elif predictor == 'pypka':
+        #     for trajectory_slice in self.trajectory_slices:
+        #         results = pka_iterator(
+        #             trajectory_slice,
+        #             self.corrected_universe,
+        #             self.output_directory,
+        #             mutation_selections,
+        #             predictor,
+        #             optargs)
+                
         
         data, log_contents = zip(*results)
         self.data = data
         log_contents = list(filter(bool,log_contents))
         if log_contents:
-            propka_warning_logger = logging.getLogger('proka_warning')
-            propka_warning_logger.propagate = False
-            propka_warning_handler = logging.FileHandler(f'{self.output_directory}/{self.output_prefix}_propka_warnings.log','w')
-            propka_warning_handler.setLevel(logging.WARNING)
-            propka_warning_handler.setFormatter(logging.Formatter('%(message)s'))
-            propka_warning_logger.addHandler(propka_warning_handler)
-            propka_warning_logger.warning(log_contents[0])
-            propka_warning_handler.close()
-            propka_warning_logger.removeHandler(propka_warning_handler)
+            predictor_warning_logger = logging.getLogger('predictor_warning')
+            predictor_warning_logger.propagate = False
+            predictor_warning_handler = logging.FileHandler(f'{self.output_directory}/{self.output_prefix}_{predictor}_warnings.log','w')
+            predictor_warning_handler.setLevel(logging.WARNING)
+            predictor_warning_handler.setFormatter(logging.Formatter('%(message)s'))
+            predictor_warning_logger.addHandler(predictor_warning_handler)
+            predictor_warning_logger.warning(log_contents[0])
+            predictor_warning_handler.close()
+            predictor_warning_logger.removeHandler(predictor_warning_handler)
 
         
         # Combine the temporary pka csv and sort it according to Time [ps] column
@@ -216,7 +231,8 @@ class Trajectory:
             output_prefix=self.output_prefix,
             data=data,
             save_disulphide_pka=save_disulphide_pka,
-            extract_buriedness_data=extract_buriedness_data
+            extract_buriedness_data=extract_buriedness_data,
+            predictor=predictor
         )
 
         end = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
@@ -228,6 +244,7 @@ class Trajectory:
             extract_buriedness_data,
             mutation_selections,
             disulphide_cys_col,
+            predictor,
             optargs,
             self.cpu_core_number,
             self.trajectory_slices,

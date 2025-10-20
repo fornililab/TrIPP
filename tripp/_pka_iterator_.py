@@ -19,7 +19,7 @@
 import MDAnalysis as mda 
 from tripp._edit_pdb_ import mutate 
 from propka import run 
-from tripp._extract_pka_file_data_ import propka_pka_buriedness_data_parser, pypka_pka_data_parser
+from tripp._extract_pka_file_data_ import propka_pka_buriedness_data_parser, pypka_pka_data_parser, pkai_pka_data_parser
 import os
 import logging
 import io
@@ -104,6 +104,34 @@ def pypka_predictor(pdb_file, optargs, frame):
     sys.stdout = sys.__stdout__
     
     return tit_result, log_contents
+def pkai_predictor(pdb_file, predictor, frame):
+    from pkai.pKAI import pKAI
+    # Redirect warning from pKAI to a file
+    logger = logging.getLogger('pKAI')
+    logger.propagate = False
+    logger.setLevel(logging.WARNING)
+    log_capture_string = io.StringIO()
+    handler = logging.StreamHandler(log_capture_string)
+    logger.addHandler(handler)
+    # Redirect stdout to capture Titration output
+    text_trap = io.StringIO()
+    sys.stdout = text_trap
+    
+    if predictor.lower() == 'pkai':
+        model_name = 'pKAI'
+    elif predictor.lower() == 'pkai+':
+        model_name = 'pKAI+'
+    pka_result = pKAI(pdb=pdb_file, model_name=model_name, device='cpu')
+    log_contents = None
+    if log_capture_string.getvalue():
+        log_contents = (f"pKAI warning raised for frame {frame}:\n" +
+                        log_capture_string.getvalue() +
+                        '\n')
+    logger.removeHandler(handler)
+    log_capture_string.close()
+    sys.stdout = sys.__stdout__
+
+    return pka_result, log_contents
 
 def pka_iterator(trajectory_slice, universe,
                  output_directory, mutation_selections,
@@ -163,6 +191,11 @@ def pka_iterator(trajectory_slice, universe,
             os.chdir(cwd)
             os.remove(f'.temp_{pid}/{temp_pdb_file}')
             os.rmdir(f'.temp_{pid}')
+        if predictor.lower() == 'pkai' or predictor.lower() == 'pkai+':
+            result, log_contents = pkai_predictor(temp_pdb_file, predictor, frame)
+            data_dictionary = pkai_pka_data_parser(result, time=time)
+            os.chdir(cwd)
+            os.remove(f'{temp_name}.pdb')
         data.append(data_dictionary)
                         
     return data, log_contents

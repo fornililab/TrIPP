@@ -73,3 +73,12 @@ def pypka_pka_data_parser(tit_result, time):
                   'pka_list':pka_arr,
                   'buriedness_list':None}}
     return data
+
+def pkai_pka_data_parser(result, time):
+    result_arr = np.array(result) # col0:chain, col1:resid, col2:resname, col3:pka
+    residue_identifier_list = np.char.array(result_arr[:,2]) + np.char.array(result_arr[:,1]) + ':' + np.char.array(result_arr[:,0])
+    pka_arr = result_arr[:,3]
+    data = {time: {'residue_identifier_list':np.array(residue_identifier_list),
+                  'pka_list':pka_arr,
+                  'buriedness_list':None}}
+    return data

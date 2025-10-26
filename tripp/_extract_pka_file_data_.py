@@ -20,7 +20,7 @@ import numpy as np
 
 def propka_pka_buriedness_data_parser(molecule, time):
     """
-    Parses the pKa and buriedness data from the PROPKA output files.
+    Parses the pKa and buriedness data from the PROPKA molecule object.
     Parameters
     ----------
     molecule: propka.molecule.Molecule object
@@ -54,27 +54,22 @@ def propka_pka_buriedness_data_parser(molecule, time):
                   'buriedness_list':np.array(buriedness_list)}}
     return data
 
-def pypka_pka_data_parser(tit_result, time):
-    processed_line = []
-    for line in str(tit_result).split('\n'):
-        tmp = []
-        if 'Not In Range' in line or 'Predicted Isoelectric Point' in line:
-            continue
-        for element in line.split(' '):
-            if element != '':
-                tmp.append(element)
-        if tmp:
-            processed_line.append(tmp)
-    result_arr = np.array(processed_line[1:]) # col0:chain, col1:resid, col2:resname, col3:pka
-    result_arr[:,2] = list(map(lambda x: x.replace('NTR','N+').replace('CTR','C-'), result_arr[:,2])) #Convert NTR and CTR to N+ and C-
-    residue_identifier_list = np.char.array(result_arr[:,2]) + np.char.array(result_arr[:,1]) + ':' + np.char.array(result_arr[:,0]) 
-    pka_arr = result_arr[:,3]
-    data = {time: {'residue_identifier_list':np.array(residue_identifier_list),
-                  'pka_list':pka_arr,
-                  'buriedness_list':None}}
-    return data
-
 def pkai_pka_data_parser(result, time):
+    """
+    Parses the pKa result from the pkai/pkai+ output files.
+    Parameters
+    ----------
+    result: list
+        The pKa result from pkai/pkai+ as a list of lists.
+        col0:chain, col1:resid, col2:resname, col3:pka
+    time: int
+        The time corresponding to the pKa calculation.
+    Returns
+    -------
+    data: dict
+        A dictionary containing residue identifiers, pKa values and buriedness
+        values for the titratable groups in the molecule.
+    """
     result_arr = np.array(result) # col0:chain, col1:resid, col2:resname, col3:pka
     residue_identifier_list = np.char.array(result_arr[:,2]) + np.char.array(result_arr[:,1]) + ':' + np.char.array(result_arr[:,0])
     pka_arr = result_arr[:,3]

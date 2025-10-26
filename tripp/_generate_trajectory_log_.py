@@ -102,6 +102,8 @@ def trajectory_log(output_directory,
         Selection string for pseudo-mutations.
     disulphide_cys_col : list | None
         List of disulphide bonded cysteines.
+    predictor : str
+        The pKa predictor used.
     optargs : dict
         Optional arguments for the PROPKA calculation.
     cores : int
@@ -137,7 +139,7 @@ Predictor optional arguments: {optargs}
 
 -----------------------------------------------------------------
 """)
-    df = pd.read_csv(f'{output_directory}/{output_prefix}_{predictor}_pka.csv')
+    df = pd.read_csv(f'{output_directory}/{output_prefix}_pka.csv')
     df.drop(columns=['Time [ps]'],inplace=True)
     chains = set([x.split(':')[-1] for x in df.columns])
     for chain in chains:

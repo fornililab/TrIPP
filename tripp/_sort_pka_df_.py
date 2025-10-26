@@ -43,6 +43,8 @@ def output_df(output_directory, output_prefix, data, save_disulphide_pka, extrac
         Whether to save pKa values for cysteines in disulphide bonds.
     extract_buriedness_data : bool
         Whether to extract and save buriedness data.
+    predictor : str
+        The pKa predictor used.
     Returns
     -------
     disulphide_cys_col : list or None
@@ -88,11 +90,11 @@ run -d in the optargs to consider alternative state.
         disulphide_cys_col = None
     cols = [pka_df.columns[0]] + sorted(pka_df.columns[1:], key=sort_columns)
     pka_df = pka_df[cols]    
-    pka_df.to_csv(f'{output_directory}/{output_prefix}_{predictor}_pka.csv', index=False)
+    pka_df.to_csv(f'{output_directory}/{output_prefix}_pka.csv', index=False)
     
     if extract_buriedness_data and predictor == 'propka':
         cols = [buriedness_df.columns[0]] + sorted(buriedness_df.columns[1:], key=sort_columns)
         buriedness_df = buriedness_df[cols]
-        buriedness_df.to_csv(f'{output_directory}/{output_prefix}_{predictor}_buriedness.csv', index=False)
+        buriedness_df.to_csv(f'{output_directory}/{output_prefix}_buriedness.csv', index=False)
 
     return disulphide_cys_col

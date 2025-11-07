@@ -3,9 +3,9 @@
 
 TrIPP (Trajectory Iterative pKa Predictor) is a Python tool to monitor and analyse changes in the pKa of ionisable residues during Molecular Dynamics simulations of proteins.
 
-TrIPP uses [PROPKA 3](https://github.com/jensengroup/propka), which is licensed under
-the GNU Lesser General Public License (LGPL). PROPKA is not included in this repository
-but is required to run the software. See the PROPKA repository for its license terms. 
+TrIPP uses [PROPKA 3](https://github.com/jensengroup/propka) and [pKAI](https://github.com/bayer-science-for-a-better-life/pKAI), which are licensed under
+the GNU Lesser General Public License (LGPL) and MIT License, respectively. PROPKA and pKAI are not included in this repository
+but are required to run the software. See the PROPKA or pKAI repository for their license terms. 
 
 ## Prerequisites
 

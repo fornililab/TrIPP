@@ -81,7 +81,7 @@ def pkai_predictor(pdb_file, predictor, frame):
         model_name = 'pKAI'
     elif predictor.lower() == 'pkai+':
         model_name = 'pKAI+'
-    pka_result = pKAI(pdb=pdb_file, model_name=model_name, device='cpu', thread=1)
+    pka_result = pKAI(pdb=pdb_file, model_name=model_name, device='cpu', threads=1)
     log_contents = None
     if log_capture_string.getvalue():
         log_contents = (f"pKAI warning raised for frame {frame}:\n" +

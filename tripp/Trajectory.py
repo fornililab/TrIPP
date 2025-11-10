@@ -157,6 +157,8 @@ class Trajectory:
         extract_buriedness_data: bool, default=True
             If set to True, both buried ratios and pKa values will be extracted.
             If set to False, only pKa values will be extracted.
+            Only valid for PROPKA predictor, this parameter will be ignored if
+            pKAI/pKAI+ predictor is used.
         mutation_selections: str, default=None
             Peform pseudomutation of residues to alanine.
             Selection is based on MDAnalysis syntax. For multi-chain systems,
@@ -166,17 +168,19 @@ class Trajectory:
         save_disulphide_pka: bool, default=False
             If set to False, pKa and buried ratio values for cysteines 
             forming a disulphide bond (pKa set by PROPKA to 99.99) will 
-            not be saved in the CSV files. 
+            not be saved in the CSV files.
+            Only valid for PROPKA predictor, this parameter will be ignored if
+            pKAI/pKAI+ predictor is used.
         optargs: list of str, default=[]
             PROPKA predictions can be run with optional arguments
             (see https://propka.readthedocs.io/en/latest/command.html). 
             For example, if optargs is set to `["-k"]`, propka will run with the -k flag 
             (protons from the input file are kept).
+            Only valid for PROPKA predictor, this parameter will be ignored if
+            pKAI/pKAI+ predictor is used.
         """
-        extract_buriedness_data = False if predictor == 'pypka' else extract_buriedness_data # pypKa does not provide buriedness data.
-        # save_disulphide_pka =False if predictor == 'pypka' # pypKa does not set disulphide-bonded cysteine pKa to 99.99.
+                
         start = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
-        # if predictor == 'propka':        
         mp.set_start_method("spawn", force=True)
         pool = mp.Pool(self.cpu_core_number)
         # Create jobs
@@ -199,15 +203,6 @@ class Trajectory:
         results = [job.get() for job in jobs]
         pool.close()
         pool.join()
-        # elif predictor == 'pypka':
-        #     for trajectory_slice in self.trajectory_slices:
-        #         results = pka_iterator(
-        #             trajectory_slice,
-        #             self.corrected_universe,
-        #             self.output_directory,
-        #             mutation_selections,
-        #             predictor,
-        #             optargs)
                 
         
         data, log_contents = zip(*results)

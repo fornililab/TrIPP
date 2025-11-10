@@ -17,7 +17,7 @@
 """
 
 import pandas as pd 
-from tripp._model_pka_values_ import model_pka_values 
+from tripp._model_pka_values_ import model_propka_values, model_pkai_values
 import numpy as np
 from scipy import stats
 
@@ -36,7 +36,8 @@ def calculate_difference_to_model(input_directory, output_prefix):
     
     """
     df_pka = pd.read_csv(f'{input_directory}/{output_prefix}_pka.csv')
-
+    model_pka_values = model_propka_values if 'propka' in input_directory else model_pkai_values
+    
     df_dif = pd.DataFrame()
     df_dif['Time [ps]'] = df_pka['Time [ps]']
     del df_pka['Time [ps]']

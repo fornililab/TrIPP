@@ -116,9 +116,9 @@ def pka_iterator(trajectory_slice, universe,
         (see https://propka.readthedocs.io/en/latest/command.html).
         For example, if optargs is set to `["-k"]`, propka will run with the -k flag
         (protons from the input file are kept).
+        Only valid for PROPKA predictor, this parameter will be ignored if
+        pKAI/pKAI+ predictor is used.
     """
-
-    # log_contents = None
     
     pid = os.getpid()
     

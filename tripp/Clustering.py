@@ -71,12 +71,14 @@ class Clustering:
         trajectories in trajectory_file. In this case, the file paths need to be given in the 
         same order as the correspnding trajectories in trajectory_file.
         If None, the buried ratio values are not used for clustering.
+        Only valid for PROPKA predictor, set to None if pKAI/pKAI+ predictor is used.
     include_distances: bool, default=False
         If True, all the possible pairs of distances between charge centers in the selected 
         residues are used as additional features for the clustering alongside the pKa values.
     include_buriedness: bool, default=False
         If True, the buried ratio of the selected residues are used as additional features
         for the clustering alongside the pKa values.
+        Only valid for PROPKA predictor, set to None if pKAI/pKAI+ predictor is used.
     dimensionality_reduction: bool, befault=False
         If True, dimensionality reduction is performed on the input features using PCA. 
         The minimum number of principal components that explain at least 90% of the 

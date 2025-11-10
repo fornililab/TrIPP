@@ -20,7 +20,7 @@ import MDAnalysis as mda
 import numpy as np
 import pandas as pd 
 from tripp._pymol_template_ import gen_pymol_template 
-from tripp._model_pka_values_ import model_pka_values 
+from tripp._model_pka_values_ import model_propka_values, model_pkai_values 
 from tripp._create_mda_universe_ import create_mda_universe 
 import logging
 
@@ -73,9 +73,13 @@ class Visualization:
                 for file in pka_file: 
                     pka_file_l.append(pd.read_csv(file)) 
                 pka_values = pd.concat(pka_file_l) 
-            
+                # Determine which predictor has been used based on the first file name
+                self.predictor = 'propka' if 'propka' in pka_file[0] else 'pkai'
             else: 
                 pka_values = pd.read_csv(pka_file)
+                # Determine which predictor has been used based on the file name
+                self.predictor = 'propka' if 'propka' in pka_file else 'pkai'
+                
             # If user wants to use part of the trajectory to calculate mean/difference_to_model_value.
             self.start = start
             if end == -1:
@@ -88,7 +92,7 @@ class Visualization:
             N_C_cols = [col for col in self.pka_values.columns if 'C-' in col or 'N+' in col]
             Rest_cols = [col for col in self.pka_values.columns if col not in N_C_cols]
             self.pka_values = self.pka_values[Rest_cols + N_C_cols]
-            
+                        
     def gen_pse(self, 
                 pymol_path, 
                 output_directory,
@@ -144,6 +148,9 @@ class Visualization:
             tempfactors_output_topology_file = f"{output_directory}/{output_prefix}_mean.pdb"
 
         elif coloring_method == 'difference_to_model_value':
+            
+            model_pka_values = model_propka_values if self.predictor == 'propka' else model_pkai_values
+
             del self.pka_values['Time [ps]']
             pka_values_mean = self.pka_values.mean(axis=0)
             for residue in pka_values_mean.keys():

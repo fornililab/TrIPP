@@ -19,14 +19,24 @@
 """ 
 Dictionary that contains the model pKa values of amino acids in solution used in 
 PROPKA (https://github.com/jensengroup/propka/blob/27e0ad2f8d653404f57c78f1cae2ec32cb5adb68/propka/propka.cfg#L5-L13)
+and pKAI (https://github.com/bayer-science-for-a-better-life/pKAI/blob/11cd7973c936dd6fa1b38654e7d0ae30bec55bfc/pKAI/protein.py#L4-L13)
 """ 
 
-model_pka_values = {'ASP' : 3.8, 
-                    'GLU' : 4.5, 
-                    'CTR' : 3.2, 
-                    'HIS' : 6.5, 
-                    'NTR' : 8, 
-                    'CYS' : 9, 
-                    'TYR' : 10, 
-                    'LYS' : 10.5, 
-                    'ARG' : 12.5} 
+model_propka_values = {'ASP' : 3.8, 
+                        'GLU' : 4.5, 
+                        'CTR' : 3.2, 
+                        'HIS' : 6.5, 
+                        'NTR' : 8, 
+                        'CYS' : 9, 
+                        'TYR' : 10, 
+                        'LYS' : 10.5, 
+                        'ARG' : 12.5} 
+
+model_pkai_values= {"ASP": 3.79,
+                    "CTR": 2.90,
+                    "CYS": 8.67,
+                    "GLU": 4.20,
+                    "HIS": 6.74,
+                    "LYS": 10.46,
+                    "NTR": 7.99,
+                    "TYR": 9.59}

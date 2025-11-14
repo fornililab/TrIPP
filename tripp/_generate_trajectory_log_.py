@@ -80,7 +80,8 @@ def pka_statistics_table(df):
 def trajectory_log(output_directory,
                    output_prefix, 
                    extract_buriedness_data,
-                   mutation_selection, 
+                   mutation_selection,
+                   save_disulphide_pka,
                    disulphide_cys_col,
                    predictor,
                    optargs,
@@ -115,10 +116,6 @@ def trajectory_log(output_directory,
     end : str
         Wall-clock end time.
     """
-    if disulphide_cys_col:
-        save_disulphide_pka = False
-    else:
-        save_disulphide_pka = True
         
     logger.info(f"""-----------------------------------------------------------------                
 
@@ -139,7 +136,7 @@ Predictor optional arguments: {optargs}
 
 -----------------------------------------------------------------
 """)
-    df = pd.read_csv(f'{output_directory}/{output_prefix}_pka.csv')
+    df = pd.read_csv(f'{output_directory}/{output_prefix}_{predictor}_pka.csv')
     df.drop(columns=['Time [ps]'],inplace=True)
     chains = set([x.split(':')[-1] for x in df.columns])
     for chain in chains:

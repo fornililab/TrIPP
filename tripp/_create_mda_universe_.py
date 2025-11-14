@@ -78,10 +78,11 @@ Will set formal charges to 0 for your whole system.""")
     added_universe = universe.copy()
     return added_universe
 
-def create_propka_compatible_universe(universe,
+def create_predictor_compatible_universe(universe,
                                       hetatm_resname,
                                       custom_terminal_oxygens,
-                                      custom_resname_correction):
+                                      custom_resname_correction,
+                                      predictor):
     """
     Converts the universe from create_mda_universe function 
     into a PROPKA compatible format, including the resname of standard amino 
@@ -109,6 +110,9 @@ def create_propka_compatible_universe(universe,
         the hard-coded TrIPP dictionary (tripp._correction_dictionary_.py). 
         Can be given as e.g. {'XXX':'ASP'}, where 'XXX' is the residue
         name in the PDB file and 'ASP' is the corresponding PROPKA name.
+    predictor: str
+        The pKa predictor to be used, supporting 'propka', 'pkai',
+        and 'pkai+'.
     Returns
     -------
     corrected_universe: MDAnalysis.universe
@@ -117,12 +121,30 @@ def create_propka_compatible_universe(universe,
         HETATM for non-protein atoms (when hetatm_resname is used).
     """
     corrected_universe = universe.copy()
+    process_resname_HETATM(corrected_universe,
+                            hetatm_resname,
+                            custom_resname_correction,
+                            predictor)
+    
+    process_terminal_oxygens(custom_terminal_oxygens,
+                             corrected_universe,
+                             predictor)
+    return corrected_universe
+
+def process_resname_HETATM(corrected_universe,
+                           hetatm_resname,
+                           custom_resname_correction,
+                           predictor):
+    """
+    Function to process and check residue names and HETATM record types in the 
+    corrected_universe. 
+    """
     # Make a local copy of corrected_amino_acids for temporary changes
     local_corrected_amino_acids = corrected_amino_acids.copy()
     if custom_resname_correction is not None:
         for current_resname, correct_resname in custom_resname_correction.items():
             local_corrected_amino_acids[current_resname] = correct_resname        
-    # Correct resname to propka compatible with predefined list.
+    # Correct resname to propka and pKAI compatible with predefined list.
     corrected_resnames = []
     corrected_resnames_trace = []
     for resname, residx in zip(corrected_universe.residues.resnames,
@@ -161,43 +183,52 @@ def create_propka_compatible_universe(universe,
         logger.info(f"""The record type of the following residues has been modified to HETATM:
 {', '.join(corrected_hetatm)}""")
     
-    propka_compatible_amino_acids = ' '.join(np.unique(list(local_corrected_amino_acids.values())))
-    check_resname_HETATM(corrected_universe.select_atoms(f"not resname {propka_compatible_amino_acids} {hetatm_resname}"))
+    predictor_compatible_amino_acids = ' '.join(np.unique(list(local_corrected_amino_acids.values())))
+    check_resname_HETATM(corrected_universe.select_atoms(f"not resname {predictor_compatible_amino_acids} {hetatm_resname}"), predictor)
     
-    # When custom_terminal_oxygens is not provided by user as list of string,
-    # the terminal oxygens will be renamed according to the dictionary
-    # in _correction_dictionary_.corrected_atom_names.
-    if custom_terminal_oxygens is None:
-        corrected_universe, corrected_terminal_oxygens_trace = modifiy_terminal_oxygens(corrected_universe, corrected_atom_names)
-        logger.info(f"""C-Terminal oxygen atom names will be modified according to our predefined dictionary:
-{corrected_terminal_oxygens_trace}""")
-        
-    # Check if argument is a list
-    elif not isinstance(custom_terminal_oxygens,list):
-        raise TypeError(f'custom_terminal_oxygens argument must be a list, not {type(custom_terminal_oxygens)}')
-    
-    # Check if argument is a list of string
-    elif not all(isinstance(element,str) for element in custom_terminal_oxygens):
-        raise TypeError(f'custom_terminal_oxygens argument must be a list of strings, at least one of your elements is not a string')
-    
-    # Check if argument is a list of length 2
-    elif len(custom_terminal_oxygens) != 2:
-        raise ValueError(f'Length of custom_terminal_oxygens should be 2, but got {len(custom_terminal_oxygens)}')
-
-    # When custom_terminal_oxygens is provided by the user as a list of strings,
-    # the C-terminal oxygen atoms will be renamed as O and OXT.
-    elif isinstance(custom_terminal_oxygens, list) and len(custom_terminal_oxygens) == 2:
+def process_terminal_oxygens(custom_terminal_oxygens,
+                             corrected_universe,
+                             predictor):
+    """
+    Function to process and check terminal oxygens in the 
+    corrected_universe. Only valid when PROPKA predictor is
+    selected, pKAI and pKAI+ skip this step.
+    """
+    # Make a local copy of corrected_atom_names for temporary changes
+    local_corrected_atom_names = corrected_atom_names.copy()
+    if predictor == 'propka':
         correct_terminal_oxygens = ['O', 'OXT']
-        to_be_corrected_dict = {i:j for i,j in zip(custom_terminal_oxygens, correct_terminal_oxygens)}
-        corrected_universe, corrected_terminal_oxygens_trace = modifiy_terminal_oxygens(corrected_universe, to_be_corrected_dict)
-        
-        logger.info(f"""custom_terminal_oxygens supplied and modified:
+                
+        # When custom_terminal_oxygens is not provided by user as list of string,
+        # the terminal oxygens will be renamed according to the dictionary
+        # in _correction_dictionary_.corrected_atom_names.
+        if custom_terminal_oxygens is None:
+            corrected_universe, corrected_terminal_oxygens_trace = modifiy_terminal_oxygens(corrected_universe, local_corrected_atom_names)
+            logger.info(f"""C-Terminal oxygen atom names will be modified according to our predefined dictionary:
 {corrected_terminal_oxygens_trace}""")
-    
-    check_terminal_oxygens(corrected_universe)
+            
+        # Check if argument is a list
+        elif not isinstance(custom_terminal_oxygens,list):
+            raise TypeError(f'custom_terminal_oxygens argument must be a list, not {type(custom_terminal_oxygens)}')
         
-    return corrected_universe
+        # Check if argument is a list of string
+        elif not all(isinstance(element,str) for element in custom_terminal_oxygens):
+            raise TypeError(f'custom_terminal_oxygens argument must be a list of strings, at least one of your elements is not a string')
+        
+        # Check if argument is a list of length 2
+        elif len(custom_terminal_oxygens) != 2:
+            raise ValueError(f'Length of custom_terminal_oxygens should be 2, but got {len(custom_terminal_oxygens)}')
 
+        elif isinstance(custom_terminal_oxygens, list) and len(custom_terminal_oxygens) == 2:
+            to_be_corrected_dict = {i:j for i,j in zip(custom_terminal_oxygens, correct_terminal_oxygens)}
+            corrected_universe, corrected_terminal_oxygens_trace = modifiy_terminal_oxygens(corrected_universe, to_be_corrected_dict)
+            logger.info(f"""custom_terminal_oxygens supplied and modified:
+{corrected_terminal_oxygens_trace}""")    
+        
+        check_terminal_oxygens(corrected_universe, correct_terminal_oxygens)
+    elif predictor in ['pkai', 'pkai+']:
+        logger.info(f'{predictor} selected, skipping terminal oxygen check.\n')
+    
 def modifiy_terminal_oxygens(corrected_universe, to_be_corrected_dict):
     """
     Function to modify the C-terminal oxygen atom names in the corrected_universe 

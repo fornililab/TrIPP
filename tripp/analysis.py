@@ -22,7 +22,7 @@ import numpy as np
 from scipy import stats
 
 
-def calculate_difference_to_model(input_directory, output_prefix):
+def calculate_difference_to_model(input_directory, output_prefix, pka_file):
     """Calculate the time evolution of the difference between PROPKA predicted
     and model pKa values.
 
@@ -35,8 +35,16 @@ def calculate_difference_to_model(input_directory, output_prefix):
         Prefix of the output CSV file.
     
     """
-    df_pka = pd.read_csv(f'{input_directory}/{output_prefix}_pka.csv')
-    model_pka_values = model_propka_values if 'propka' in input_directory else model_pkai_values
+    df_pka = pd.read_csv(pka_file)
+    if 'propka' in pka_file:
+        predictor='propka'
+        model_pka_values = model_propka_values
+    elif 'pkai+' in pka_file:
+        predictor='pkai+'
+        model_pka_values = model_pkai_values
+    elif 'pkai' in pka_file:
+        predictor='pkai'
+        model_pka_values = model_pkai_values
     
     df_dif = pd.DataFrame()
     df_dif['Time [ps]'] = df_pka['Time [ps]']
@@ -55,7 +63,7 @@ def calculate_difference_to_model(input_directory, output_prefix):
         residue_data = np.around(df_pka[residue].to_numpy() - model_value, decimals=3)
         df_dif[residue] = residue_data
 
-    df_dif.to_csv(f'{input_directory}/{output_prefix}_difference_to_model.csv', index=False)
+    df_dif.to_csv(f'{input_directory}/{output_prefix}_difference_to_model_{predictor}.csv', index=False)
 
 
 def PCProjectionScreening(output_directory,

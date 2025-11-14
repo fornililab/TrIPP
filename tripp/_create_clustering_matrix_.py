@@ -57,9 +57,13 @@ def create_clustering_matrix(trajectory_file, topology_file, pka_df,
         A DataFrame containing buried ratio (buriedness) values labelled by time, residue identifier,
         and trajectory name. This DataFrame is processed by the make_pka_or_buriendess_df function
         in the Clustering class.
+        Only valid for PROPKA predictor, this parameter will be ignored if
+        pKAI/pKAI+ predictor is used.
     include_buriedness: bool
         If True, buried ratio values will be included in the feature matrix.
         Default is False.
+        Only valid for PROPKA predictor, this parameter will be ignored if
+        pKAI/pKAI+ predictor is used.
     Returns
     -------
     clustering_matrix: np.ndarray
@@ -94,7 +98,7 @@ def create_clustering_matrix(trajectory_file, topology_file, pka_df,
         df_traj_pka = pka_df[pka_df["Trajectories"] == key]
         if include_buriedness:
             df_traj_buriedness = buriedness_df[buriedness_df["Trajectories"] == key]
-        elif not include_buriedness:
+        elif not include_buriedness or not buriedness_df:
             df_traj_buriedness = None
         if index == 0:
             clustering_matrix, times, frames, trajectory_names = (
@@ -151,10 +155,10 @@ def extract_pka_distances_buriedness(trajectory_name, universe,
                 pka_residue = df_traj_pka.loc[ts.time, residue_identifier]
                 pkas.append(pka_residue)
 
-                if include_distances is True:
+                if include_distances:
                     positions.append(charge_center)
 
-                if include_buriedness is True:
+                if include_buriedness:
                     buriedness_residue = df_traj_buriedness.loc[
                         ts.time, residue_identifier
                     ]
@@ -162,16 +166,16 @@ def extract_pka_distances_buriedness(trajectory_name, universe,
 
             pka.append(np.array(pkas))
 
-            if include_distances is True:
+            if include_distances:
                 distances = calculate_charge_center_distances(positions)
                 d.append(distances)
 
-            if include_buriedness is True:
+            if include_buriedness:
                 b.append(buriedness)
 
         pka = np.array(pka)
 
-        if include_distances is True and include_buriedness is True:
+        if include_distances and include_buriedness:
             d = np.array(d)
             b = np.array(b)
             clustering_matrix = np.concatenate(
@@ -179,19 +183,19 @@ def extract_pka_distances_buriedness(trajectory_name, universe,
                 axis=1,
             )
 
-        elif include_distances is True and include_buriedness is False:
+        elif include_distances and not include_buriedness:
             d = np.array(d)
             clustering_matrix = np.concatenate(
                 (zscore(d, axis=None), zscore(pka, axis=None)), axis=1
             )
 
-        elif include_distances is False and include_buriedness is True:
+        elif not include_distances and include_buriedness:
             b = np.array(b)
             clustering_matrix = np.concatenate(
                 (zscore(b, axis=None), zscore(pka, axis=None)), axis=1
             )
 
-        elif include_distances is False and include_buriedness is False:
+        elif not include_distances and not include_buriedness:
             clustering_matrix = zscore(pka, axis=None)
 
         times = np.array(times)

@@ -22,34 +22,41 @@ from tripp._correction_dictionary_ import corrected_amino_acids
 
 logger = logging.getLogger(__name__)
     
-def check_resname_HETATM(non_protein_ag):
+def check_resname_HETATM(non_protein_ag, predictor):
     """
     Checks if the resnames in the non-protein atoms universe are compatible with PROPKA.
     Parameters
     ----------
     non_protein_ag : MDAnalysis.AtomGroup
         The AtomGroup (MDAnalysis selection syntax) for residues with resnames not found in either the built-in or user-defined conversion dictionaries.
-        
+    predictor : str
+        The pKa predictor to be used.
     Raises
     ------
     NameError
         If there are resnames that are not recognized by PROPKA, and their record type
         is not 'HETATM', an exception will be raised.
     """
-    compatible_resnames = np.unique(list(corrected_amino_acids.values()))
+    if predictor == 'propka':
+        predictor_name = predictor.upper()
+        compatible_resnames = np.unique(list(corrected_amino_acids.values()))
+    elif predictor in ['pkai', 'pkai+']:
+        predictor_name = predictor[0] + predictor[1:].upper()
+        compatible_resnames = np.unique(list(corrected_amino_acids.values())).tolist() + ['NTR','CTR'] # Add NTR and CTR for N- and C-termini as compatible resnames for pKAI and pKAI+
+        
     incorrect_resnames=[]
     for resname, record_types in zip(non_protein_ag.residues.resnames,
                                      non_protein_ag.residues.record_types):
         if resname not in compatible_resnames and np.all(record_types != 'HETATM'):
             incorrect_resnames.append(f'{resname}')
     if len(incorrect_resnames) > 0:
-        raise NameError(f"""Your system still contains resname(s) not recognised by PROPKA: {', '.join(incorrect_resnames)}
-For amino acids, please use the custom_resname_correction argument to indicate valid PROPKA resnames for the residues indicated above.
+        raise NameError(f"""Your system still contains resname(s) not recognised by {predictor_name}: {', '.join(incorrect_resnames)}
+For amino acids, please use the custom_resname_correction argument to indicate valid {predictor_name} resnames for the residues indicated above.
 For ligands, please use the hetatm_resname argument to convert the record type of the ligand to HETATM.""")
     else:
         logger.info('Resname and record type check passed.\n')
         
-def check_terminal_oxygens(universe):
+def check_terminal_oxygens(universe, correct_terminal_oxygens):
     """
     Checks if the C-terminal oxygen atoms in the universe are named 'O' and 'OXT
     Parameters
@@ -64,11 +71,11 @@ def check_terminal_oxygens(universe):
     """
     terminals = []
     for index, name in zip(universe.residues.resindices, universe.residues.names):
-        if np.isin('O', name).any() and np.isin('OXT', name).any():
+        if np.isin(correct_terminal_oxygens[0], name).any() and np.isin(correct_terminal_oxygens[1], name).any():
             ag = universe.select_atoms(f'resindex {index}')
             terminals.append(f'{ag.residues.resnames[0]}{ag.residues.resids[0]}')
     if len(terminals) > 0:
         logger.info(f"""Terminal oxygen check passed, involving: 
 {', '.join(terminals)}\n""")
     else:
-        raise NameError('No terminal oxygen atom named O and OXT was found, please either modify your topology_file or use the custom_terminal_oxygens argument')
+        raise NameError(f'No terminal oxygen atom named {correct_terminal_oxygens[0]} and {correct_terminal_oxygens[1]} was found, please either modify your topology_file or use the custom_terminal_oxygens argument')

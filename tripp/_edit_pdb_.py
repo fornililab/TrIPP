@@ -23,7 +23,7 @@ def mutate(universe, mutation_selections, temp_name):
     Parameters
     ----------
     universe: MDAnalysis.universe
-        MDAnalysis universe. The universe after create_propka_compatible_universe
+        MDAnalysis universe. The universe after create_predictor_compatible_universe
         modifications should be used here.
     mutation_selections: str
         A string (MDAnalysis selection syntax) to select the 

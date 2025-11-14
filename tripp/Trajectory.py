@@ -20,7 +20,7 @@ import os
 import multiprocessing as mp
 from tripp._create_mda_universe_ import (
     create_mda_universe,
-    create_propka_compatible_universe,
+    create_predictor_compatible_universe,
 )
 from tripp._pka_iterator_ import pka_iterator
 from tripp._sort_pka_df_ import output_df
@@ -47,6 +47,9 @@ class Trajectory:
         The directory where output files will be saved.
     output_prefix: str
         The output file prefix.
+    predictor: str, default='propka'
+        The pKa predictor to be used. 
+        Options are 'propka', 'pkai', and 'pkai+'.
     cpu_core_number: int, default=-1
         The number of cpu cores used for the calculation.
         If cpu_core_number=-1, all available cores are used.
@@ -73,6 +76,7 @@ class Trajectory:
         trajectory_file,
         output_directory,
         output_prefix,
+        predictor='propka',
         cpu_core_number=-1,
         hetatm_resname=None,
         custom_terminal_oxygens=None,
@@ -80,18 +84,23 @@ class Trajectory:
     ):  
         self.output_directory = output_directory
         self.output_prefix = output_prefix
+        self.predictor = predictor.lower()
         if not os.path.isdir(output_directory):
             # Make directory if not present
             os.makedirs(output_directory) 
         else:
             # Remove files named .temp* in the directory before proceeding.
             [os.remove(file) for file in glob.glob(f'{output_directory}/.temp*.pdb')]
-        if os.path.isfile(f'{output_directory}/{output_prefix}.log'):
-            os.remove(f'{output_directory}/{output_prefix}.log')
+        if os.path.isfile(f'{output_directory}/{output_prefix}_{predictor}.log'):
+            os.remove(f'{output_directory}/{output_prefix}_{predictor}.log')
             
         self.logger = logging.getLogger()
+        # Clear any existing handlers
+        for handler in self.logger.handlers[:]:
+            handler.close()
+            self.logger.removeHandler(handler)
         self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(f'{output_directory}/{output_prefix}.log',
+        handler = logging.FileHandler(f'{output_directory}/{output_prefix}_{predictor}.log',
                                       'a')
         handler.setLevel(logging.INFO)
         formatter = logging.Formatter('%(message)s')
@@ -117,11 +126,12 @@ class Trajectory:
             trajectory_file=self.trajectory_file,
         )
 
-        self.corrected_universe = create_propka_compatible_universe(
+        self.corrected_universe = create_predictor_compatible_universe(
             self.universe,
             hetatm_resname,
             custom_terminal_oxygens,
             custom_resname_correction,
+            predictor=self.predictor
         )
 
         frames_nr = len(self.universe.trajectory)
@@ -146,11 +156,10 @@ class Trajectory:
         extract_buriedness_data=True,
         mutation_selections=None,
         save_disulphide_pka=False,
-        predictor='propka',
         optargs=[],
     ):
         """
-        Function to run PROPKA after initialising the Trajectory class
+        Function to run the selected predictor after initialising the Trajectory class
 
         Parameters
         ----------
@@ -179,7 +188,11 @@ class Trajectory:
             Only valid for PROPKA predictor, this parameter will be ignored if
             pKAI/pKAI+ predictor is used.
         """
-                
+        if self.predictor in ['pkai', 'pkai+']:
+            extract_buriedness_data = None
+            save_disulphide_pka = None
+            optargs = None
+            
         start = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
         mp.set_start_method("spawn", force=True)
         pool = mp.Pool(self.cpu_core_number)
@@ -195,7 +208,7 @@ class Trajectory:
                     self.corrected_universe,
                     self.output_directory,
                     mutation_selections,
-                    predictor,
+                    self.predictor,
                     optargs),
             )
             jobs.append(job)
@@ -211,7 +224,7 @@ class Trajectory:
         if log_contents:
             predictor_warning_logger = logging.getLogger('predictor_warning')
             predictor_warning_logger.propagate = False
-            predictor_warning_handler = logging.FileHandler(f'{self.output_directory}/{self.output_prefix}_{predictor}_warnings.log','w')
+            predictor_warning_handler = logging.FileHandler(f'{self.output_directory}/{self.output_prefix}_{self.predictor}_warnings.log','w')
             predictor_warning_handler.setLevel(logging.WARNING)
             predictor_warning_handler.setFormatter(logging.Formatter('%(message)s'))
             predictor_warning_logger.addHandler(predictor_warning_handler)
@@ -227,7 +240,7 @@ class Trajectory:
             data=data,
             save_disulphide_pka=save_disulphide_pka,
             extract_buriedness_data=extract_buriedness_data,
-            predictor=predictor
+            predictor=self.predictor
         )
 
         end = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
@@ -238,14 +251,12 @@ class Trajectory:
             self.output_prefix,
             extract_buriedness_data,
             mutation_selections,
+            save_disulphide_pka,
             disulphide_cys_col,
-            predictor,
+            self.predictor,
             optargs,
             self.cpu_core_number,
             self.trajectory_slices,
             start,
             end,
         )
-        for handler in self.logger.handlers[:]:
-            handler.close()
-            self.logger.removeHandler(handler)

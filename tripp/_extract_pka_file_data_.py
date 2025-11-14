@@ -17,7 +17,7 @@
 """
 
 import numpy as np 
-
+import propka
 def propka_pka_buriedness_data_parser(molecule, time):
     """
     Parses the pKa and buriedness data from the PROPKA molecule object.
@@ -39,12 +39,9 @@ def propka_pka_buriedness_data_parser(molecule, time):
     pka_list = []
     buriedness_list = []
     for group in groups:
-        if group.atom.name == 'N':
-            residue_name = 'N+'
-        elif group.atom.name == 'OXT':
-            residue_name = 'C-'
-        else:
-            residue_name = group.atom.res_name
+        residue_name = group.residue_type
+        if not propka.group.is_protein_group(group.parameters,group.atom): # Use PROPKA's internal function to check if the group is a protein group
+            continue                                                       # Skip non-protein groups
         residue_id = str(group.atom.res_num)
         residue_identifier_list.append(residue_name + residue_id + ':' + group.atom.chain_id)
         pka_list.append(round(group.pka_value,2))

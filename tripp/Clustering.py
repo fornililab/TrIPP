@@ -71,15 +71,17 @@ class Clustering:
         trajectories in trajectory_file. In this case, the file paths need to be given in the 
         same order as the correspnding trajectories in trajectory_file.
         If None, the buried ratio values are not used for clustering.
-        Only valid for PROPKA predictor, set to None if pKAI/pKAI+ predictor is used.
+        Only valid for PROPKA predictor, this parameter will be ignored if
+        pKAI/pKAI+ predictor is used.
     include_distances: bool, default=False
         If True, all the possible pairs of distances between charge centers in the selected 
         residues are used as additional features for the clustering alongside the pKa values.
     include_buriedness: bool, default=False
         If True, the buried ratio of the selected residues are used as additional features
         for the clustering alongside the pKa values.
-        Only valid for PROPKA predictor, set to None if pKAI/pKAI+ predictor is used.
-    dimensionality_reduction: bool, befault=False
+        Only valid for PROPKA predictor, this parameter will be ignored if
+        pKAI/pKAI+ predictor is used.
+    dimensionality_reduction: bool, default=False
         If True, dimensionality reduction is performed on the input features using PCA. 
         The minimum number of principal components that explain at least 90% of the 
         total variance is used.
@@ -110,12 +112,15 @@ class Clustering:
         self.selections = selections
         self.output_directory = output_directory
         self.output_prefix = output_prefix
+        # Overwrite include_buriedness and buriedness_file if pKAI/pKAI+ is used
+        if 'pkai' in pka_file or 'pkai' in pka_file[0]:
+            buriedness_file = None
+            include_buriedness = None
         self.buriedness_file = buriedness_file
         self.include_buriedness = include_buriedness
         self.include_distances = include_distances
         self._labels = None
         self._cluster_center_indices = None
-
         def make_pka_or_buriedness_df(file):
             if isinstance(file, str):
                 df = pd.read_csv(file, index_col="Time [ps]")
@@ -129,7 +134,7 @@ class Clustering:
                     df_list.append(df)
                 df = pd.concat(df_list)
 
-            elif file is None:
+            elif not file:
                 df = None
 
             return df

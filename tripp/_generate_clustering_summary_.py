@@ -46,6 +46,8 @@ def generate_clustering_summary(trajectory_file,
         Whether distances between charge centers were included in the clustering.
     include_buriedness: bool
         Whether buriedness (buried ratio) values were included in the clustering.
+        Only valid for PROPKA predictor, this parameter will be set to None if
+        pKAI/pKAI+ predictor is used.
     clustering_method: str
         The clustering method used, e.g., 'DBSCAN'.
     automatic: bool
@@ -58,6 +60,8 @@ def generate_clustering_summary(trajectory_file,
         The cumulative variance explained by the principal components used.
     buriedness_file: str or list
         The path to the buriedness file or a list of paths if multiple buriedness files are used.
+        Only valid for PROPKA predictor, this parameter will be set to None if
+        pKAI/pKAI+ predictor is used.
     Returns
     -------
     summary: str
@@ -67,18 +71,18 @@ def generate_clustering_summary(trajectory_file,
     """
     #information on files 
     if type(trajectory_file) == str: 
-        trajectory_name = 'Unnnamed Trajectory' 
-        if include_buriedness == False: 
+        trajectory_name = 'Unnamed Trajectory' 
+        if not include_buriedness:
             trajectory_file_summary= f'{trajectory_name} \nTrajectory file: {trajectory_file} \npKa file: {pka_file} \n\n' 
-        elif include_buriedness == True: 
+        elif include_buriedness: 
             trajectory_file_summary= f'{trajectory_name} \nTrajectory file: {trajectory_file} \npKa file: {pka_file}\nBuriedness file: {buriedness_file} \n\n' 
 
     else: 
-        if include_buriedness == False: 
+        if not include_buriedness: 
             trajectory_file_summary = '' 
             for trajectory_index, trajectory_name in enumerate(trajectory_file.keys()): 
                 trajectory_file_summary+=f'{trajectory_name} \nTrajectory file: {trajectory_file[trajectory_name]} \npKa file: {pka_file[trajectory_index]} \n\n' 
-        elif include_buriedness == True: 
+        elif include_buriedness: 
             trajectory_file_summary = '' 
             for trajectory_index, trajectory_name in enumerate(trajectory_file.keys()): 
                 trajectory_file_summary+=f'{trajectory_name} \nTrajectory file: {trajectory_file[trajectory_name]} \npKa file: {pka_file[trajectory_index]}\nBuriedness file: {buriedness_file[trajectory_index]} \n\n' 
@@ -95,26 +99,26 @@ Trajectories:
     residue_summary = f'Clustering was performed using {", ".join(selections[:-1])} and {selections[-1]}.' 
 
     #information on whether distances between charge centers were used for the clustering 
-    if include_distances == True: 
+    if include_distances: 
         n = len(selections) 
         num_distances = int((n*(n-1))/2)
         if num_distances == 1: 
             include_distances_summary = f'In total {num_distances} distance between charge centers was included in the clustering.' 
         else: 
             include_distances_summary = f'In total {num_distances} distances between charge centers were included in the clustering.' 
-    
-    elif include_distances == False: 
+
+    elif not include_distances: 
         include_distances_summary = f'No distances between charge centers were included in the clustering.' 
     
     #information on whether buriedness measures were used for the clustering 
-    if include_buriedness== True: 
+    if include_buriedness: 
         n = len(selections) 
         if n == 1: 
             include_buriedness_summary = f'In total {n} buriedness measure was included in the clustering.' 
         else: 
             include_buriedness_summary = f'In total {n} buriedness measures were included in the clustering.' 
-    
-    elif include_buriedness == False: 
+
+    elif not include_buriedness:
         include_buriedness_summary = f'No buriedness measures were included in the clustering.' 
     
     #information on clustering method 
@@ -136,10 +140,10 @@ Trajectories:
     best_params_summary = f'Clustering was performed using the following parameters: \n{best_params} '
     
     #information on all parameters tested 
-    if automatic == True: 
+    if automatic: 
         automatic_clustering_summary = f'Automatic clustering was selected. \nThe following parameters were tested: \n\n{silhouette_scores.to_markdown(index=False)}' 
     
-    elif automatic == False: 
+    elif not automatic:
         automatic_clustering_summary = 'No automatic clustering was performed' 
     
     summary = f"""{log_header()} 

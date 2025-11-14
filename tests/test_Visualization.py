@@ -19,7 +19,7 @@ while not PyMOL_path:
     
 def fix_parm():
     topology_file = 'data/lyso.pdb'
-    pka_file = 'reference_output/lyso_test_default/lyso_test_default_pka.csv'
+    pka_file = 'reference_output/lyso_test_default/lyso_test_default_propka_pka.csv'
     correlation_file = 'reference_output/lyso_test_PearsonCorrelation.csv'
     start = 0
     end = -1
@@ -31,7 +31,7 @@ def return_param(request):
 class TestVisualization:
     def parm1():
         topology_file = 'data/lyso.pdb'
-        pka_file = 'reference_output/lyso_test_default/lyso_test_default_pka.csv'
+        pka_file = 'reference_output/lyso_test_default/lyso_test_default_propka_pka.csv'
         correlation_file = None
         start = 0
         end = -1
@@ -39,7 +39,7 @@ class TestVisualization:
         return parameters
     def parm2():
         topology_file = 'data/lyso.pdb'
-        pka_file = 'reference_output/lyso_test_default/lyso_test_default_pka.csv'
+        pka_file = 'reference_output/lyso_test_default/lyso_test_default_propka_pka.csv'
         correlation_file = None
         start = 100
         end = 1000
@@ -47,7 +47,7 @@ class TestVisualization:
         return parameters
     def parm3():
         topology_file = 'data/lyso.pdb'
-        pka_file = 'reference_output/lyso_test_default/lyso_test_default_pka.csv'
+        pka_file = 'reference_output/lyso_test_default/lyso_test_default_propka_pka.csv'
         correlation_file = 'reference_output/lyso_test_PearsonCorrelation.csv'
         start = 0
         end = -1

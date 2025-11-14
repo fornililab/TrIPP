@@ -1,4 +1,4 @@
-from tripp._create_mda_universe_ import create_mda_universe, create_propka_compatible_universe
+from tripp._create_mda_universe_ import create_mda_universe, create_predictor_compatible_universe
 from io import StringIO
 import MDAnalysis as mda
 import os
@@ -34,10 +34,11 @@ ATOM      2  O   LYS     2      43.080  50.770  17.580  1.00  0.00           O
 ATOM      3  OXT LYS     2      43.080  50.770  17.580  1.00  0.00           O
 """
         universe = mda.Universe(StringIO(pdb), format='PDB')
-        corrected_universe = create_propka_compatible_universe(universe,
+        corrected_universe = create_predictor_compatible_universe(universe,
                                                                hetatm_resname=None,
                                                                custom_terminal_oxygens=None,
-                                                               custom_resname_correction=None)
+                                                               custom_resname_correction=None,
+                                                               predictor='propka')
         assert corrected_universe.atoms.residues.resnames[0] == 'ASP'
         
         pdb = """
@@ -49,15 +50,17 @@ ATOM      3  OXT LYS     2      43.080  50.770  17.580  1.00  0.00           O
         universe = mda.Universe(pstream, format='PDB')
         pstream.reset()
         with pytest.raises(NameError):
-            incorrect_universe = create_propka_compatible_universe(universe,
+            incorrect_universe = create_predictor_compatible_universe(universe,
                                                                hetatm_resname=None,
                                                                custom_terminal_oxygens=None,
-                                                               custom_resname_correction=None)
+                                                               custom_resname_correction=None,
+                                                               predictor='propka')
 
-        corrected_universe = create_propka_compatible_universe(universe,
+        corrected_universe = create_predictor_compatible_universe(universe,
                                                         hetatm_resname=None,
                                                         custom_terminal_oxygens=None,
-                                                        custom_resname_correction={'ABCD':'ASP'})
+                                                        custom_resname_correction={'ABCD':'ASP'},
+                                                        predictor='propka')
         assert corrected_universe.atoms.residues.resnames[0] == 'ASP'
     
     def test_hetatm_correction(self):
@@ -69,10 +72,11 @@ ATOM      3  OXT LYS     2      43.080  50.770  17.580  1.00  0.00           O
         pstream = mda.lib.util.NamedStream(StringIO(pdb),'tmp.pdb')
         universe = mda.Universe(pstream, format='PDB')
         pstream.reset()
-        corrected_universe = create_propka_compatible_universe(universe,
+        corrected_universe = create_predictor_compatible_universe(universe,
                                                         hetatm_resname='ABCD',
                                                         custom_terminal_oxygens=None,
-                                                        custom_resname_correction=None)
+                                                        custom_resname_correction=None,
+                                                        predictor='propka')
         assert corrected_universe.atoms.residues.record_types[0] == 'HETATM'
         
         pdb = """
@@ -84,24 +88,27 @@ ATOM      4  OXT LYS     3      43.080  50.770  17.580  1.00  0.00           O
         pstream = mda.lib.util.NamedStream(StringIO(pdb),'tmp.pdb')
         universe = mda.Universe(pstream, format='PDB')
         pstream.reset()
-        corrected_universe = create_propka_compatible_universe(universe,
+        corrected_universe = create_predictor_compatible_universe(universe,
                                                         hetatm_resname=['ABCD','DEF'],
                                                         custom_terminal_oxygens=None,
-                                                        custom_resname_correction=None)
+                                                        custom_resname_correction=None,
+                                                        predictor='propka')
         assert corrected_universe.atoms.residues.record_types[0] == 'HETATM'
         assert corrected_universe.atoms.residues.record_types[1] == 'HETATM'
         
         topology_file = get_data_path('myosin_elc_test.pdb')
         universe = mda.Universe(topology_file)
         with pytest.raises(NameError):
-            incorrect_universe = create_propka_compatible_universe(universe,
+            incorrect_universe = create_predictor_compatible_universe(universe,
                                                                    hetatm_resname=None,
                                                                    custom_terminal_oxygens=None,
-                                                                   custom_resname_correction=None)
-        corrected_universe = create_propka_compatible_universe(universe,
+                                                                   custom_resname_correction=None,
+                                                                   predictor='propka')
+        corrected_universe = create_predictor_compatible_universe(universe,
                                                                 hetatm_resname=['ADP','PI2','MG'],
                                                                 custom_terminal_oxygens=None,
-                                                                custom_resname_correction=None)
+                                                                custom_resname_correction=None,
+                                                                predictor='propka')
         assert (corrected_universe.select_atoms('resname ADP PI2 MG').atoms.record_types == 'HETATM').all()
     
     def test_custom_terminal_oxygens(self):
@@ -115,14 +122,16 @@ ATOM      4  OB2 LYS     3      43.080  50.770  17.580  1.00  0.00           O
         universe = mda.Universe(pstream, format='PDB')
         pstream.reset()
         with pytest.raises(NameError):
-            incorrect_universe = create_propka_compatible_universe(universe,
+            incorrect_universe = create_predictor_compatible_universe(universe,
                                                                hetatm_resname=None,
                                                                custom_terminal_oxygens=None,
-                                                               custom_resname_correction=None)
-        corrected_universe = create_propka_compatible_universe(universe,
+                                                               custom_resname_correction=None,
+                                                               predictor='propka')
+        corrected_universe = create_predictor_compatible_universe(universe,
                                                         hetatm_resname=None,
                                                         custom_terminal_oxygens=['OB1','OB2'],
-                                                        custom_resname_correction=None)
+                                                        custom_resname_correction=None,
+                                                        predictor='propka')
     def test_myosin_elc_fail(self):
         topology_file = get_data_path('myosin_elc_test_nochB.pdb')
         trajectory_file = get_data_path('myosin_elc_test.xtc')

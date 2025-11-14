@@ -18,7 +18,8 @@ def get_data_path(filename):
     
 topology_file = get_data_path('lyso.pdb')
 trajectory_file = get_data_path('lyso_test.xtc')
-pka_file = 'test_output/lyso_test_default/lyso_test_default_pka.csv'
+pka_file = 'test_output/lyso_test_default/lyso_test_default_propka_pka.csv'
+predictor='propka'
 
 PyMOL_path = False
 while not PyMOL_path:
@@ -37,7 +38,8 @@ class TestInstallation:
         TrIPP_Traj = Trajectory(topology_file=topology_file,  
                                     trajectory_file=trajectory_file,  
                                     output_directory = output_directory,  
-                                    output_prefix = output_prefix,  
+                                    output_prefix = output_prefix,
+                                    predictor=predictor,
                                     hetatm_resname=None,  
                                     custom_terminal_oxygens=None, 
                                     custom_resname_correction=None,  
@@ -53,8 +55,8 @@ class TestInstallation:
                        mutation_selections=None,
                        save_disulphide_pka=False,
                        optargs=[])
-        assert TestInstallation.compare_output('test_output/lyso_test_default/lyso_test_default_pka.csv','reference_output/lyso_test_default/lyso_test_default_pka.csv')
-        assert TestInstallation.compare_output('test_output/lyso_test_default/lyso_test_default_buriedness.csv','reference_output/lyso_test_default/lyso_test_default_buriedness.csv')
+        assert TestInstallation.compare_output('test_output/lyso_test_default/lyso_test_default_propka_pka.csv','reference_output/lyso_test_default/lyso_test_default_propka_pka.csv')
+        assert TestInstallation.compare_output('test_output/lyso_test_default/lyso_test_default_propka_buriedness.csv','reference_output/lyso_test_default/lyso_test_default_propka_buriedness.csv')
     
     def test_Trajectory_lyso_mutation(self):
         output_directory = 'test_output/lyso_test_44'
@@ -64,9 +66,9 @@ class TestInstallation:
                        mutation_selections='chainID A and resid 44',
                        save_disulphide_pka=False,
                        optargs=[])
-        assert TestInstallation.compare_output('test_output/lyso_test_44/lyso_test_44_pka.csv','reference_output/lyso_test_44/lyso_test_44_pka.csv')
-        assert TestInstallation.compare_output('test_output/lyso_test_44/lyso_test_44_buriedness.csv','reference_output/lyso_test_44/lyso_test_44_buriedness.csv')
-        
+        assert TestInstallation.compare_output('test_output/lyso_test_44/lyso_test_44_propka_pka.csv','reference_output/lyso_test_44/lyso_test_44_propka_pka.csv')
+        assert TestInstallation.compare_output('test_output/lyso_test_44/lyso_test_44_propka_buriedness.csv','reference_output/lyso_test_44/lyso_test_44_propka_buriedness.csv')
+
     def test_Clustering_lyso(self):
         output_directory = 'test_output'
         TrIPP_Clust = Clustering(topology_file=topology_file,

@@ -17,12 +17,14 @@ class TestAnalysis:
     def test_calculate_difference_to_model(self):
         input_directory = 'reference_output/lyso_test_default'
         output_prefix = 'lyso_test_default'
-        calculate_difference_to_model(input_directory, output_prefix)
-        assert os.path.isfile(f'{input_directory}/{output_prefix}_difference_to_model.csv')
+        pka_file = 'reference_output/lyso_test_default/lyso_test_default_propka_pka.csv'
+        predictor = 'propka'
+        calculate_difference_to_model(input_directory, output_prefix, pka_file)
+        assert os.path.isfile(f'{input_directory}/{output_prefix}_difference_to_model_{predictor}.csv')
     def parm1():
         output_directory = check_dir('test_output/PCProjectionScreening')
-        output_prefix = 'lyso_test_default_pka_projection_correlation'
-        pka_file = 'reference_output/lyso_test_default/lyso_test_default_pka.csv'
+        output_prefix = 'lyso_test_default_propka_pka_projection_correlation'
+        pka_file = 'reference_output/lyso_test_default/lyso_test_default_propka_pka.csv'
         projection_file = 'data/lyso_test_pc1.csv'
         method = 'Pearson'
         start = 0
@@ -31,8 +33,8 @@ class TestAnalysis:
         return (output_directory, output_prefix, pka_file, projection_file, method, start, end, header)
     def parm2():
         output_directory = check_dir('test_output/PCProjectionScreening')
-        output_prefix = 'lyso_test_default_pka_projection_correlation'
-        pka_file = 'reference_output/lyso_test_default/lyso_test_default_pka.csv'
+        output_prefix = 'lyso_test_default_propka_pka_projection_correlation'
+        pka_file = 'reference_output/lyso_test_default/lyso_test_default_propka_pka.csv'
         projection_file = 'data/lyso_test_pc1.csv'
         method = 'Spearman'
         start = 0
@@ -41,8 +43,8 @@ class TestAnalysis:
         return (output_directory, output_prefix, pka_file, projection_file, method, start, end, header)
     def parm3():
         output_directory = check_dir('test_output/PCProjectionScreening')
-        output_prefix = 'lyso_test_default_pka_projection_correlation'
-        pka_file = 'reference_output/lyso_test_default/lyso_test_default_pka.csv'
+        output_prefix = 'lyso_test_default_propka_pka_projection_correlation'
+        pka_file = 'reference_output/lyso_test_default/lyso_test_default_propka_pka.csv'
         projection_file = 'data/lyso_test_pc1.csv'
         method = 'Pearson'
         start = 1000
@@ -71,8 +73,8 @@ class TestAnalysis:
         
     def parm4():
         output_directory = check_dir('test_output/PCProjectionScreening')
-        output_prefix = 'lyso_test_default_pka_projection_correlation'
-        pka_file = 'reference_output/lyso_test_default/lyso_test_default_pka.csv'
+        output_prefix = 'lyso_test_default_propka_pka_projection_correlation'
+        pka_file = 'reference_output/lyso_test_default/lyso_test_default_propka_pka.csv'
         projection_file = 'data/lyso_test_pc1.csv'
         method = 'apsgh'
         start = 1000
@@ -81,8 +83,8 @@ class TestAnalysis:
         return (output_directory, output_prefix, pka_file, projection_file, method, start, end, header)
     def parm5():
         output_directory = check_dir('test_output/PCProjectionScreening')
-        output_prefix = 'lyso_test_default_pka_projection_correlation'
-        pka_file = 'reference_output/lyso_test_default/lyso_test_default_pka.csv'
+        output_prefix = 'lyso_test_default_propka_pka_projection_correlation'
+        pka_file = 'reference_output/lyso_test_default/lyso_test_default_propka_pka.csv'
         projection_file = 'data/lyso_test_pc1.csv'
         method = 'Pearson'
         start = 1000
@@ -91,8 +93,8 @@ class TestAnalysis:
         return (output_directory, output_prefix, pka_file, projection_file, method, start, end, header)
     def parm6():
         output_directory = check_dir('test_output/PCProjectionScreening')
-        output_prefix = 'lyso_test_default_pka_projection_correlation'
-        pka_file = 'reference_output/lyso_test_default/lyso_test_default_pka.csv'
+        output_prefix = 'lyso_test_default_propka_pka_projection_correlation'
+        pka_file = 'reference_output/lyso_test_default/lyso_test_default_propka_pka.csv'
         projection_file = 'data/lyso_test_pc1.csv'
         method = 'Pearson'
         start = 6

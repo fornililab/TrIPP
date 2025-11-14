@@ -23,18 +23,20 @@ def check_dir(path):
 
 class Test_sort_pka_df:
     def test_output_df_no_cys(self):
+        predictor= 'propka'
         output_directory = check_dir('test_output/output_df_no_cys')
         disulphide_cys_col = output_df(
             output_directory=output_directory,
             output_prefix='test_no_cys',
             data=data,
             save_disulphide_pka=False,
-            extract_buriedness_data=True
+            extract_buriedness_data=True,
+            predictor=predictor
         )
-        assert os.path.isfile(f'{output_directory}/test_no_cys_pka.csv')
-        assert os.path.isfile(f'{output_directory}/test_no_cys_buriedness.csv')
-        pka_df = pd.read_csv(f'{output_directory}/test_no_cys_pka.csv')
-        buriedness_df = pd.read_csv(f'{output_directory}/test_no_cys_buriedness.csv')
+        assert os.path.isfile(f'{output_directory}/test_no_cys_{predictor}_pka.csv')
+        assert os.path.isfile(f'{output_directory}/test_no_cys_{predictor}_buriedness.csv')
+        pka_df = pd.read_csv(f'{output_directory}/test_no_cys_{predictor}_pka.csv')
+        buriedness_df = pd.read_csv(f'{output_directory}/test_no_cys_{predictor}_buriedness.csv')
         assert pka_df['Time [ps]'].tolist() == [0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0]
         assert not any('CYS' in col for col in pka_df.columns.tolist())
         assert buriedness_df['Time [ps]'].tolist() == [0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0]
@@ -42,18 +44,20 @@ class Test_sort_pka_df:
         assert disulphide_cys_col == ['CYS3:A']
         
     def test_output_df_with_cys(self):
+        predictor= 'propka'
         output_directory = check_dir('test_output/output_df_with_cys')
         disulphide_cys_col = output_df(
             output_directory=output_directory,
             output_prefix='test_with_cys',
             data=data,
             save_disulphide_pka=True,
-            extract_buriedness_data=True
+            extract_buriedness_data=True,
+            predictor=predictor
         )
-        assert os.path.isfile(f'{output_directory}/test_with_cys_pka.csv')
-        assert os.path.isfile(f'{output_directory}/test_with_cys_buriedness.csv')
-        pka_df = pd.read_csv(f'{output_directory}/test_with_cys_pka.csv')
-        buriedness_df = pd.read_csv(f'{output_directory}/test_with_cys_buriedness.csv')
+        assert os.path.isfile(f'{output_directory}/test_with_cys_{predictor}_pka.csv')
+        assert os.path.isfile(f'{output_directory}/test_with_cys_{predictor}_buriedness.csv')
+        pka_df = pd.read_csv(f'{output_directory}/test_with_cys_{predictor}_pka.csv')
+        buriedness_df = pd.read_csv(f'{output_directory}/test_with_cys_{predictor}_buriedness.csv')
         assert pka_df['Time [ps]'].tolist() == [0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0]
         assert 'CYS3:A' in pka_df.columns.tolist()
         assert buriedness_df['Time [ps]'].tolist() == [0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0]

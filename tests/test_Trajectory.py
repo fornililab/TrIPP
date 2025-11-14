@@ -22,11 +22,12 @@ class TestTrajectory:
         trajectory_file = get_data_path('myosin_elc_test.xtc')
         output_directory = check_dir('test_output/myosin_elc_test')
         output_prefix = 'myosin_elc_test'
+        predictor = 'propka'
         cpu_core_number = -1
         hetatm_resname = ['ADP','PI2','MG']
         custom_terminal_oxygens = None
         custom_resname_correction = None
-        parameters = (topology_file, trajectory_file, output_directory, output_prefix, cpu_core_number, hetatm_resname, custom_terminal_oxygens, custom_resname_correction)
+        parameters = (topology_file, trajectory_file, output_directory, output_prefix, predictor, cpu_core_number, hetatm_resname, custom_terminal_oxygens, custom_resname_correction)
         return parameters
     @pytest.mark.parametrize("parameters", [parm1()])
     def test_Trajectory_mysoin_elc(self, parameters):
@@ -35,11 +36,11 @@ class TestTrajectory:
                        mutation_selections=None,
                        save_disulphide_pka=False,
                        optargs=[])
-        assert os.path.isfile(f'{parameters[2]}/{parameters[3]}_pka.csv')
-        df = pd.read_csv(f'{parameters[2]}/{parameters[3]}_pka.csv')
+        assert os.path.isfile(f'{parameters[2]}/{parameters[3]}_{parameters[4]}_pka.csv')
+        df = pd.read_csv(f'{parameters[2]}/{parameters[3]}_{parameters[4]}_pka.csv')
         chains = np.unique(np.vstack(df.drop(columns=['Time [ps]']).columns.str.split(':'))[:,1])
         assert (chains == np.unique(TrIPP_Traj.corrected_universe.atoms.chainIDs)).all()
-        df = pd.read_csv(f'{parameters[2]}/{parameters[3]}_buriedness.csv')
+        df = pd.read_csv(f'{parameters[2]}/{parameters[3]}_{parameters[4]}_buriedness.csv')
         chains = np.unique(np.vstack(df.drop(columns=['Time [ps]']).columns.str.split(':'))[:,1])
         assert (chains == np.unique(TrIPP_Traj.corrected_universe.atoms.chainIDs)).all()
         

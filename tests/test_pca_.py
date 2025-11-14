@@ -42,13 +42,13 @@ class TestPCA:
         trajectory_file = {
             "traj1": get_data_path('lyso_test.xtc'),
             "traj2": get_data_path('lyso_test.xtc')}
-        pka_file = ['reference_output/lyso_test_default/lyso_test_default_pka.csv',
-                    'reference_output/lyso_test_default/lyso_test_default_pka.csv']
+        pka_file = ['reference_output/lyso_test_default/lyso_test_default_propka_pka.csv',
+                    'reference_output/lyso_test_default/lyso_test_default_propka_pka.csv']
         pka_df = make_pka_or_buriedness_df(pka_file, trajectory_file)
         selections = ['chainID A and resid 35', 'chainID A and resid 52', 'chainID A and resid 48']
         include_distances = True
-        buriedness_file = ['reference_output/lyso_test_default/lyso_test_default_buriedness.csv',
-                           'reference_output/lyso_test_default/lyso_test_default_buriedness.csv']
+        buriedness_file = ['reference_output/lyso_test_default/lyso_test_default_propka_buriedness.csv',
+                           'reference_output/lyso_test_default/lyso_test_default_propka_buriedness.csv']
         buriedness_df = make_pka_or_buriedness_df(buriedness_file, trajectory_file)
         include_buriedness = True
         return (topology_file, trajectory_file, pka_df, selections, include_distances, buriedness_df, include_buriedness)

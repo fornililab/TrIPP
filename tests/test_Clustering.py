@@ -21,12 +21,12 @@ def parm1():
     trajectory_file = {
         "traj1": get_data_path('lyso_test.xtc'),
         "traj2": get_data_path('lyso_test.xtc')}
-    pka_file = ['reference_output/lyso_test_default/lyso_test_default_pka.csv',
-                'reference_output/lyso_test_default/lyso_test_default_pka.csv']
+    pka_file = ['reference_output/lyso_test_default/lyso_test_default_propka_pka.csv',
+                'reference_output/lyso_test_default/lyso_test_default_propka_pka.csv']
     selections = ['chainID A and resid 35', 'chainID A and resid 52', 'chainID A and resid 48']
     include_distances = True
-    buriedness_file = ['reference_output/lyso_test_default/lyso_test_default_buriedness.csv',
-                        'reference_output/lyso_test_default/lyso_test_default_buriedness.csv']
+    buriedness_file = ['reference_output/lyso_test_default/lyso_test_default_propka_buriedness.csv',
+                        'reference_output/lyso_test_default/lyso_test_default_propka_buriedness.csv']
     include_buriedness = True
     dimensionality_reduction = True
     output_directory = None
@@ -112,4 +112,17 @@ class TestClustering():
             assert len(glob.glob(f'{output_directory}/*_HDBSCAN_C*.pdb')) == len(df['Clusters'].unique()) - 1
         else:
             assert len(glob.glob(f'{output_directory}/*_HDBSCAN_C*.pdb')) == len(df['Clusters'].unique())
-    
+            
+    def test_pkai_clustering_matrix(self):
+        Clust = Clustering(topology_file=get_data_path('lyso.pdb'),
+                           trajectory_file={'MD1': get_data_path('lyso_test.xtc')},
+                           pka_file=[get_data_path('lyso_test_pkai_pka.csv')],
+                           selections=['chainID A and resid 35', 'chainID A and resid 52'],
+                           output_directory=check_dir('test_output/TestClustering/TestPKAIClusteringMatrix'),
+                           output_prefix='lyso_test_clustering',
+                           buriedness_file=get_data_path('lyso_test_propka_buriedness.csv'),
+                            include_distances=False,
+                            include_buriedness=True,
+                            dimensionality_reduction=False)
+        assert not Clust.buriedness_file
+        assert not Clust.include_buriedness

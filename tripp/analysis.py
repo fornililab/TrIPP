@@ -22,30 +22,32 @@ import numpy as np
 from scipy import stats
 
 
-def calculate_difference_to_model(input_directory, output_prefix, pka_file):
+def calculate_difference_to_model(pka_directory, pka_prefix, predictor):
     """Calculate the time evolution of the difference between PROPKA predicted
     and model pKa values.
 
     Parameters
     ----------
-    output_directory: str
-        The directory where the output CSV file will be saved.
+    pka_directory: str
+        The directory where the pka CSV files are stored, the output CSV file will be saved
+        in the same folder.
         
-    output_prefix: str
-        Prefix of the output CSV file.
+    pka_prefix: str
+        Partial prefix of the pka CSV file (full name: {pka_prefix}_{predictor}_pka.csv).
+
+    predictor: str
+	Name of the pKa predictor used (possible values: 'propka', 'pkai', 'pkai+').
     
     """
-    df_pka = pd.read_csv(pka_file)
-    if 'propka' in pka_file:
-        predictor='propka'
+    if predictor == 'propka':
         model_pka_values = model_propka_values
-    elif 'pkai+' in pka_file:
-        predictor='pkai+'
+    elif (predictor == 'pkai+') or (predictor == 'pkai'):
         model_pka_values = model_pkai_values
-    elif 'pkai' in pka_file:
-        predictor='pkai'
-        model_pka_values = model_pkai_values
+    else: 
+        print('Unknown predictor value, stopping...') 
+        return
     
+    df_pka = pd.read_csv(f'{pka_directory}/{pka_prefix}_{predictor}_pka.csv')
     df_dif = pd.DataFrame()
     df_dif['Time [ps]'] = df_pka['Time [ps]']
     del df_pka['Time [ps]']
@@ -63,7 +65,7 @@ def calculate_difference_to_model(input_directory, output_prefix, pka_file):
         residue_data = np.around(df_pka[residue].to_numpy() - model_value, decimals=3)
         df_dif[residue] = residue_data
 
-    df_dif.to_csv(f'{input_directory}/{output_prefix}_difference_to_model_{predictor}.csv', index=False)
+    df_dif.to_csv(f'{pka_directory}/{pka_prefix}_difference_to_model_{predictor}.csv', index=False)
 
 
 def PCProjectionScreening(output_directory,

@@ -56,8 +56,19 @@ def create_mda_universe(topology_file, trajectory_file):
     
     topology = universe._topology
     _, counts = np.unique(universe.residues.resids, return_counts=True)
+    # Add chainID and record_type if not present in the topology attributes.
+    if not hasattr(topology, 'chainIDs'):
+        universe.add_TopologyAttr('chainIDs', 
+                                  np.full(len(topology.ids.values), 
+                                          'A', 
+                                          dtype='U1'))
+    if not hasattr(topology, 'record_types'):
+        universe.add_TopologyAttr('record_types', 
+                                  np.full(len(topology.ids.values), 
+                                          'ATOM',
+                                          dtype='U4'))
     # Check if chainID of any residue is empty or not, 
-    # if so default chain A for the whole system.
+    # if so default chain A for the whole system.    
     if '' in topology.chainIDs.values and (counts == 1).all():
         topology.chainIDs.values = np.full(len(topology.chainIDs.values),
                                            'A',

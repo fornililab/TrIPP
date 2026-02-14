@@ -38,7 +38,7 @@ Written by: Christos Matsingos, Ka Fu Man, and Arianna Fornili
 
 If you are using TrIPP, please cite: 
 Matsingos, C.; Man, K. F.; Fornili, A. TrIPP: A Trajectory Iterative pKa Predictor. 
-bioRxiv 2025, 2025.09.02.673559. https://doi.org/10.1101/2025.09.02.673559.
+Bioinformatics 2026, btag063. https://doi.org/10.1093/bioinformatics/btag063.
 
 -----------------------------------------------------------------
 """
